@@ -20,4 +20,12 @@ class DayEditorStateTest {
         assertNull(parseAmount("101", 100))
         assertNull(parseAmount("", 100))
     }
+
+    @Test
+    fun parseTarget_blankClearsTarget_zeroAndTooLargeAreInvalid() {
+        assertEquals(TargetInput.Valid(null), parseTarget(" ", 100))
+        assertEquals(TargetInput.Valid(100), parseTarget("100", 100))
+        assertEquals(TargetInput.Invalid, parseTarget("0", 100))
+        assertEquals(TargetInput.Invalid, parseTarget("101", 100))
+    }
 }

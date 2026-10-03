@@ -10,6 +10,7 @@ import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.model.DailyNutrition
+import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.nutrition.NutritionPeriod
 import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.SettingsRepository
@@ -33,7 +34,7 @@ import kotlinx.coroutines.flow.update
 
 /**
  * Nutrition: today's calories and protein against the targets, the history of a period, and
- * the dialog that logs one day. Messages are sent once through [events].
+ * the dialog that logs one day, and the daily targets. Messages are sent once through [events].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class NutritionViewModel(
@@ -149,6 +150,12 @@ class NutritionViewModel(
     fun onUndoDelete(day: DailyNutrition) {
         viewModelScope.launchCatching(onError = { showMessage(R.string.nutrition_error_save) }) {
             nutritionRepository.saveDay(day)
+        }
+    }
+
+    fun onSaveTargets(targets: NutritionTargets) {
+        viewModelScope.launchCatching(onError = { showMessage(R.string.nutrition_error_targets) }) {
+            settingsRepository.setNutritionTargets(targets)
         }
     }
 

@@ -296,4 +296,9 @@
     <string name="nutrition_error_save">Couldn\'t save. Try again.</string>
     <string name="nutrition_error_delete">Couldn\'t delete that day. Try again.</string>
     <string name="nutrition_day_deleted">Day deleted</string>
+    <string name="nutrition_targets">Targets</string>
+    <string name="nutrition_targets_title">Daily targets</string>
+    <string name="nutrition_targets_body">Leave a field empty for no target.</string>
+    <string name="nutrition_error_target">Enter a whole number from 1 to %1$s, or leave it empty</string>
+    <string name="nutrition_error_targets">Couldn\'t save your targets. Try again.</string>
 </resources>

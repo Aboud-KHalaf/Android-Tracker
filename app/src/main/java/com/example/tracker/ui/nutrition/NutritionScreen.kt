@@ -1,6 +1,11 @@
 package com.example.tracker.ui.nutrition
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,7 +15,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Restaurant
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -20,10 +27,14 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -33,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
+import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.ui.common.EmptyState
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
@@ -42,6 +54,7 @@ import com.example.tracker.ui.common.ScreenTitle
 import com.example.tracker.ui.nutrition.components.DayEditorDialog
 import com.example.tracker.ui.nutrition.components.NutritionDayRow
 import com.example.tracker.ui.nutrition.components.PeriodSummaryCard
+import com.example.tracker.ui.nutrition.components.TargetsDialog
 import com.example.tracker.ui.nutrition.components.TodayCard
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
@@ -85,6 +98,7 @@ fun NutritionRoute(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         onOpenDay = viewModel::onOpenEditor,
+        onSaveTargets = viewModel::onSaveTargets,
         onRetry = viewModel::onRetry,
         modifier = modifier,
     )
@@ -109,10 +123,12 @@ fun NutritionRoute(
 fun NutritionScreen(
     uiState: NutritionUiState,
     onOpenDay: (LocalDate?) -> Unit,
+    onSaveTargets: (NutritionTargets) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
+    var showTargetsDialog by rememberSaveable { mutableStateOf(false) }
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -134,8 +150,24 @@ fun NutritionScreen(
                 modifier = Modifier.padding(innerPadding),
             )
 
-            is NutritionUiState.Success -> NutritionContent(uiState, onOpenDay, innerPadding)
+            is NutritionUiState.Success -> NutritionContent(
+                state = uiState,
+                onOpenDay = onOpenDay,
+                onEditTargets = { showTargetsDialog = true },
+                contentPadding = innerPadding,
+            )
         }
+    }
+
+    if (showTargetsDialog && uiState is NutritionUiState.Success) {
+        TargetsDialog(
+            targets = uiState.targets,
+            onSave = { targets ->
+                showTargetsDialog = false
+                onSaveTargets(targets)
+            },
+            onDismiss = { showTargetsDialog = false },
+        )
     }
 }
 
@@ -143,6 +175,7 @@ fun NutritionScreen(
 private fun NutritionContent(
     state: NutritionUiState.Success,
     onOpenDay: (LocalDate?) -> Unit,
+    onEditTargets: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
@@ -160,9 +193,9 @@ private fun NutritionContent(
             ),
         ) {
             item(key = "title") {
-                ScreenTitle(
-                    text = stringResource(R.string.nutrition_title),
-                    modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, bottom = spacing.md),
+                TitleRow(
+                    onEditTargets = onEditTargets,
+                    modifier = Modifier.padding(start = spacing.lg, end = spacing.sm, bottom = spacing.md),
                 )
             }
             item(key = "today") {
@@ -196,6 +229,19 @@ private fun NutritionContent(
                     NutritionDayRow(day, onClick = { onOpenDay(day.date) })
                 }
             }
+        }
+    }
+}
+
+/** "Nutrition" with a "Targets" action on the right. */
+@Composable
+private fun TitleRow(onEditTargets: () -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        ScreenTitle(text = stringResource(R.string.nutrition_title), modifier = Modifier.weight(1f))
+        TextButton(onClick = onEditTargets, modifier = Modifier.heightIn(min = Dimens.minTouchTarget)) {
+            Icon(Icons.Outlined.Flag, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+            Text(stringResource(R.string.nutrition_targets))
         }
     }
 }

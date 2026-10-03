@@ -197,4 +197,24 @@ class NutritionViewModelTest {
 
         assertEquals(day, nutrition.days.value[today])
     }
+
+    @Test
+    fun onSaveTargets_updatesTargetsShownOnScreen() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onSaveTargets(NutritionTargets(2400, null))
+
+        assertEquals(NutritionTargets(2400, null), state.success().targets)
+    }
+
+    @Test
+    fun onSaveTargets_failure_showsMessage() = runTest {
+        settings.writeError = IOException("disk")
+        val viewModel = createViewModel()
+
+        viewModel.onSaveTargets(NutritionTargets(2400, 160))
+
+        assertEquals(NutritionEvent.ShowMessage(R.string.nutrition_error_targets), viewModel.events.first())
+    }
 }

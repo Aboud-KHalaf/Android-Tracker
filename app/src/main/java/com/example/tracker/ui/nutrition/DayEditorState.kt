@@ -23,3 +23,15 @@ internal fun sanitizeAmount(text: String): String = text.filter(Char::isDigit).t
 
 /** The whole number in [text] if it is in 0..[max], otherwise null. */
 internal fun parseAmount(text: String, max: Int): Int? = text.trim().toIntOrNull()?.takeIf { it in 0..max }
+
+/** A typed target: blank clears it, otherwise a whole number in 1..max. */
+internal sealed interface TargetInput {
+    data class Valid(val value: Int?) : TargetInput
+    data object Invalid : TargetInput
+}
+
+internal fun parseTarget(text: String, max: Int): TargetInput {
+    if (text.isBlank()) return TargetInput.Valid(null)
+    val value = text.trim().toIntOrNull()?.takeIf { it in 1..max } ?: return TargetInput.Invalid
+    return TargetInput.Valid(value)
+}
