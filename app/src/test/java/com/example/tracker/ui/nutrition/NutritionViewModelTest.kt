@@ -4,6 +4,7 @@ import com.example.tracker.R
 import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.NutritionTargets
+import com.example.tracker.domain.nutrition.NutritionPeriod
 import com.example.tracker.testing.FakeNutritionRepository
 import com.example.tracker.testing.FakeSettingsRepository
 import com.example.tracker.testing.MainDispatcherRule
@@ -216,5 +217,39 @@ class NutritionViewModelTest {
         viewModel.onSaveTargets(NutritionTargets(2400, 160))
 
         assertEquals(NutritionEvent.ShowMessage(R.string.nutrition_error_targets), viewModel.events.first())
+    }
+
+    @Test
+    fun onSelectPeriod_showsThatRangesDays() = runTest {
+        nutrition.put(DailyNutrition(today, 2000, 150), DailyNutrition(LocalDate.of(2026, 9, 10), 2500, 160))
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onSelectPeriod(NutritionPeriod.Last30Days)
+
+        assertEquals(LocalDate.of(2026, 9, 4), state.success().rangeStart)
+        assertEquals(2, state.success().summary!!.loggedDays)
+
+        viewModel.onSelectPeriod(NutritionPeriod.Custom(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+
+        assertEquals(listOf(LocalDate.of(2026, 9, 10)), state.success().months.flatMap { it.days }.map { it.date })
+        assertEquals(DailyNutrition(today, 2000, 150), state.success().todayEntry) // today stays visible
+    }
+
+    @Test
+    fun onSelectMetric_chartsThatMetricAgainstItsTarget() = runTest {
+        nutrition.put(DailyNutrition(today, 2000, 150))
+        settings.nutritionTargets.value = NutritionTargets(2400, 160)
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        assertEquals(NutritionMetric.CALORIES, state.success().metric)
+        assertEquals(listOf(2000), state.success().chart!!.bars.map { it.value })
+        assertEquals(2400, state.success().chart!!.target)
+
+        viewModel.onSelectMetric(NutritionMetric.PROTEIN)
+
+        assertEquals(listOf(150), state.success().chart!!.bars.map { it.value })
+        assertEquals(160, state.success().chart!!.target)
     }
 }

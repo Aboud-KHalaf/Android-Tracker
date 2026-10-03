@@ -46,6 +46,7 @@ class NutritionViewModel(
     private val mapper = NutritionStateMapper()
     private val loadAttempt = MutableStateFlow(0)
     private val period = MutableStateFlow<NutritionPeriod>(NutritionPeriod.ThisMonth)
+    private val metric = MutableStateFlow(NutritionMetric.CALORIES)
 
     val uiState: StateFlow<NutritionUiState> = combine(loadAttempt, period) { _, period -> period }
         .flatMapLatest { period ->
@@ -54,8 +55,9 @@ class NutritionViewModel(
                 nutritionRepository.observeDays(period.start(today), period.end(today)),
                 nutritionRepository.observeDay(today),
                 settingsRepository.nutritionTargets,
-            ) { days, todayEntry, targets ->
-                mapper.map(today, todayEntry, period, days, targets) as NutritionUiState
+                metric,
+            ) { days, todayEntry, targets, metric ->
+                mapper.map(today, todayEntry, period, metric, days, targets) as NutritionUiState
             }
                 .onStart { emit(NutritionUiState.Loading) }
                 .catch { emit(NutritionUiState.Error) }
@@ -69,6 +71,14 @@ class NutritionViewModel(
 
     private val _events = Channel<NutritionEvent>(Channel.BUFFERED)
     val events: Flow<NutritionEvent> = _events.receiveAsFlow()
+
+    fun onSelectPeriod(selected: NutritionPeriod) {
+        period.value = selected
+    }
+
+    fun onSelectMetric(selected: NutritionMetric) {
+        metric.value = selected
+    }
 
     fun onRetry() {
         loadAttempt.update { it + 1 }

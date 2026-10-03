@@ -4,6 +4,7 @@ import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.nutrition.NutritionPeriod
 import com.example.tracker.domain.nutrition.NutritionSummary
+import com.example.tracker.ui.nutrition.chart.BarChartModel
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -20,6 +21,9 @@ sealed interface NutritionUiState {
         val period: NutritionPeriod,
         val rangeStart: LocalDate,
         val rangeEnd: LocalDate,
+        val metric: NutritionMetric,
+        /** The selected metric per logged day; null when nothing is logged in the range. */
+        val chart: BarChartModel?,
         /** Null when nothing is logged in the range. */
         val summary: NutritionSummary?,
         /** Logged days in the range, newest month first; empty when there are none. */

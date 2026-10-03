@@ -45,6 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.domain.model.NutritionTargets
+import com.example.tracker.domain.nutrition.NutritionPeriod
 import com.example.tracker.ui.common.EmptyState
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
@@ -52,7 +53,9 @@ import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.ScreenTitle
 import com.example.tracker.ui.nutrition.components.DayEditorDialog
+import com.example.tracker.ui.nutrition.components.NutritionChartCard
 import com.example.tracker.ui.nutrition.components.NutritionDayRow
+import com.example.tracker.ui.nutrition.components.PeriodSelector
 import com.example.tracker.ui.nutrition.components.PeriodSummaryCard
 import com.example.tracker.ui.nutrition.components.TargetsDialog
 import com.example.tracker.ui.nutrition.components.TodayCard
@@ -99,6 +102,8 @@ fun NutritionRoute(
         snackbarHostState = snackbarHostState,
         onOpenDay = viewModel::onOpenEditor,
         onSaveTargets = viewModel::onSaveTargets,
+        onSelectPeriod = viewModel::onSelectPeriod,
+        onSelectMetric = viewModel::onSelectMetric,
         onRetry = viewModel::onRetry,
         modifier = modifier,
     )
@@ -124,6 +129,8 @@ fun NutritionScreen(
     uiState: NutritionUiState,
     onOpenDay: (LocalDate?) -> Unit,
     onSaveTargets: (NutritionTargets) -> Unit,
+    onSelectPeriod: (NutritionPeriod) -> Unit,
+    onSelectMetric: (NutritionMetric) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
@@ -154,6 +161,8 @@ fun NutritionScreen(
                 state = uiState,
                 onOpenDay = onOpenDay,
                 onEditTargets = { showTargetsDialog = true },
+                onSelectPeriod = onSelectPeriod,
+                onSelectMetric = onSelectMetric,
                 contentPadding = innerPadding,
             )
         }
@@ -176,6 +185,8 @@ private fun NutritionContent(
     state: NutritionUiState.Success,
     onOpenDay: (LocalDate?) -> Unit,
     onEditTargets: () -> Unit,
+    onSelectPeriod: (NutritionPeriod) -> Unit,
+    onSelectMetric: (NutritionMetric) -> Unit,
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
@@ -206,6 +217,21 @@ private fun NutritionContent(
                     onLogToday = { onOpenDay(state.today) },
                     modifier = cardModifier,
                 )
+            }
+            item(key = "period") {
+                PeriodSelector(
+                    selected = state.period,
+                    rangeStart = state.rangeStart,
+                    rangeEnd = state.rangeEnd,
+                    today = state.today,
+                    onSelect = onSelectPeriod,
+                    modifier = Modifier.padding(top = spacing.md, bottom = spacing.xs),
+                )
+            }
+            state.chart?.let { chart ->
+                item(key = "chart") {
+                    NutritionChartCard(chart, state.metric, onSelectMetric, cardModifier)
+                }
             }
             if (state.summary == null) {
                 item(key = "empty") {

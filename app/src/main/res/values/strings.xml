@@ -301,4 +301,12 @@
     <string name="nutrition_targets_body">Leave a field empty for no target.</string>
     <string name="nutrition_error_target">Enter a whole number from 1 to %1$s, or leave it empty</string>
     <string name="nutrition_error_targets">Couldn\'t save your targets. Try again.</string>
+    <string name="nutrition_period_group">Period</string>
+    <string name="nutrition_period_this_month">This month</string>
+    <string name="nutrition_period_last_30_days">Last 30 days</string>
+    <string name="nutrition_period_custom">Custom</string>
+    <string name="nutrition_period_range">%1$s – %2$s</string>
+    <string name="nutrition_chart_target">Target %1$s</string>
+    <string name="nutrition_chart_point">%1$s: %2$s</string>
+    <string name="nutrition_chart_description">Daily %1$s from %2$s to %3$s. %4$s</string>
 </resources>
