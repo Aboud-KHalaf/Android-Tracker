@@ -249,4 +249,51 @@
     <string name="plan_name_label">Plan name</string>
     <string name="create_plan_confirm">Create</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_ok">OK</string>
+
+    <!-- Nutrition -->
+    <string name="nav_nutrition">Nutrition</string>
+    <string name="nutrition_title">Nutrition</string>
+    <string name="nutrition_error_load">Couldn\'t load your nutrition log.</string>
+    <string name="nutrition_today">Today</string>
+    <string name="nutrition_today_empty">Nothing logged today yet. Add what you ate at the end of the day.</string>
+    <string name="nutrition_log_today">Log today</string>
+    <string name="nutrition_edit_today">Edit</string>
+    <string name="nutrition_calories">Calories</string>
+    <string name="nutrition_protein">Protein</string>
+    <string name="nutrition_kcal">%1$s kcal</string>
+    <string name="nutrition_grams">%1$s g</string>
+    <string name="nutrition_kcal_of_target">%1$s / %2$s kcal</string>
+    <string name="nutrition_grams_of_target">%1$s / %2$s g</string>
+    <string name="nutrition_day_values">%1$s kcal · %2$s g protein</string>
+    <string name="nutrition_daily_average">Daily average</string>
+    <plurals name="nutrition_logged_days">
+        <item quantity="one">Logged %1$d of %2$d day</item>
+        <item quantity="other">Logged %1$d of %2$d days</item>
+    </plurals>
+    <plurals name="nutrition_calories_on_target">
+        <item quantity="one">Calories on target %1$d of %2$d logged day</item>
+        <item quantity="other">Calories on target %1$d of %2$d logged days</item>
+    </plurals>
+    <plurals name="nutrition_protein_on_target">
+        <item quantity="one">Protein target hit %1$d of %2$d logged day</item>
+        <item quantity="other">Protein target hit %1$d of %2$d logged days</item>
+    </plurals>
+    <plurals name="nutrition_day_count">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <string name="nutrition_empty_title">No days logged</string>
+    <string name="nutrition_empty_body">Log your calories and protein at the end of each day to see your history here.</string>
+    <string name="nutrition_log_day">Log day</string>
+    <string name="nutrition_edit_day">Edit day</string>
+    <string name="nutrition_unit_kcal">kcal</string>
+    <string name="nutrition_unit_grams">g</string>
+    <string name="nutrition_error_amount">Enter a whole number from 0 to %1$s</string>
+    <string name="nutrition_error_open_day">Couldn\'t open that day. Try again.</string>
+    <string name="nutrition_error_save">Couldn\'t save. Try again.</string>
+    <string name="nutrition_error_delete">Couldn\'t delete that day. Try again.</string>
+    <string name="nutrition_day_deleted">Day deleted</string>
 </resources>
