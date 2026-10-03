@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -40,6 +39,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
+import com.example.tracker.ui.common.MessageContent
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
@@ -195,7 +195,7 @@ fun ActiveWorkoutScreen(
                 modifier = Modifier.padding(innerPadding),
             )
 
-            ActiveWorkoutUiState.NotFound -> NotFoundContent(Modifier.padding(innerPadding))
+            ActiveWorkoutUiState.NotFound -> MessageContent(stringResource(R.string.workout_not_found), Modifier.padding(innerPadding))
             is ActiveWorkoutUiState.Success -> WorkoutContent(uiState, actions, innerPadding)
         }
     }
@@ -278,22 +278,5 @@ private fun WorkoutContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun NotFoundContent(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(MaterialTheme.spacing.xl),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = stringResource(R.string.workout_not_found),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.fillMaxWidth(),
-        )
     }
 }
