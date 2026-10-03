@@ -6,4 +6,5 @@ import com.example.tracker.domain.model.ThemeMode
 data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val isDeletingData: Boolean = false,
+    val nutritionReminderEnabled: Boolean = true,
 )

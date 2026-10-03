@@ -252,4 +252,25 @@ class NutritionViewModelTest {
         assertEquals(listOf(150), state.success().chart!!.bars.map { it.value })
         assertEquals(160, state.success().chart!!.target)
     }
+
+    @Test
+    fun shouldRequestNotificationPermission_onceWhileReminderIsOn() = runTest {
+        val viewModel = createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.shouldRequestNotificationPermission.collect {} }
+
+        assertTrue(viewModel.shouldRequestNotificationPermission.value)
+
+        viewModel.onNotificationPermissionRequested()
+
+        assertFalse(viewModel.shouldRequestNotificationPermission.value)
+    }
+
+    @Test
+    fun shouldRequestNotificationPermission_notWhenReminderIsOff() = runTest {
+        settings.nutritionReminderEnabled.value = false
+        val viewModel = createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.shouldRequestNotificationPermission.collect {} }
+
+        assertFalse(viewModel.shouldRequestNotificationPermission.value)
+    }
 }

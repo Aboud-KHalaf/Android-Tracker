@@ -191,6 +191,17 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
 class FakeSettingsRepository : SettingsRepository {
     override val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
     override val nutritionTargets = MutableStateFlow(NutritionTargets())
+    override val nutritionReminderEnabled = MutableStateFlow(true)
+    override val notificationPermissionRequested = MutableStateFlow(false)
+
+    override suspend fun setNutritionReminderEnabled(enabled: Boolean) {
+        writeError?.let { throw it }
+        nutritionReminderEnabled.value = enabled
+    }
+
+    override suspend fun markNotificationPermissionRequested() {
+        notificationPermissionRequested.value = true
+    }
 
     /** When set, every write fails with it. */
     var writeError: Exception? = null

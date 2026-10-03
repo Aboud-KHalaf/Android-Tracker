@@ -64,6 +64,19 @@ class NutritionViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), NutritionUiState.Loading)
 
+    /**
+     * Whether to ask for notification permission now: once, on the first visit, while the
+     * reminder is on. The screen checks whether the permission is actually missing.
+     */
+    val shouldRequestNotificationPermission: StateFlow<Boolean> =
+        combine(settingsRepository.nutritionReminderEnabled, settingsRepository.notificationPermissionRequested) { enabled, requested ->
+            enabled && !requested
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), false)
+
+    fun onNotificationPermissionRequested() {
+        viewModelScope.launchCatching(onError = {}) { settingsRepository.markNotificationPermissionRequested() }
+    }
+
     private val _editor = MutableStateFlow<DayEditorState?>(null)
 
     /** The open "Log day" dialog, or null when it is closed. */

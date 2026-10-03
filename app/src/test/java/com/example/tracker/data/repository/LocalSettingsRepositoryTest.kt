@@ -86,6 +86,27 @@ class LocalSettingsRepositoryTest {
     }
 
     @Test
+    fun nutritionReminder_defaultsOnAndPersistsWhenTurnedOff() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val settings = LocalSettingsRepository(preferences, database, dispatcher)
+        assertTrue(settings.nutritionReminderEnabled.value)
+
+        settings.setNutritionReminderEnabled(false)
+
+        assertEquals(false, LocalSettingsRepository(preferences, database, dispatcher).nutritionReminderEnabled.value)
+    }
+
+    @Test
+    fun notificationPermissionRequested_persists() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        assertEquals(false, LocalSettingsRepository(preferences, database, dispatcher).notificationPermissionRequested.value)
+
+        LocalSettingsRepository(preferences, database, dispatcher).markNotificationPermissionRequested()
+
+        assertTrue(LocalSettingsRepository(preferences, database, dispatcher).notificationPermissionRequested.value)
+    }
+
+    @Test
     fun deleteAllData_removesNutritionButKeepsTargets() = runTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val settings = LocalSettingsRepository(preferences, database, dispatcher)

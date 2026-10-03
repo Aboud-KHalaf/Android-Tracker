@@ -29,6 +29,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +53,7 @@ import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.ScreenTitle
+import com.example.tracker.ui.common.rememberNotificationPermissionRequest
 import com.example.tracker.ui.nutrition.components.DayEditorDialog
 import com.example.tracker.ui.nutrition.components.NutritionChartCard
 import com.example.tracker.ui.nutrition.components.NutritionDayRow
@@ -78,6 +80,13 @@ fun NutritionRoute(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    // The daily reminder needs notification permission; ask once, here, where the reason is clear.
+    val shouldRequestPermission by viewModel.shouldRequestNotificationPermission.collectAsStateWithLifecycle()
+    val requestNotifications = rememberNotificationPermissionRequest { viewModel.onNotificationPermissionRequested() }
+    LaunchedEffect(shouldRequestPermission) {
+        if (shouldRequestPermission) requestNotifications()
+    }
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {

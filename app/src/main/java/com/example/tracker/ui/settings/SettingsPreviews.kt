@@ -15,6 +15,7 @@ private fun SettingsScreenPreview() {
             uiState = SettingsUiState(themeMode = ThemeMode.DARK),
             onBack = {},
             onSelectThemeMode = {},
+            onSetNutritionReminder = {},
             onDeleteAllData = {},
         )
     }

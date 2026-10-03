@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 
 /**
- * Settings screen: the app theme and deleting all local data.
+ * Settings screen: the app theme, the daily reminder, and deleting all local data.
  * State is exposed as [uiState]; messages are sent once through [events].
  */
 class SettingsViewModel(
@@ -34,17 +34,30 @@ class SettingsViewModel(
     val events: Flow<SettingsEvent> = _events.receiveAsFlow()
 
     val uiState: StateFlow<SettingsUiState> =
-        combine(settingsRepository.themeMode, isDeletingData) { themeMode, deleting ->
-            SettingsUiState(themeMode = themeMode, isDeletingData = deleting)
+        combine(
+            settingsRepository.themeMode,
+            isDeletingData,
+            settingsRepository.nutritionReminderEnabled,
+        ) { themeMode, deleting, reminder ->
+            SettingsUiState(themeMode = themeMode, isDeletingData = deleting, nutritionReminderEnabled = reminder)
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
-            SettingsUiState(themeMode = settingsRepository.themeMode.value),
+            SettingsUiState(
+                themeMode = settingsRepository.themeMode.value,
+                nutritionReminderEnabled = settingsRepository.nutritionReminderEnabled.value,
+            ),
         )
 
     fun onSelectThemeMode(mode: ThemeMode) {
         viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_theme) }) {
             settingsRepository.setThemeMode(mode)
+        }
+    }
+
+    fun onSetNutritionReminder(enabled: Boolean) {
+        viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_reminder) }) {
+            settingsRepository.setNutritionReminderEnabled(enabled)
         }
     }
 

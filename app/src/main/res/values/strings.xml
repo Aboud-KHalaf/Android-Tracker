@@ -309,4 +309,16 @@
     <string name="nutrition_chart_target">Target %1$s</string>
     <string name="nutrition_chart_point">%1$s: %2$s</string>
     <string name="nutrition_chart_description">Daily %1$s from %2$s to %3$s. %4$s</string>
+
+    <!-- Reminders -->
+    <string name="reminder_channel_name">Daily reminders</string>
+    <string name="reminder_channel_description">A reminder in the evening when today\'s nutrition isn\'t logged</string>
+    <string name="reminder_title">Log today\'s nutrition</string>
+    <string name="reminder_text">You haven\'t added today\'s calories and protein yet.</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_nutrition_reminder">Daily nutrition reminder</string>
+    <string name="settings_nutrition_reminder_description">At 9 PM if today isn\'t logged</string>
+    <string name="settings_notifications_blocked">Notifications are off for this app</string>
+    <string name="settings_open_system_settings">Settings</string>
+    <string name="settings_error_reminder">Couldn\'t change the reminder. Try again.</string>
 </resources>

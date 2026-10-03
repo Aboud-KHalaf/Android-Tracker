@@ -49,6 +49,27 @@ class LocalSettingsRepository(
         _nutritionTargets.value = targets
     }
 
+    private val _nutritionReminderEnabled = MutableStateFlow(preferences.getBoolean(KEY_NUTRITION_REMINDER, true))
+    override val nutritionReminderEnabled: StateFlow<Boolean> = _nutritionReminderEnabled.asStateFlow()
+
+    override suspend fun setNutritionReminderEnabled(enabled: Boolean) {
+        withContext(ioDispatcher) {
+            preferences.edit(commit = true) { putBoolean(KEY_NUTRITION_REMINDER, enabled) }
+        }
+        _nutritionReminderEnabled.value = enabled
+    }
+
+    private val _notificationPermissionRequested =
+        MutableStateFlow(preferences.getBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, false))
+    override val notificationPermissionRequested: StateFlow<Boolean> = _notificationPermissionRequested.asStateFlow()
+
+    override suspend fun markNotificationPermissionRequested() {
+        withContext(ioDispatcher) {
+            preferences.edit(commit = true) { putBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, true) }
+        }
+        _notificationPermissionRequested.value = true
+    }
+
     override suspend fun deleteAllData() {
         withContext(ioDispatcher) { database.clearAllTables() }
     }
@@ -74,5 +95,7 @@ class LocalSettingsRepository(
         private const val KEY_THEME_MODE = "theme_mode"
         private const val KEY_CALORIE_TARGET = "calorie_target"
         private const val KEY_PROTEIN_TARGET = "protein_target"
+        private const val KEY_NUTRITION_REMINDER = "nutrition_reminder"
+        private const val KEY_NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested"
     }
 }

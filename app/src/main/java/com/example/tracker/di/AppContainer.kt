@@ -16,6 +16,11 @@ import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
+import com.example.tracker.domain.reminder.NutritionReminder
+import com.example.tracker.reminder.AlarmReminderScheduler
+import com.example.tracker.reminder.NotificationReminderNotifier
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 
 /**
  * App-wide dependencies, created once in [com.example.tracker.TrackerApplication].
@@ -34,5 +39,18 @@ class AppContainer(context: Context) {
         val preferences = context.applicationContext
             .getSharedPreferences(LocalSettingsRepository.PREFERENCES_NAME, Context.MODE_PRIVATE)
         LocalSettingsRepository(preferences, database)
+    }
+
+    /** For work that outlives a screen, such as handling a broadcast. */
+    val applicationScope = CoroutineScope(SupervisorJob())
+
+    val nutritionReminder: NutritionReminder by lazy {
+        NutritionReminder(
+            settings = settingsRepository,
+            nutrition = nutritionRepository,
+            scheduler = AlarmReminderScheduler(context.applicationContext),
+            notifier = NotificationReminderNotifier(context.applicationContext),
+            time = time,
+        )
     }
 }
