@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.semantics
 import com.example.tracker.R
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.NutritionTargets
+import com.example.tracker.ui.common.RollingNumberText
 import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.common.longDate
 import com.example.tracker.ui.nutrition.formatAmount
@@ -115,7 +116,7 @@ private fun AmountProgress(label: String, value: Int, target: Int?, withTarget: 
     ) {
         Row {
             Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-            Text(amount, style = MaterialTheme.typography.bodyLarge.tabularNumbers())
+            RollingNumberText(value.toDouble(), amount, style = MaterialTheme.typography.bodyLarge.tabularNumbers())
         }
         if (target != null) {
             val fraction = (value.toFloat() / target).coerceIn(0f, 1f)

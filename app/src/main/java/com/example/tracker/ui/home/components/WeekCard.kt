@@ -1,5 +1,15 @@
 package com.example.tracker.ui.home.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -22,8 +32,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -43,6 +56,7 @@ import com.example.tracker.ui.home.DayStatus
 import com.example.tracker.ui.home.PersonalBestUi
 import com.example.tracker.ui.home.WeekDayUi
 import com.example.tracker.ui.home.WeekUi
+import com.example.tracker.ui.theme.Motion
 import com.example.tracker.ui.theme.spacing
 import com.example.tracker.ui.theme.tabularNumbers
 
@@ -124,19 +138,43 @@ private fun WeekDay(day: WeekDayUi, modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.labelMedium,
             color = if (day.status == DayStatus.TODAY) colors.primary else colors.onSurfaceVariant,
         )
-        val indicator = Modifier.size(DayIndicatorSize)
-        when (day.status) {
-            DayStatus.TRAINED -> Box(indicator.background(colors.primary, CircleShape), Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Outlined.Check,
-                    contentDescription = null,
-                    tint = colors.onPrimary,
-                    modifier = Modifier.size(DayCheckSize),
-                )
-            }
+        DayIndicator(day.status)
+    }
+}
 
-            DayStatus.TODAY -> Box(indicator.border(TodayBorderWidth, colors.primary, CircleShape))
-            DayStatus.IDLE -> Box(indicator.background(colors.surfaceContainerHighest, CircleShape))
+/** Filled with a check when trained, ringed for today. The check springs in when it appears. */
+@Composable
+private fun DayIndicator(status: DayStatus) {
+    val colors = MaterialTheme.colorScheme
+    val fill by animateColorAsState(
+        targetValue = when (status) {
+            DayStatus.TRAINED -> colors.primary
+            DayStatus.TODAY -> Color.Transparent
+            DayStatus.IDLE -> colors.surfaceContainerHighest
+        },
+        animationSpec = tween(Motion.DurationMedium, easing = Motion.Emphasized),
+        label = "dayFill",
+    )
+    val check = remember { MutableTransitionState(false) }.apply { targetState = status == DayStatus.TRAINED }
+    Box(
+        modifier = Modifier
+            .size(DayIndicatorSize)
+            .background(fill, CircleShape)
+            .then(if (status == DayStatus.TODAY) Modifier.border(TodayBorderWidth, colors.primary, CircleShape) else Modifier),
+        contentAlignment = Alignment.Center,
+    ) {
+        AnimatedVisibility(
+            visibleState = check,
+            enter = scaleIn(spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMediumLow)) +
+                fadeIn(tween(Motion.DurationShort)),
+            exit = scaleOut(tween(Motion.DurationShort)) + fadeOut(tween(Motion.DurationShort)),
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Check,
+                contentDescription = null,
+                tint = colors.onPrimary,
+                modifier = Modifier.size(DayCheckSize),
+            )
         }
     }
 }
