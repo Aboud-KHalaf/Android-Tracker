@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -23,28 +24,36 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.selection.toggleable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.SectionHeader
+import com.example.tracker.ui.common.openAppNotificationSettings
+import com.example.tracker.ui.common.rememberNotificationPermissionRequest
 import com.example.tracker.ui.settings.components.DeleteDataDialog
 import com.example.tracker.ui.settings.components.ThemeModeOptions
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
+import kotlinx.coroutines.launch
 
 /** Settings destination: connects [SettingsViewModel] to [SettingsScreen]. */
 @Composable
@@ -63,10 +72,27 @@ fun SettingsRoute(
         }
     }
 
+    val scope = rememberCoroutineScope()
+    val ensureNotifications = rememberNotificationPermissionRequest { granted ->
+        if (!granted) {
+            scope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = context.getString(R.string.settings_notifications_blocked),
+                    actionLabel = context.getString(R.string.settings_open_system_settings),
+                )
+                if (result == SnackbarResult.ActionPerformed) context.openAppNotificationSettings()
+            }
+        }
+    }
+
     SettingsScreen(
         uiState = uiState,
         onBack = onBack,
         onSelectThemeMode = viewModel::onSelectThemeMode,
+        onSetNutritionReminder = { enabled ->
+            viewModel.onSetNutritionReminder(enabled)
+            if (enabled) ensureNotifications()
+        },
         onDeleteAllData = viewModel::onDeleteAllData,
         snackbarHostState = snackbarHostState,
         modifier = modifier,
@@ -80,6 +106,7 @@ fun SettingsScreen(
     uiState: SettingsUiState,
     onBack: () -> Unit,
     onSelectThemeMode: (ThemeMode) -> Unit,
+    onSetNutritionReminder: (Boolean) -> Unit,
     onDeleteAllData: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
@@ -124,6 +151,12 @@ fun SettingsScreen(
                 ThemeModeOptions(selected = uiState.themeMode, onSelect = onSelectThemeMode)
 
                 SectionHeader(
+                    title = stringResource(R.string.settings_notifications),
+                    modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, top = spacing.lg),
+                )
+                ReminderItem(enabled = uiState.nutritionReminderEnabled, onToggle = onSetNutritionReminder)
+
+                SectionHeader(
                     title = stringResource(R.string.settings_data),
                     modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, top = spacing.lg),
                 )
@@ -144,6 +177,17 @@ fun SettingsScreen(
             onDismiss = { showDeleteDialog = false },
         )
     }
+}
+
+@Composable
+private fun ReminderItem(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.settings_nutrition_reminder)) },
+        supportingContent = { Text(stringResource(R.string.settings_nutrition_reminder_description)) },
+        leadingContent = { Icon(Icons.Outlined.NotificationsActive, contentDescription = null) },
+        trailingContent = { Switch(checked = enabled, onCheckedChange = null) },
+        modifier = Modifier.toggleable(value = enabled, role = Role.Switch, onValueChange = onToggle),
+    )
 }
 
 @Composable

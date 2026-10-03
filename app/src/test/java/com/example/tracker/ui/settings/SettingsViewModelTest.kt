@@ -76,4 +76,25 @@ class SettingsViewModelTest {
         assertEquals(SettingsEvent.ShowMessage(R.string.settings_error_delete_data), viewModel.events.first())
         assertFalse(viewModel.uiState.value.isDeletingData)
     }
+
+    @Test
+    fun onSetNutritionReminder_savesIt() = runTest {
+        val viewModel = SettingsViewModel(settings)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+
+        viewModel.onSetNutritionReminder(false)
+
+        assertFalse(settings.nutritionReminderEnabled.value)
+        assertFalse(viewModel.uiState.value.nutritionReminderEnabled)
+    }
+
+    @Test
+    fun onSetNutritionReminder_failure_showsMessage() = runTest {
+        settings.writeError = java.io.IOException("disk")
+        val viewModel = SettingsViewModel(settings)
+
+        viewModel.onSetNutritionReminder(false)
+
+        assertEquals(SettingsEvent.ShowMessage(R.string.settings_error_reminder), viewModel.events.first())
+    }
 }
