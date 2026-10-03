@@ -43,6 +43,7 @@ import com.example.tracker.R
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
+import com.example.tracker.ui.common.MessageContent
 import com.example.tracker.ui.common.NameInputDialog
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.currentLocale
@@ -178,7 +179,7 @@ fun PlanScreen(
                 modifier = Modifier.padding(innerPadding),
             )
 
-            PlanUiState.NotFound -> NotFoundContent(Modifier.padding(innerPadding))
+            PlanUiState.NotFound -> MessageContent(stringResource(R.string.plan_not_found), Modifier.padding(innerPadding))
             is PlanUiState.Success -> PlanContent(
                 state = uiState,
                 actions = actions,
@@ -301,21 +302,5 @@ private fun AddExerciseButton(onClick: () -> Unit, modifier: Modifier = Modifier
         Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
         Spacer(Modifier.width(ButtonDefaults.IconSpacing))
         Text(stringResource(R.string.plan_add_exercise))
-    }
-}
-
-@Composable
-private fun NotFoundContent(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(MaterialTheme.spacing.xl),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = stringResource(R.string.plan_not_found),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }

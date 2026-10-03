@@ -59,6 +59,14 @@ fun LocalDate.shortMonth(locale: Locale): String =
 fun LocalDate.longDate(locale: Locale): String =
     format(DateTimeFormatter.ofPattern("EEEE, MMMM d", locale))
 
+/** "Sep 28". */
+fun LocalDate.shortDate(locale: Locale): String =
+    format(DateTimeFormatter.ofPattern("MMM d", locale))
+
+/** "1,250" or "47.5": grouped, with at most one decimal. */
+fun formatNumber(value: Double, locale: Locale): String =
+    DecimalFormat("#,##0.#", DecimalFormatSymbols.getInstance(locale)).format(value)
+
 /** "Mon, Sep 28". */
 fun LocalDate.mediumDate(locale: Locale): String =
     format(DateTimeFormatter.ofPattern("EEE, MMM d", locale))

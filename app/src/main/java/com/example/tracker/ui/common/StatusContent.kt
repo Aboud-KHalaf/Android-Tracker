@@ -60,3 +60,21 @@ fun ErrorContent(
         }
     }
 }
+
+/** Full-screen informational message, e.g. when the requested item no longer exists. */
+@Composable
+fun MessageContent(message: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(MaterialTheme.spacing.xl),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
