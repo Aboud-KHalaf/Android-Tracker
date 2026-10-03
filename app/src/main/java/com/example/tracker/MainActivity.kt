@@ -11,10 +11,12 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tracker.ui.TrackerApp
+import com.example.tracker.ui.splash.installAnimatedSplashScreen
 import com.example.tracker.ui.theme.TrackerTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        installAnimatedSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val settings = (application as TrackerApplication).container.settingsRepository
