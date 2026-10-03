@@ -3,10 +3,10 @@ package com.example.tracker.ui.nutrition.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -36,11 +36,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.example.tracker.R
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.ui.common.currentLocale
+import com.example.tracker.ui.common.longDate
+import com.example.tracker.ui.common.toLocalDate
+import com.example.tracker.ui.common.toUtcMillis
 import com.example.tracker.ui.nutrition.DayEditorState
 import com.example.tracker.ui.nutrition.formatAmount
-import com.example.tracker.ui.nutrition.toLocalDate
-import com.example.tracker.ui.nutrition.toUtcMillis
-import com.example.tracker.ui.common.longDate
 import com.example.tracker.ui.theme.spacing
 import java.time.LocalDate
 

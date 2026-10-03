@@ -1,4 +1,4 @@
-package com.example.tracker.ui.nutrition.components
+package com.example.tracker.ui.common
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -30,27 +30,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.example.tracker.R
-import com.example.tracker.domain.nutrition.NutritionPeriod
-import com.example.tracker.ui.common.currentLocale
-import com.example.tracker.ui.common.shortDate
-import com.example.tracker.ui.nutrition.toLocalDate
-import com.example.tracker.ui.nutrition.toUtcMillis
+import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.ui.theme.spacing
 import java.time.LocalDate
 
 /** This month / Last 30 days / a custom range picked from a calendar. */
 @Composable
 fun PeriodSelector(
-    selected: NutritionPeriod,
+    selected: DatePeriod,
     rangeStart: LocalDate,
     rangeEnd: LocalDate,
     today: LocalDate,
-    onSelect: (NutritionPeriod) -> Unit,
+    onSelect: (DatePeriod) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showRangePicker by rememberSaveable { mutableStateOf(false) }
     val locale = currentLocale()
-    val groupDescription = stringResource(R.string.nutrition_period_group)
+    val groupDescription = stringResource(R.string.period_group)
 
     Row(
         modifier = modifier
@@ -60,25 +56,25 @@ fun PeriodSelector(
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm),
     ) {
         FilterChip(
-            selected = selected == NutritionPeriod.ThisMonth,
-            onClick = { onSelect(NutritionPeriod.ThisMonth) },
-            label = { Text(stringResource(R.string.nutrition_period_this_month)) },
+            selected = selected == DatePeriod.ThisMonth,
+            onClick = { onSelect(DatePeriod.ThisMonth) },
+            label = { Text(stringResource(R.string.period_this_month)) },
         )
         FilterChip(
-            selected = selected == NutritionPeriod.Last30Days,
-            onClick = { onSelect(NutritionPeriod.Last30Days) },
-            label = { Text(stringResource(R.string.nutrition_period_last_30_days)) },
+            selected = selected == DatePeriod.Last30Days,
+            onClick = { onSelect(DatePeriod.Last30Days) },
+            label = { Text(stringResource(R.string.period_last_30_days)) },
         )
-        val isCustom = selected is NutritionPeriod.Custom
+        val isCustom = selected is DatePeriod.Custom
         FilterChip(
             selected = isCustom,
             onClick = { showRangePicker = true },
             label = {
                 Text(
                     if (isCustom) {
-                        stringResource(R.string.nutrition_period_range, rangeStart.shortDate(locale), rangeEnd.shortDate(locale))
+                        stringResource(R.string.period_range, rangeStart.shortDate(locale), rangeEnd.shortDate(locale))
                     } else {
-                        stringResource(R.string.nutrition_period_custom)
+                        stringResource(R.string.period_custom)
                     },
                 )
             },
@@ -93,7 +89,7 @@ fun PeriodSelector(
             latest = today,
             onPick = { from, to ->
                 showRangePicker = false
-                onSelect(NutritionPeriod.Custom(from, to))
+                onSelect(DatePeriod.Custom(from, to))
             },
             onDismiss = { showRangePicker = false },
         )

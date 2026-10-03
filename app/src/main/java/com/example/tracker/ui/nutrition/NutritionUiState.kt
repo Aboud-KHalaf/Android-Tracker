@@ -1,8 +1,8 @@
 package com.example.tracker.ui.nutrition
 
 import com.example.tracker.domain.model.DailyNutrition
+import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.NutritionTargets
-import com.example.tracker.domain.nutrition.NutritionPeriod
 import com.example.tracker.domain.nutrition.NutritionSummary
 import com.example.tracker.ui.nutrition.chart.BarChartModel
 import java.time.LocalDate
@@ -18,7 +18,7 @@ sealed interface NutritionUiState {
         /** What was logged today, or null when nothing is yet. */
         val todayEntry: DailyNutrition?,
         val targets: NutritionTargets,
-        val period: NutritionPeriod,
+        val period: DatePeriod,
         val rangeStart: LocalDate,
         val rangeEnd: LocalDate,
         val metric: NutritionMetric,
