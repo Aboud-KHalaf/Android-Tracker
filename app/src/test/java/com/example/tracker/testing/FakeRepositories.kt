@@ -5,6 +5,7 @@ import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.PersonalBest
 import com.example.tracker.domain.model.PlanDetails
+import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.model.WeekSummary
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutPlan
@@ -12,6 +13,7 @@ import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.PlanRepository
+import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import java.time.Duration
 import java.time.Instant
@@ -180,5 +182,23 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
     private fun writeWorkout(change: (Workout) -> Workout) {
         writeError?.let { throw it }
         activeWorkout.value = change(requireNotNull(activeWorkout.value) { "No workout" })
+    }
+}
+
+class FakeSettingsRepository : SettingsRepository {
+    override val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
+
+    /** When set, every write fails with it. */
+    var writeError: Exception? = null
+    var deleteAllDataCalls = 0
+
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        writeError?.let { throw it }
+        themeMode.value = mode
+    }
+
+    override suspend fun deleteAllData() {
+        writeError?.let { throw it }
+        deleteAllDataCalls++
     }
 }

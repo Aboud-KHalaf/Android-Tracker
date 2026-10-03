@@ -12,6 +12,7 @@ fun NavGraphBuilder.homeScreen(
     onOpenPlan: (planId: String) -> Unit,
     onOpenHistory: () -> Unit,
     onOpenExerciseProgress: (exerciseId: String) -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     composable<HomeDestination> {
         HomeRoute(
@@ -19,6 +20,7 @@ fun NavGraphBuilder.homeScreen(
             onOpenPlan = onOpenPlan,
             onOpenHistory = onOpenHistory,
             onOpenExerciseProgress = onOpenExerciseProgress,
+            onOpenSettings = onOpenSettings,
         )
     }
 }

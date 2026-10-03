@@ -1,0 +1,76 @@
+package com.example.tracker.data.repository
+
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.test.core.app.ApplicationProvider
+import com.example.tracker.data.local.TrackerDatabase
+import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.ThemeMode
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [35])
+class LocalSettingsRepositoryTest {
+
+    private lateinit var database: TrackerDatabase
+    private lateinit var preferences: SharedPreferences
+    private val time = FakeTimeProvider()
+    private val ids = SequentialIds()
+
+    @Before
+    fun setUp() {
+        database = inMemoryDatabase()
+        preferences = ApplicationProvider.getApplicationContext<Context>()
+            .getSharedPreferences("settings-test", Context.MODE_PRIVATE)
+            .also { it.edit().clear().commit() }
+    }
+
+    @After
+    fun tearDown() = database.close()
+
+    @Test
+    fun themeMode_defaultsToSystem() = runTest {
+        val settings = LocalSettingsRepository(preferences, database, StandardTestDispatcher(testScheduler))
+
+        assertEquals(ThemeMode.SYSTEM, settings.themeMode.value)
+    }
+
+    @Test
+    fun setThemeMode_updatesStateAndPersists() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val settings = LocalSettingsRepository(preferences, database, dispatcher)
+
+        settings.setThemeMode(ThemeMode.DARK)
+
+        assertEquals(ThemeMode.DARK, settings.themeMode.value)
+        assertEquals(ThemeMode.DARK, LocalSettingsRepository(preferences, database, dispatcher).themeMode.value)
+    }
+
+    @Test
+    fun deleteAllData_removesExercisesPlansAndWorkouts() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val exercises = OfflineFirstExerciseRepository(database, time, ids)
+        val plans = OfflineFirstPlanRepository(database, time, ids)
+        val workouts = OfflineFirstWorkoutRepository(database, time, ids)
+        val planId = plans.createPlan("Push Day")
+        plans.addExercise(planId, exercises.createExercise("Bench Press", ExerciseType.WEIGHT_REPS))
+        workouts.startWorkout(planId)
+
+        LocalSettingsRepository(preferences, database, dispatcher).deleteAllData()
+
+        assertTrue(exercises.observeExercises().first().isEmpty())
+        assertTrue(plans.observePlans().first().isEmpty())
+        assertNull(workouts.observeActiveWorkout().first())
+    }
+}

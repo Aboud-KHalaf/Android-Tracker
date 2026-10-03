@@ -222,6 +222,23 @@
     <string name="exercises_empty_title">No exercises yet</string>
     <string name="exercises_empty_body">Add exercises to a plan to track their progress here.</string>
 
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_open">Settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme_system">System default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_error_theme">Couldn\'t change the theme. Try again.</string>
+    <string name="settings_data">Data</string>
+    <string name="settings_delete_data">Delete all data</string>
+    <string name="settings_delete_data_description">Remove every exercise, plan and workout from this device</string>
+    <string name="settings_delete_data_title">Delete all data?</string>
+    <string name="settings_delete_data_body">All exercises, plans and workout history on this device are permanently deleted. This can\'t be undone.</string>
+    <string name="settings_delete_data_confirm">Delete all</string>
+    <string name="settings_data_deleted">All data deleted</string>
+    <string name="settings_error_delete_data">Couldn\'t delete your data. Try again.</string>
+
     <!-- Bottom navigation -->
     <string name="nav_home">Home</string>
     <string name="nav_history">History</string>
