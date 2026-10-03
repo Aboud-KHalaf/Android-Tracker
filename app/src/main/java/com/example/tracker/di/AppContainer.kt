@@ -18,7 +18,7 @@ import com.example.tracker.domain.repository.WorkoutRepository
  * ViewModels receive repositories from here through their factories.
  */
 class AppContainer(context: Context) {
-    private val time: TimeProvider = SystemTimeProvider
+    val time: TimeProvider = SystemTimeProvider
     private val ids: IdGenerator = UuidGenerator
     private val database: TrackerDatabase by lazy { TrackerDatabase.create(context.applicationContext) }
 
