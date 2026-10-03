@@ -56,6 +56,7 @@ fun HomeRoute(
     onOpenPlan: (planId: String) -> Unit,
     onOpenHistory: () -> Unit,
     onOpenExerciseProgress: (exerciseId: String) -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
@@ -81,6 +82,7 @@ fun HomeRoute(
             onOpenPlan = onOpenPlan,
             onOpenHistory = onOpenHistory,
             onOpenExerciseProgress = onOpenExerciseProgress,
+            onOpenSettings = onOpenSettings,
             onRetry = viewModel::onRetry,
         ),
         modifier = modifier,
@@ -95,6 +97,7 @@ data class HomeActions(
     val onOpenPlan: (planId: String) -> Unit = {},
     val onOpenHistory: () -> Unit = {},
     val onOpenExerciseProgress: (exerciseId: String) -> Unit = {},
+    val onOpenSettings: () -> Unit = {},
     val onRetry: () -> Unit = {},
 )
 
@@ -164,7 +167,11 @@ private fun HomeContent(
             ),
         ) {
             item(key = "header") {
-                HomeHeader(today = state.today, modifier = Modifier.padding(bottom = spacing.lg))
+                HomeHeader(
+                    today = state.today,
+                    onOpenSettings = actions.onOpenSettings,
+                    modifier = Modifier.padding(bottom = spacing.lg),
+                )
             }
             item(key = "up-next") {
                 UpNextCard(
