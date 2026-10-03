@@ -1,8 +1,10 @@
 package com.example.tracker.testing
 
+import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.PersonalBest
 import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.ThemeMode
@@ -12,6 +14,7 @@ import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.domain.repository.ExerciseRepository
+import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
@@ -187,6 +190,7 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
 
 class FakeSettingsRepository : SettingsRepository {
     override val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
+    override val nutritionTargets = MutableStateFlow(NutritionTargets())
 
     /** When set, every write fails with it. */
     var writeError: Exception? = null
@@ -197,8 +201,45 @@ class FakeSettingsRepository : SettingsRepository {
         themeMode.value = mode
     }
 
+    override suspend fun setNutritionTargets(targets: NutritionTargets) {
+        writeError?.let { throw it }
+        nutritionTargets.value = targets
+    }
+
     override suspend fun deleteAllData() {
         writeError?.let { throw it }
         deleteAllDataCalls++
+    }
+}
+
+class FakeNutritionRepository : NutritionRepository {
+    /** Logged days by date. */
+    val days = MutableStateFlow<Map<LocalDate, DailyNutrition>>(emptyMap())
+
+    /** When set, [observeDays] fails with it, so screens can show their error state. */
+    var observeError: Exception? = null
+
+    /** When set, every write fails with it. */
+    var writeError: Exception? = null
+
+    override fun observeDays(from: LocalDate, to: LocalDate): Flow<List<DailyNutrition>> = flow {
+        observeError?.let { throw it }
+        emitAll(days.map { all -> all.values.filter { it.date in from..to }.sortedByDescending { it.date } })
+    }
+
+    override fun observeDay(date: LocalDate): Flow<DailyNutrition?> = days.map { it[date] }
+
+    override suspend fun saveDay(day: DailyNutrition) {
+        writeError?.let { throw it }
+        days.value += day.date to day
+    }
+
+    override suspend fun deleteDay(date: LocalDate) {
+        writeError?.let { throw it }
+        days.value -= date
+    }
+
+    fun put(vararg logged: DailyNutrition) {
+        days.value += logged.associateBy { it.date }
     }
 }

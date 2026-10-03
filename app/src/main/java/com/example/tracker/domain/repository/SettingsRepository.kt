@@ -1,5 +1,6 @@
 package com.example.tracker.domain.repository
 
+import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.ThemeMode
 import kotlinx.coroutines.flow.StateFlow
 
@@ -9,6 +10,11 @@ interface SettingsRepository {
 
     suspend fun setThemeMode(mode: ThemeMode)
 
-    /** Permanently deletes every exercise, plan and workout on this device. */
+    val nutritionTargets: StateFlow<NutritionTargets>
+
+    /** Throws [IllegalArgumentException] when a target is out of range. */
+    suspend fun setNutritionTargets(targets: NutritionTargets)
+
+    /** Permanently deletes every exercise, plan, workout and nutrition entry on this device. Preferences stay. */
     suspend fun deleteAllData()
 }

@@ -15,7 +15,7 @@ import com.example.tracker.ui.navigation.TrackerNavigationBar
 import com.example.tracker.ui.navigation.navigateToTopLevel
 
 /**
- * App root: the navigation graph, with the bottom bar on the three top-level screens only.
+ * App root: the navigation graph, with the bottom bar on the top-level screens only.
  * Screens below the bar see its height as already-consumed insets, so they don't pad twice.
  */
 @Composable

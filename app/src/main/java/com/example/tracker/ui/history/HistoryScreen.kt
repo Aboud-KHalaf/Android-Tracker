@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -22,9 +23,9 @@ import com.example.tracker.R
 import com.example.tracker.ui.common.EmptyState
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
+import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ScreenTitle
 import com.example.tracker.ui.common.WorkoutSummaryRow
-import com.example.tracker.ui.history.components.MonthHeader
 import com.example.tracker.ui.history.components.PlanFilterChips
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
@@ -109,7 +110,10 @@ private fun HistoryContent(
                 }
             }
             state.months.forEach { group ->
-                item(key = "month-${group.month}") { MonthHeader(group.month, group.workouts.size) }
+                item(key = "month-${group.month}") {
+                    val count = group.workouts.size
+                    MonthHeader(group.month, pluralStringResource(R.plurals.workout_count, count, count))
+                }
                 items(group.workouts, key = { it.id }) { WorkoutSummaryRow(it) }
             }
         }

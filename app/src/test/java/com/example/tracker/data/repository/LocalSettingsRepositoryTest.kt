@@ -4,8 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
 import com.example.tracker.data.local.TrackerDatabase
+import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.ThemeMode
+import java.time.LocalDate
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -55,6 +58,46 @@ class LocalSettingsRepositoryTest {
 
         assertEquals(ThemeMode.DARK, settings.themeMode.value)
         assertEquals(ThemeMode.DARK, LocalSettingsRepository(preferences, database, dispatcher).themeMode.value)
+    }
+
+    @Test
+    fun nutritionTargets_defaultToNone() = runTest {
+        val settings = LocalSettingsRepository(preferences, database, StandardTestDispatcher(testScheduler))
+
+        assertEquals(NutritionTargets(), settings.nutritionTargets.value)
+    }
+
+    @Test
+    fun setNutritionTargets_updatesStateAndPersists_andNullClearsATarget() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val settings = LocalSettingsRepository(preferences, database, dispatcher)
+
+        settings.setNutritionTargets(NutritionTargets(calories = 2400, proteinGrams = 160))
+        settings.setNutritionTargets(NutritionTargets(calories = 2200, proteinGrams = null))
+
+        assertEquals(NutritionTargets(2200, null), settings.nutritionTargets.value)
+        assertEquals(NutritionTargets(2200, null), LocalSettingsRepository(preferences, database, dispatcher).nutritionTargets.value)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun setNutritionTargets_zero_isRejected() = runTest {
+        LocalSettingsRepository(preferences, database, StandardTestDispatcher(testScheduler))
+            .setNutritionTargets(NutritionTargets(calories = 0))
+    }
+
+    @Test
+    fun deleteAllData_removesNutritionButKeepsTargets() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val settings = LocalSettingsRepository(preferences, database, dispatcher)
+        val nutrition = OfflineFirstNutritionRepository(database, time)
+        val day = LocalDate.of(2026, 10, 1)
+        nutrition.saveDay(DailyNutrition(day, 2300, 150))
+        settings.setNutritionTargets(NutritionTargets(2400, 160))
+
+        settings.deleteAllData()
+
+        assertNull(nutrition.observeDay(day).first())
+        assertEquals(NutritionTargets(2400, 160), settings.nutritionTargets.value)
     }
 
     @Test

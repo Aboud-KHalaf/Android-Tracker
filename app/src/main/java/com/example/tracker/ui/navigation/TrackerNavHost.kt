@@ -10,6 +10,7 @@ import com.example.tracker.ui.exercises.exerciseListScreen
 import com.example.tracker.ui.history.historyScreen
 import com.example.tracker.ui.home.HomeDestination
 import com.example.tracker.ui.home.homeScreen
+import com.example.tracker.ui.nutrition.nutritionScreen
 import com.example.tracker.ui.plan.navigateToPlan
 import com.example.tracker.ui.plan.planScreen
 import com.example.tracker.ui.settings.navigateToSettings
@@ -36,6 +37,7 @@ fun TrackerNavHost(
         )
         historyScreen()
         exerciseListScreen(onOpenExercise = navController::navigateToExerciseDetails)
+        nutritionScreen()
         planScreen(
             onBack = navController::popBackStack,
             onOpenWorkout = navController::navigateToActiveWorkout,

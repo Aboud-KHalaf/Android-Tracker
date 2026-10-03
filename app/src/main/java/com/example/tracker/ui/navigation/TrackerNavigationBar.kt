@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 
-/** Home / History / Progress. */
+/** Home / History / Progress / Nutrition. */
 @Composable
 fun TrackerNavigationBar(
     selected: TopLevelDestination,

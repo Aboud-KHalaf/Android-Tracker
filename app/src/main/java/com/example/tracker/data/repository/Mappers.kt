@@ -5,9 +5,11 @@ import com.example.tracker.data.local.dao.PlanExerciseRow
 import com.example.tracker.data.local.dao.PlanSummaryRow
 import com.example.tracker.data.local.dao.WorkoutExerciseRow
 import com.example.tracker.data.local.dao.WorkoutSummaryRow
+import com.example.tracker.data.local.entity.DailyNutritionEntity
 import com.example.tracker.data.local.entity.ExerciseEntity
 import com.example.tracker.data.local.entity.WorkoutEntity
 import com.example.tracker.data.local.entity.WorkoutSetEntity
+import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.LoggedSet
 import com.example.tracker.domain.model.PlanExercise
@@ -17,6 +19,7 @@ import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.model.WorkoutSummary
 import java.time.Instant
+import java.time.LocalDate
 
 internal fun Long.toInstant(): Instant = Instant.ofEpochMilli(this)
 
@@ -85,4 +88,10 @@ internal fun LoggedSetRow.toDomain() = LoggedSet(
     weightKg = weightKg,
     reps = reps,
     durationSeconds = durationSeconds,
+)
+
+internal fun DailyNutritionEntity.toDomain() = DailyNutrition(
+    date = LocalDate.ofEpochDay(epochDay),
+    calories = calories,
+    proteinGrams = proteinGrams,
 )

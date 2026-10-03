@@ -46,6 +46,11 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+    sourceSets {
+        // Exported Room schemas for migration tests. Robolectric only reads the merged debug
+        // assets, so they ship in debug builds (never release).
+        getByName("debug").assets.srcDir("$projectDir/schemas")
+    }
 }
 
 room {
