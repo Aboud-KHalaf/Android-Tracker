@@ -5,10 +5,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Insights
+import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material.icons.outlined.MonitorWeight
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
@@ -21,6 +23,7 @@ import com.example.tracker.ui.exercises.ExerciseListDestination
 import com.example.tracker.ui.history.HistoryDestination
 import com.example.tracker.ui.home.HomeDestination
 import com.example.tracker.ui.nutrition.NutritionDestination
+import com.example.tracker.ui.weight.WeightDestination
 import kotlin.reflect.KClass
 
 /** The screens in the bottom navigation bar. */
@@ -33,7 +36,8 @@ enum class TopLevelDestination(
     HOME(HomeDestination, R.string.nav_home, Icons.Filled.Home, Icons.Outlined.Home),
     HISTORY(HistoryDestination, R.string.nav_history, Icons.Filled.History, Icons.Outlined.History),
     PROGRESS(ExerciseListDestination, R.string.nav_progress, Icons.Filled.Insights, Icons.Outlined.Insights),
-    NUTRITION(NutritionDestination, R.string.nav_nutrition, Icons.Filled.Restaurant, Icons.Outlined.Restaurant);
+    NUTRITION(NutritionDestination, R.string.nav_nutrition, Icons.Filled.Restaurant, Icons.Outlined.Restaurant),
+    WEIGHT(WeightDestination, R.string.nav_weight, Icons.Filled.MonitorWeight, Icons.Outlined.MonitorWeight);
 
     private val routeClass: KClass<*> get() = route::class
 

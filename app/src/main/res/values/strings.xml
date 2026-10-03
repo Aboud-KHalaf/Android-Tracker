@@ -321,4 +321,34 @@
     <string name="settings_notifications_blocked">Notifications are off for this app</string>
     <string name="settings_open_system_settings">Settings</string>
     <string name="settings_error_reminder">Couldn\'t change the reminder. Try again.</string>
+
+    <!-- Weight -->
+    <string name="nav_weight">Weight</string>
+    <string name="weight_title">Weight</string>
+    <string name="weight_today">Today</string>
+    <string name="weight_current">Current weight</string>
+    <string name="weight_none_yet">No weight logged yet. Weigh yourself and add it to start a trend.</string>
+    <string name="weight_log_today">Log today</string>
+    <string name="weight_edit_today">Edit</string>
+    <string name="weight_log">Log weight</string>
+    <string name="weight_edit">Edit weight</string>
+    <string name="weight_unit_kg">kg</string>
+    <string name="weight_kg">%1$s kg</string>
+    <string name="weight_change_up">+%1$s kg</string>
+    <string name="weight_change_down">−%1$s kg</string>
+    <string name="weight_change">Change</string>
+    <string name="weight_lowest">Lowest</string>
+    <string name="weight_highest">Highest</string>
+    <plurals name="weight_entry_count">
+        <item quantity="one">%d entry</item>
+        <item quantity="other">%d entries</item>
+    </plurals>
+    <string name="weight_empty_title">No weight in this period</string>
+    <string name="weight_empty_body">Log your weight to see how it changes over time.</string>
+    <string name="weight_error_value">Enter a weight from %1$s to %2$s kg</string>
+    <string name="weight_error_load">Couldn\'t load your weight log.</string>
+    <string name="weight_error_open">Couldn\'t open that day. Try again.</string>
+    <string name="weight_error_save">Couldn\'t save. Try again.</string>
+    <string name="weight_error_delete">Couldn\'t delete that entry. Try again.</string>
+    <string name="weight_deleted">Weight deleted</string>
 </resources>
