@@ -1,5 +1,10 @@
 package com.example.tracker.ui.common
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +25,30 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.tracker.R
+import com.example.tracker.ui.theme.Motion
 import com.example.tracker.ui.theme.spacing
+
+/**
+ * Crossfades a screen between its loading, error and content states. Changes within the
+ * same state (new data on the content) don't crossfade; the content animates those itself.
+ */
+@Composable
+fun <S : Any> StateCrossfade(
+    state: S,
+    modifier: Modifier = Modifier,
+    content: @Composable (S) -> Unit,
+) {
+    AnimatedContent(
+        targetState = state,
+        modifier = modifier,
+        transitionSpec = {
+            fadeIn(tween(Motion.DurationMedium, easing = Motion.EmphasizedDecelerate)) togetherWith
+                fadeOut(tween(Motion.DurationShort, easing = Motion.EmphasizedAccelerate))
+        },
+        contentKey = { it::class },
+        label = "screenState",
+    ) { content(it) }
+}
 
 /** Full-screen loading indicator. */
 @Composable

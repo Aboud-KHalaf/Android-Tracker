@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.domain.model.DatePeriod
+import com.example.tracker.ui.common.AnimatedFab
 import com.example.tracker.ui.common.EmptyState
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
@@ -41,6 +42,7 @@ import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.PeriodSelector
 import com.example.tracker.ui.common.ScreenTitle
+import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 import com.example.tracker.ui.weight.components.CurrentWeightCard
@@ -120,7 +122,7 @@ fun WeightScreen(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            if (uiState is WeightUiState.Success) {
+            AnimatedFab(visible = uiState is WeightUiState.Success) {
                 ExtendedFloatingActionButton(
                     text = { Text(stringResource(R.string.weight_log)) },
                     icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
@@ -129,15 +131,17 @@ fun WeightScreen(
             }
         },
     ) { innerPadding ->
-        when (uiState) {
-            WeightUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
-            WeightUiState.Error -> ErrorContent(
-                message = stringResource(R.string.weight_error_load),
-                onRetry = onRetry,
-                modifier = Modifier.padding(innerPadding),
-            )
+        StateCrossfade(uiState) { state ->
+            when (state) {
+                WeightUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
+                WeightUiState.Error -> ErrorContent(
+                    message = stringResource(R.string.weight_error_load),
+                    onRetry = onRetry,
+                    modifier = Modifier.padding(innerPadding),
+                )
 
-            is WeightUiState.Success -> WeightContent(uiState, onOpenEntry, onSelectPeriod, innerPadding)
+                is WeightUiState.Success -> WeightContent(state, onOpenEntry, onSelectPeriod, innerPadding)
+            }
         }
     }
 }
@@ -201,10 +205,14 @@ private fun WeightContent(
             state.months.forEach { group ->
                 item(key = "month-${group.month}") {
                     val count = group.entries.size
-                    MonthHeader(group.month, pluralStringResource(R.plurals.weight_entry_count, count, count))
+                    MonthHeader(
+                        month = group.month,
+                        countText = pluralStringResource(R.plurals.weight_entry_count, count, count),
+                        modifier = Modifier.animateItem(),
+                    )
                 }
                 items(group.entries, key = { it.entry.date.toEpochDay() }) { row ->
-                    WeightRow(row, onClick = { onOpenEntry(row.entry.date) })
+                    WeightRow(row, onClick = { onOpenEntry(row.entry.date) }, modifier = Modifier.animateItem())
                 }
             }
         }

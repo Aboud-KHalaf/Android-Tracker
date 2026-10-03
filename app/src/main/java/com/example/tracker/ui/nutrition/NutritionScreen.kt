@@ -47,6 +47,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.NutritionTargets
+import com.example.tracker.ui.common.AnimatedFab
 import com.example.tracker.ui.common.EmptyState
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
@@ -54,6 +55,7 @@ import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.PeriodSelector
 import com.example.tracker.ui.common.ScreenTitle
+import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.rememberNotificationPermissionRequest
 import com.example.tracker.ui.nutrition.components.DayEditorDialog
 import com.example.tracker.ui.nutrition.components.NutritionChartCard
@@ -149,7 +151,7 @@ fun NutritionScreen(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            if (uiState is NutritionUiState.Success) {
+            AnimatedFab(visible = uiState is NutritionUiState.Success) {
                 ExtendedFloatingActionButton(
                     text = { Text(stringResource(R.string.nutrition_log_day)) },
                     icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
@@ -158,22 +160,24 @@ fun NutritionScreen(
             }
         },
     ) { innerPadding ->
-        when (uiState) {
-            NutritionUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
-            NutritionUiState.Error -> ErrorContent(
-                message = stringResource(R.string.nutrition_error_load),
-                onRetry = onRetry,
-                modifier = Modifier.padding(innerPadding),
-            )
+        StateCrossfade(uiState) { state ->
+            when (state) {
+                NutritionUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
+                NutritionUiState.Error -> ErrorContent(
+                    message = stringResource(R.string.nutrition_error_load),
+                    onRetry = onRetry,
+                    modifier = Modifier.padding(innerPadding),
+                )
 
-            is NutritionUiState.Success -> NutritionContent(
-                state = uiState,
-                onOpenDay = onOpenDay,
-                onEditTargets = { showTargetsDialog = true },
-                onSelectPeriod = onSelectPeriod,
-                onSelectMetric = onSelectMetric,
-                contentPadding = innerPadding,
-            )
+                is NutritionUiState.Success -> NutritionContent(
+                    state = state,
+                    onOpenDay = onOpenDay,
+                    onEditTargets = { showTargetsDialog = true },
+                    onSelectPeriod = onSelectPeriod,
+                    onSelectMetric = onSelectMetric,
+                    contentPadding = innerPadding,
+                )
+            }
         }
     }
 
@@ -261,7 +265,7 @@ private fun NutritionContent(
                     MonthHeader(group.month, pluralStringResource(R.plurals.nutrition_day_count, count, count))
                 }
                 items(group.days, key = { it.date.toEpochDay() }) { day ->
-                    NutritionDayRow(day, onClick = { onOpenDay(day.date) })
+                    NutritionDayRow(day, onClick = { onOpenDay(day.date) }, modifier = Modifier.animateItem())
                 }
             }
         }

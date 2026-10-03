@@ -28,7 +28,15 @@ fun TrackerNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
-    NavHost(navController = navController, startDestination = HomeDestination, modifier = modifier) {
+    NavHost(
+        navController = navController,
+        startDestination = HomeDestination,
+        modifier = modifier,
+        enterTransition = { enterTransition() },
+        exitTransition = { exitTransition() },
+        popEnterTransition = { popEnterTransition() },
+        popExitTransition = { popExitTransition() },
+    ) {
         homeScreen(
             onOpenWorkout = navController::navigateToActiveWorkout,
             onOpenPlan = navController::navigateToPlan,

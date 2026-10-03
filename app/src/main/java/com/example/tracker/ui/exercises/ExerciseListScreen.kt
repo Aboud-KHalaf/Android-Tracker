@@ -29,6 +29,7 @@ import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.IconAvatar
 import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.ScreenTitle
+import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.icon
 import com.example.tracker.ui.common.label
 import com.example.tracker.ui.theme.Dimens
@@ -54,15 +55,17 @@ fun ExerciseListScreen(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(modifier = modifier) { innerPadding ->
-        when (uiState) {
-            ExerciseListUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
-            ExerciseListUiState.Error -> ErrorContent(
-                message = stringResource(R.string.exercises_error_load),
-                onRetry = onRetry,
-                modifier = Modifier.padding(innerPadding),
-            )
+        StateCrossfade(uiState) { state ->
+            when (state) {
+                ExerciseListUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
+                ExerciseListUiState.Error -> ErrorContent(
+                    message = stringResource(R.string.exercises_error_load),
+                    onRetry = onRetry,
+                    modifier = Modifier.padding(innerPadding),
+                )
 
-            is ExerciseListUiState.Success -> ExerciseList(uiState.exercises, onOpenExercise, innerPadding)
+                is ExerciseListUiState.Success -> ExerciseList(state.exercises, onOpenExercise, innerPadding)
+            }
         }
     }
 }
@@ -111,7 +114,9 @@ private fun ExerciseList(
                         )
                     },
                     trailingContent = { Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null) },
-                    modifier = Modifier.clickable { onOpenExercise(exercise.id) },
+                    modifier = Modifier
+                        .animateItem()
+                        .clickable { onOpenExercise(exercise.id) },
                 )
             }
         }

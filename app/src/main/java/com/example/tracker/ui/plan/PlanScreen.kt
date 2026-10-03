@@ -41,11 +41,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.ui.common.AnimatedFab
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MessageContent
 import com.example.tracker.ui.common.NameInputDialog
 import com.example.tracker.ui.common.ObserveAsEvents
+import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.common.mediumDate
 import com.example.tracker.ui.plan.components.AddExerciseSheet
@@ -161,31 +163,35 @@ fun PlanScreen(
         },
         floatingActionButton = {
             if (success != null) {
-                WorkoutFab(
-                    action = success.workoutAction,
-                    isStartingWorkout = success.isStartingWorkout,
-                    onStart = actions.onStartWorkout,
-                    onResume = actions.onResumeWorkout,
-                )
+                AnimatedFab {
+                    WorkoutFab(
+                        action = success.workoutAction,
+                        isStartingWorkout = success.isStartingWorkout,
+                        onStart = actions.onStartWorkout,
+                        onResume = actions.onResumeWorkout,
+                    )
+                }
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        when (uiState) {
-            PlanUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
-            PlanUiState.Error -> ErrorContent(
-                message = stringResource(R.string.plan_error_load),
-                onRetry = actions.onRetry,
-                modifier = Modifier.padding(innerPadding),
-            )
+        StateCrossfade(uiState) { state ->
+            when (state) {
+                PlanUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
+                PlanUiState.Error -> ErrorContent(
+                    message = stringResource(R.string.plan_error_load),
+                    onRetry = actions.onRetry,
+                    modifier = Modifier.padding(innerPadding),
+                )
 
-            PlanUiState.NotFound -> MessageContent(stringResource(R.string.plan_not_found), Modifier.padding(innerPadding))
-            is PlanUiState.Success -> PlanContent(
-                state = uiState,
-                actions = actions,
-                onAddExerciseClick = { overlay = PlanOverlay.ADD_EXERCISE },
-                contentPadding = innerPadding,
-            )
+                PlanUiState.NotFound -> MessageContent(stringResource(R.string.plan_not_found), Modifier.padding(innerPadding))
+                is PlanUiState.Success -> PlanContent(
+                    state = state,
+                    actions = actions,
+                    onAddExerciseClick = { overlay = PlanOverlay.ADD_EXERCISE },
+                    contentPadding = innerPadding,
+                )
+            }
         }
     }
 

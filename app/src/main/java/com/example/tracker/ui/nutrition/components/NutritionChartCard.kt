@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import com.example.tracker.R
 import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.common.formatNumber
+import com.example.tracker.ui.common.chart.rememberDrawInProgress
+import com.example.tracker.ui.common.chart.staggered
 import com.example.tracker.ui.common.shortDate
 import com.example.tracker.ui.nutrition.NutritionMetric
 import com.example.tracker.ui.nutrition.chart.BarChartModel
@@ -106,6 +108,7 @@ private fun BarChart(chart: BarChartModel, metric: NutritionMetric) {
     val locale = currentLocale()
     val description = chartDescription(chart, metric, locale)
     val colors = MaterialTheme.colorScheme
+    val drawIn = rememberDrawInProgress(chart)
 
     Column(verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)) {
         BoxWithConstraints(
@@ -131,8 +134,12 @@ private fun BarChart(chart: BarChartModel, metric: NutritionMetric) {
                 val slotWidth = plot.width / chart.slotCount
                 val barWidth = (slotWidth * BAR_FILL).coerceAtMost(MaxBarWidth.toPx()).coerceAtLeast(1f)
                 val corner = CornerRadius(BarCorner.toPx().coerceAtMost(barWidth / 2))
+                // Bars grow up from the axis in a quick left-to-right wave.
+                val progress = drawIn.value
                 chart.bars.forEach { bar ->
-                    val top = plot.y(bar.height)
+                    val grow = staggered(progress, bar.slot, chart.slotCount)
+                    if (grow <= 0f) return@forEach
+                    val top = plot.bottom - (plot.bottom - plot.y(bar.height)) * grow
                     drawRoundRect(
                         color = colors.primary,
                         topLeft = Offset(plot.left + (bar.slot + 0.5f) * slotWidth - barWidth / 2, top),

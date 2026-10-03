@@ -16,12 +16,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.layout
@@ -53,6 +56,9 @@ private val DotStroke = 2.dp
 private val LabelGap = 12.dp
 private const val AREA_ALPHA = 0.1f
 
+/** The last point's label fades in over the end of the draw-in. */
+private const val LABEL_FADE_START = 0.75f
+
 /** Where the plot area sits inside the chart box, in px. */
 private class PlotArea(val left: Float, val top: Float, val width: Float, val height: Float) {
     fun x(fraction: Float) = left + fraction * width
@@ -82,6 +88,7 @@ fun LineChart(
     )
     val tickLabels = chart.ticks.map { axisText(it.value) }
     val lastLabel = stringResource(R.string.chart_point_label, valueText(chart.last.value), chart.last.date.shortDate(locale))
+    val drawIn = rememberDrawInProgress(chart)
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)) {
         BoxWithConstraints(
@@ -99,7 +106,7 @@ fun LineChart(
                     height = (ChartHeight - PlotTopInset - PlotBottomInset).toPx(),
                 )
             }
-            ChartCanvas(chart, plot)
+            ChartCanvas(chart, plot, drawIn)
             Box(Modifier.width(AxisWidth).fillMaxHeight()) {
                 chart.ticks.forEachIndexed { i, tick ->
                     Text(
@@ -115,6 +122,9 @@ fun LineChart(
                 endX = plot.x(chart.last.x),
                 bottomY = plot.y(chart.last.y) - with(density) { LabelGap.toPx() },
                 maxX = with(density) { maxWidth.toPx() },
+                modifier = Modifier.graphicsLayer {
+                    alpha = ((drawIn.value - LABEL_FADE_START) / (1f - LABEL_FADE_START)).coerceIn(0f, 1f)
+                },
             )
         }
         Row(Modifier.fillMaxWidth().padding(start = AxisWidth + PlotHorizontalInset)) {
@@ -126,14 +136,20 @@ fun LineChart(
     }
 }
 
+/**
+ * Gridlines, then the line and its shaded area drawn in from left to right as [drawIn] goes
+ * from 0 to 1. Each dot pops in as the line reaches it.
+ */
 @Composable
-private fun ChartCanvas(chart: ChartModel, plot: PlotArea) {
+private fun ChartCanvas(chart: ChartModel, plot: PlotArea, drawIn: State<Float>) {
     val colors = MaterialTheme.colorScheme
     Canvas(Modifier.fillMaxSize()) {
         chart.ticks.forEach { tick ->
             val y = plot.y(tick.y)
             drawLine(colors.outlineVariant, Offset(plot.left, y), Offset(plot.left + plot.width, y), GridWidth.toPx())
         }
+        val progress = drawIn.value
+        val revealX = plot.left + plot.width * progress
         val points = chart.points.map { Offset(plot.x(it.x), plot.y(it.y)) }
         if (points.size > 1) {
             val line = Path().apply {
@@ -146,27 +162,33 @@ private fun ChartCanvas(chart: ChartModel, plot: PlotArea) {
                 lineTo(points.first().x, plot.top + plot.height)
                 close()
             }
-            drawPath(area, colors.primary.copy(alpha = AREA_ALPHA))
-            drawPath(line, colors.primary, style = Stroke(LineWidth.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+            clipRect(right = revealX) {
+                drawPath(area, colors.primary.copy(alpha = AREA_ALPHA))
+                drawPath(line, colors.primary, style = Stroke(LineWidth.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+            }
         }
-        points.dropLast(1).forEach { drawDot(it, DotRadius, fill = colors.surface, ring = colors.primary) }
-        drawDot(points.last(), LastDotRadius, fill = colors.primary, ring = colors.surface)
+        // A lone point has no line to wait for, so it pops in over the whole animation.
+        val popDistance = if (points.size > 1) LastDotRadius.toPx() * 4 else plot.width
+        fun scaleAt(point: Offset) = ((revealX - point.x + popDistance) / popDistance).coerceIn(0f, 1f)
+        points.dropLast(1).forEach { drawDot(it, DotRadius * scaleAt(it), fill = colors.surface, ring = colors.primary) }
+        drawDot(points.last(), LastDotRadius * scaleAt(points.last()), fill = colors.primary, ring = colors.surface)
     }
 }
 
 private fun DrawScope.drawDot(center: Offset, radius: Dp, fill: Color, ring: Color) {
+    if (radius <= 0.dp) return
     drawCircle(fill, radius.toPx(), center)
     drawCircle(ring, radius.toPx(), center, style = Stroke(DotStroke.toPx()))
 }
 
 /** The last value and date in a small inverse tooltip, ending at [endX] and kept on screen. */
 @Composable
-private fun PointLabel(text: String, endX: Float, bottomY: Float, maxX: Float) {
+private fun PointLabel(text: String, endX: Float, bottomY: Float, maxX: Float, modifier: Modifier = Modifier) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelMedium.tabularNumbers(),
         color = MaterialTheme.colorScheme.inverseOnSurface,
-        modifier = Modifier
+        modifier = modifier
             .layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
                 layout(placeable.width, placeable.height) {

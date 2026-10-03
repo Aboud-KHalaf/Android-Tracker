@@ -1,5 +1,7 @@
 package com.example.tracker.ui.nutrition.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +16,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -22,10 +26,12 @@ import androidx.compose.ui.semantics.semantics
 import com.example.tracker.R
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.NutritionTargets
+import com.example.tracker.ui.common.RollingNumberText
 import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.common.longDate
 import com.example.tracker.ui.nutrition.formatAmount
 import com.example.tracker.ui.theme.Dimens
+import com.example.tracker.ui.theme.Motion
 import com.example.tracker.ui.theme.spacing
 import com.example.tracker.ui.theme.tabularNumbers
 import java.time.LocalDate
@@ -110,11 +116,17 @@ private fun AmountProgress(label: String, value: Int, target: Int?, withTarget: 
     ) {
         Row {
             Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-            Text(amount, style = MaterialTheme.typography.bodyLarge.tabularNumbers())
+            RollingNumberText(value.toDouble(), amount, style = MaterialTheme.typography.bodyLarge.tabularNumbers())
         }
         if (target != null) {
+            val fraction = (value.toFloat() / target).coerceIn(0f, 1f)
+            // Fills from empty when shown, then eases to each new amount.
+            val fill = remember { Animatable(0f) }
+            LaunchedEffect(fraction) {
+                fill.animateTo(fraction, tween(Motion.DurationExtraLong, easing = Motion.Emphasized))
+            }
             LinearProgressIndicator(
-                progress = { (value.toFloat() / target).coerceIn(0f, 1f) },
+                progress = { fill.value },
                 modifier = Modifier.fillMaxWidth(),
             )
         }

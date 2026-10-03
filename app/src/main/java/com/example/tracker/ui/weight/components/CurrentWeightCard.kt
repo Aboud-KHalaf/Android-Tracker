@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.example.tracker.R
 import com.example.tracker.domain.model.WeightEntry
+import com.example.tracker.ui.common.RollingNumberText
 import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.common.longDate
 import com.example.tracker.ui.theme.Dimens
@@ -69,7 +70,11 @@ fun CurrentWeightCard(
                 }
             } else {
                 Column(modifier = Modifier.semantics(mergeDescendants = true) {}) {
-                    Text(weightText(latest.weightKg), style = MaterialTheme.typography.displaySmall.tabularNumbers())
+                    RollingNumberText(
+                        value = latest.weightKg,
+                        text = weightText(latest.weightKg),
+                        style = MaterialTheme.typography.displaySmall.tabularNumbers(),
+                    )
                     Text(
                         text = if (latest.date == today) stringResource(R.string.weight_today) else latest.date.longDate(currentLocale()),
                         style = MaterialTheme.typography.bodyMedium,

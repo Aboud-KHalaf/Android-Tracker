@@ -25,6 +25,7 @@ import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ScreenTitle
+import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.WorkoutSummaryRow
 import com.example.tracker.ui.history.components.PlanFilterChips
 import com.example.tracker.ui.theme.Dimens
@@ -54,15 +55,17 @@ fun HistoryScreen(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(modifier = modifier) { innerPadding ->
-        when (uiState) {
-            HistoryUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
-            HistoryUiState.Error -> ErrorContent(
-                message = stringResource(R.string.history_error_load),
-                onRetry = onRetry,
-                modifier = Modifier.padding(innerPadding),
-            )
+        StateCrossfade(uiState) { state ->
+            when (state) {
+                HistoryUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
+                HistoryUiState.Error -> ErrorContent(
+                    message = stringResource(R.string.history_error_load),
+                    onRetry = onRetry,
+                    modifier = Modifier.padding(innerPadding),
+                )
 
-            is HistoryUiState.Success -> HistoryContent(uiState, onSelectPlan, innerPadding)
+                is HistoryUiState.Success -> HistoryContent(state, onSelectPlan, innerPadding)
+            }
         }
     }
 }
@@ -112,9 +115,13 @@ private fun HistoryContent(
             state.months.forEach { group ->
                 item(key = "month-${group.month}") {
                     val count = group.workouts.size
-                    MonthHeader(group.month, pluralStringResource(R.plurals.workout_count, count, count))
+                    MonthHeader(
+                        month = group.month,
+                        countText = pluralStringResource(R.plurals.workout_count, count, count),
+                        modifier = Modifier.animateItem(),
+                    )
                 }
-                items(group.workouts, key = { it.id }) { WorkoutSummaryRow(it) }
+                items(group.workouts, key = { it.id }) { WorkoutSummaryRow(it, Modifier.animateItem()) }
             }
         }
     }
