@@ -7,21 +7,29 @@ import java.time.Duration
 import java.time.Instant
 import kotlinx.coroutines.delay
 
-private const val TICK_MILLIS = 1_000L
+private const val SECOND_MILLIS = 1_000L
 
 /**
- * Seconds since [startedAt], ticking every second while on screen. Kept in the UI so the
- * whole screen state doesn't change every second.
+ * The current time, refreshed every [intervalMillis] while [ticking]. Clocks on screen tick
+ * here in the UI, so the screen state doesn't have to change every second.
  */
 @Composable
-fun rememberElapsedSeconds(startedAt: Instant, now: () -> Instant = Instant::now): Long {
-    val elapsed by produceState(initialValue = secondsSince(startedAt, now()), startedAt) {
-        while (true) {
-            value = secondsSince(startedAt, now())
-            delay(TICK_MILLIS)
+fun rememberTickingNow(
+    ticking: Boolean = true,
+    intervalMillis: Long = SECOND_MILLIS,
+    now: () -> Instant = Instant::now,
+): Instant {
+    val current by produceState(initialValue = now(), ticking, intervalMillis) {
+        value = now()
+        while (ticking) {
+            delay(intervalMillis)
+            value = now()
         }
     }
-    return elapsed
+    return current
 }
 
-private fun secondsSince(start: Instant, now: Instant): Long = Duration.between(start, now).seconds.coerceAtLeast(0)
+/** Seconds since [startedAt], ticking every second while on screen. */
+@Composable
+fun rememberElapsedSeconds(startedAt: Instant): Long =
+    Duration.between(startedAt, rememberTickingNow()).seconds.coerceAtLeast(0)

@@ -117,7 +117,24 @@
     <string name="workout_decrease_reps">Decrease reps by 1</string>
     <string name="workout_increase_reps">Increase reps by 1</string>
     <string name="workout_complete_set">Complete set</string>
-    <string name="workout_duration_unavailable">Timed sets can\'t be logged on this screen yet.</string>
+    <string name="hold_start">Start</string>
+    <string name="hold_pause">Pause</string>
+    <string name="hold_resume">Resume</string>
+    <string name="hold_complete">Complete</string>
+    <string name="hold_minus_label">−%1$ds</string>
+    <string name="hold_plus_label">+%1$ds</string>
+    <plurals name="hold_subtract_description">
+        <item quantity="one">Subtract %d second</item>
+        <item quantity="other">Subtract %d seconds</item>
+    </plurals>
+    <plurals name="hold_add_description">
+        <item quantity="one">Add %d second</item>
+        <item quantity="other">Add %d seconds</item>
+    </plurals>
+    <string name="hold_status_no_target">No previous set</string>
+    <string name="hold_status_target">Last time %1$s</string>
+    <string name="hold_status_matched">Matched last time</string>
+    <string name="hold_status_past">+%1$d s past last time</string>
     <string name="workout_all_sets_done">All sets done. Add another set or move on.</string>
     <string name="workout_add_set">Add set</string>
     <string name="workout_set_saved" tools:ignore="PluralsCandidate">Set %1$d saved</string>
