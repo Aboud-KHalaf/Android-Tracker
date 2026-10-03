@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.tracker.ui.common.SetValueUi
+import com.example.tracker.ui.common.WorkoutSummaryUi
 import com.example.tracker.ui.theme.TrackerTheme
 import java.time.DayOfWeek
 import java.time.Duration
@@ -33,8 +34,8 @@ private val previewState = HomeUiState.Success(
         PlanItemUi("legs", "Legs & Core", 6),
     ),
     recentWorkouts = listOf(
-        RecentWorkoutUi("w3", "Legs & Core", LocalDate.of(2026, 10, 2), 6, Duration.ofMinutes(55), 0),
-        RecentWorkoutUi("w2", "Pull Day", LocalDate.of(2026, 9, 30), 5, Duration.ofMinutes(48), 1),
+        WorkoutSummaryUi("w3", "Legs & Core", LocalDate.of(2026, 10, 2), 6, Duration.ofMinutes(55), 0),
+        WorkoutSummaryUi("w2", "Pull Day", LocalDate.of(2026, 9, 30), 5, Duration.ofMinutes(48), 1),
     ),
 )
 

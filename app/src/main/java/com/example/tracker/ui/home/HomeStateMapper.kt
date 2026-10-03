@@ -8,6 +8,7 @@ import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.domain.plan.suggestNextPlan
 import com.example.tracker.ui.common.SetValueUi
+import com.example.tracker.ui.common.toWorkoutSummaryUi
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
@@ -33,7 +34,7 @@ internal class HomeStateMapper(private val zone: ZoneId) {
             personalBest = latestPersonalBestThisWeek(today, personalBests, exercises),
         ),
         plans = plans.map { PlanItemUi(it.id, it.name, it.exerciseCount) },
-        recentWorkouts = history.take(RECENT_WORKOUT_LIMIT).map { it.toRecentWorkoutUi() },
+        recentWorkouts = history.take(RECENT_WORKOUT_LIMIT).map { it.toWorkoutSummaryUi(zone) },
     )
 
     private fun upNext(activeWorkout: Workout?, plans: List<WorkoutPlan>): UpNextUi {
@@ -89,15 +90,6 @@ internal class HomeStateMapper(private val zone: ZoneId) {
         durationSeconds != null -> SetValueUi.Hold(durationSeconds)
         else -> null
     }
-
-    private fun WorkoutSummary.toRecentWorkoutUi() = RecentWorkoutUi(
-        id = id,
-        name = name,
-        date = startedAt.atZone(zone).toLocalDate(),
-        exerciseCount = exerciseCount,
-        duration = duration,
-        personalBestCount = personalBestCount,
-    )
 
     companion object {
         const val RECENT_WORKOUT_LIMIT = 3
