@@ -9,6 +9,8 @@ import com.example.tracker.ui.home.HomeDestination
 import com.example.tracker.ui.home.homeScreen
 import com.example.tracker.ui.plan.navigateToPlan
 import com.example.tracker.ui.plan.planScreen
+import com.example.tracker.ui.workout.activeWorkoutScreen
+import com.example.tracker.ui.workout.navigateToActiveWorkout
 
 /**
  * The app's navigation graph. Each screen registers itself through its own
@@ -21,14 +23,19 @@ fun TrackerNavHost(
 ) {
     NavHost(navController = navController, startDestination = HomeDestination, modifier = modifier) {
         homeScreen(
-            onOpenWorkout = {}, // Wired when the Active workout screen exists.
+            onOpenWorkout = navController::navigateToActiveWorkout,
             onOpenPlan = navController::navigateToPlan,
             onOpenHistory = {}, // Wired when the History screen exists.
             onOpenExerciseProgress = {}, // Wired when the Exercise details screen exists.
         )
         planScreen(
             onBack = navController::popBackStack,
-            onOpenWorkout = {}, // Wired when the Active workout screen exists.
+            onOpenWorkout = navController::navigateToActiveWorkout,
+        )
+        activeWorkoutScreen(
+            onMinimize = navController::popBackStack,
+            onWorkoutEnded = { navController.popBackStack(HomeDestination, inclusive = false) },
+            onOpenExerciseProgress = {}, // Wired when the Exercise details screen exists.
         )
     }
 }

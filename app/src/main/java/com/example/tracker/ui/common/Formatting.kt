@@ -62,3 +62,15 @@ fun LocalDate.longDate(locale: Locale): String =
 /** "Mon, Sep 28". */
 fun LocalDate.mediumDate(locale: Locale): String =
     format(DateTimeFormatter.ofPattern("EEE, MMM d", locale))
+
+/** Workout clock: "24:13", or "1:05:09" from an hour on. */
+fun formatElapsed(totalSeconds: Long): String {
+    val hours = totalSeconds / 3600
+    val minutes = totalSeconds % 3600 / 60
+    val seconds = totalSeconds % 60
+    return if (hours > 0) {
+        "%d:%02d:%02d".format(Locale.ROOT, hours, minutes, seconds)
+    } else {
+        "%d:%02d".format(Locale.ROOT, minutes, seconds)
+    }
+}

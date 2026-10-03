@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">tracker</string>
 
     <!-- Common -->
@@ -88,6 +88,58 @@
     <string name="add_exercise_name_label">Exercise name</string>
     <string name="add_exercise_type_label">Measured by</string>
     <string name="add_exercise_confirm">Add to plan</string>
+
+    <!-- Active workout -->
+    <string name="workout_error_load">Couldn\'t load the workout.</string>
+    <string name="workout_not_found">This workout has ended.</string>
+    <string name="workout_error_save">Couldn\'t save the set. Try again.</string>
+    <string name="workout_error_finish">Couldn\'t finish the workout. Try again.</string>
+    <string name="workout_minimize">Minimize workout</string>
+    <string name="workout_finish">Finish</string>
+    <string name="workout_header_subtitle">%1$s · Exercise %2$d of %3$d</string>
+    <string name="workout_last_time">Last time · %1$s</string>
+    <string name="workout_last_time_weights">%1$s kg</string>
+    <string name="workout_first_time">First time doing this exercise</string>
+    <string name="workout_exercise_progress">%1$s progress</string>
+    <string name="workout_set_number">Set %1$d</string>
+    <string name="workout_set_done_description" tools:ignore="PluralsCandidate">Set %1$d done, %2$s</string>
+    <string name="workout_set_upcoming_description">Set %1$d, planned %2$s</string>
+    <string name="workout_edit_set">Edit</string>
+    <string name="workout_go_to_set">Go to set</string>
+    <string name="workout_value_not_set">Not set</string>
+    <string name="workout_last_time_set">Last time %1$s</string>
+    <string name="workout_new_set">New set</string>
+    <string name="workout_remove_set">Remove set %1$d</string>
+    <string name="workout_weight_label">Weight (kg)</string>
+    <string name="workout_reps_label">Reps</string>
+    <string name="workout_decrease_weight">Decrease weight by %1$s kg</string>
+    <string name="workout_increase_weight">Increase weight by %1$s kg</string>
+    <string name="workout_decrease_reps">Decrease reps by 1</string>
+    <string name="workout_increase_reps">Increase reps by 1</string>
+    <string name="workout_complete_set">Complete set</string>
+    <string name="workout_duration_unavailable">Timed sets can\'t be logged on this screen yet.</string>
+    <string name="workout_all_sets_done">All sets done. Add another set or move on.</string>
+    <string name="workout_add_set">Add set</string>
+    <string name="workout_set_saved" tools:ignore="PluralsCandidate">Set %1$d saved</string>
+    <string name="workout_previous_exercise">Previous exercise</string>
+    <string name="workout_next_exercise">Next: %1$s</string>
+    <string name="workout_finish_workout">Finish workout</string>
+    <string name="workout_finish_title">Finish workout?</string>
+    <plurals name="workout_finish_open_sets">
+        <item quantity="one">%d set isn\'t completed and won\'t be saved.</item>
+        <item quantity="other">%d sets aren\'t completed and won\'t be saved.</item>
+    </plurals>
+    <string name="workout_discard_title">Discard workout?</string>
+    <string name="workout_discard_body">No sets are completed, so there\'s nothing to save.</string>
+    <string name="workout_discard_confirm">Discard</string>
+    <string name="workout_keep_training">Keep training</string>
+    <string name="set_weight_reps_compact">%1$s×%2$d</string>
+    <string name="improvement_weight">+%1$s kg</string>
+    <plurals name="improvement_reps">
+        <item quantity="one">+%d rep</item>
+        <item quantity="other">+%d reps</item>
+    </plurals>
+    <string name="improvement_hold">+%1$d s</string>
 
     <!-- Create plan dialog -->
     <string name="create_plan_title">New plan</string>

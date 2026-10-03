@@ -18,3 +18,23 @@ fun SetValueUi.text(): String = when (this) {
     is SetValueUi.WeightReps -> stringResource(R.string.set_weight_reps, formatWeight(weightKg, currentLocale()), reps)
     is SetValueUi.Hold -> formatClock(seconds)
 }
+
+/**
+ * A list of sets in short form: "45×10 · 50×8 · 50×8 kg" for weights, "0:45 · 0:40" for holds.
+ * Assumes all sets are of one kind, as they are within an exercise.
+ */
+@Composable
+@ReadOnlyComposable
+fun List<SetValueUi>.compactText(): String {
+    val locale = currentLocale()
+    val separator = stringResource(R.string.separator_dot)
+    val parts = map { value ->
+        when (value) {
+            is SetValueUi.WeightReps ->
+                stringResource(R.string.set_weight_reps_compact, formatWeight(value.weightKg, locale), value.reps)
+            is SetValueUi.Hold -> formatClock(value.seconds)
+        }
+    }
+    val joined = parts.joinToString(separator)
+    return if (firstOrNull() is SetValueUi.WeightReps) stringResource(R.string.workout_last_time_weights, joined) else joined
+}
