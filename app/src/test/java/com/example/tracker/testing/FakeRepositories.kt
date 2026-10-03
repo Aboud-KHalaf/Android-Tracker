@@ -14,6 +14,7 @@ import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.PlanRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -81,21 +82,30 @@ class FakeExerciseRepository : ExerciseRepository {
     override suspend fun deleteExercise(id: String) = TODO("Not used yet")
 }
 
-class FakeWorkoutRepository : WorkoutRepository {
+class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("2026-10-03T09:00:00Z") }) :
+    WorkoutRepository {
+    /** The workout store: the one workout these tests work with, in progress or finished. */
     val activeWorkout = MutableStateFlow<Workout?>(null)
     val history = MutableStateFlow<List<WorkoutSummary>>(emptyList())
     val weekSummary = MutableStateFlow(WeekSummary(0, Duration.ZERO, emptySet()))
     val personalBests = MutableStateFlow<List<PersonalBest>>(emptyList())
 
+    /** Last-time sets by exercise id. */
+    val lastTimes = mutableMapOf<String, List<WorkoutSet>>()
+
     /** When set, [observeHistory] fails with it, so screens can show their error state. */
     var historyError: Exception? = null
     var startWorkoutError: Exception? = null
+
+    /** When set, every set or workout write fails with it. */
+    var writeError: Exception? = null
     val startedPlanIds = mutableListOf<String>()
     var requestedWeekStart: LocalDate? = null
         private set
+    private var nextSetId = 1
 
-    override fun observeActiveWorkout(): Flow<Workout?> = activeWorkout
-    override fun observeWorkout(id: String): Flow<Workout?> = TODO("Not used yet")
+    override fun observeActiveWorkout(): Flow<Workout?> = activeWorkout.map { it?.takeIf { w -> w.isInProgress } }
+    override fun observeWorkout(id: String): Flow<Workout?> = activeWorkout.map { it?.takeIf { w -> w.id == id } }
 
     override fun observeHistory(planId: String?): Flow<List<WorkoutSummary>> = flow {
         historyError?.let { throw it }
@@ -109,7 +119,7 @@ class FakeWorkoutRepository : WorkoutRepository {
 
     override fun observeExerciseSessions(exerciseId: String): Flow<List<ExerciseSession>> = TODO("Not used yet")
     override fun observePersonalBests(): Flow<List<PersonalBest>> = personalBests
-    override suspend fun lastTimeSets(exerciseId: String): List<WorkoutSet> = TODO("Not used yet")
+    override suspend fun lastTimeSets(exerciseId: String): List<WorkoutSet> = lastTimes[exerciseId].orEmpty()
 
     override suspend fun startWorkout(planId: String): String {
         startWorkoutError?.let { throw it }
@@ -117,11 +127,49 @@ class FakeWorkoutRepository : WorkoutRepository {
         return "workout-${startedPlanIds.size}"
     }
 
-    override suspend fun finishWorkout(workoutId: String) = TODO("Not used yet")
-    override suspend fun discardWorkout(workoutId: String) = TODO("Not used yet")
-    override suspend fun addSet(workoutExerciseId: String): String = TODO("Not used yet")
-    override suspend fun updateSet(setId: String, weightKg: Double?, reps: Int?, durationSeconds: Int?) = TODO("Not used yet")
-    override suspend fun completeSet(setId: String) = TODO("Not used yet")
-    override suspend fun reopenSet(setId: String) = TODO("Not used yet")
-    override suspend fun deleteSet(setId: String) = TODO("Not used yet")
+    override suspend fun finishWorkout(workoutId: String) = writeWorkout { it.copy(finishedAt = now()) }
+
+    override suspend fun discardWorkout(workoutId: String) {
+        writeError?.let { throw it }
+        activeWorkout.value = null
+    }
+
+    override suspend fun addSet(workoutExerciseId: String): String {
+        val id = "new-set-${nextSetId++}"
+        writeWorkout { workout ->
+            workout.copy(
+                exercises = workout.exercises.map { exercise ->
+                    if (exercise.id != workoutExerciseId) return@map exercise
+                    val last = exercise.sets.maxByOrNull { it.position }
+                    val set = WorkoutSet(id, (last?.position ?: -1) + 1, last?.weightKg, last?.reps, null, null)
+                    exercise.copy(sets = exercise.sets + set)
+                },
+            )
+        }
+        return id
+    }
+
+    override suspend fun updateSet(setId: String, weightKg: Double?, reps: Int?, durationSeconds: Int?) =
+        writeSet(setId) { it.copy(weightKg = weightKg, reps = reps, durationSeconds = durationSeconds) }
+
+    override suspend fun completeSet(setId: String) = writeSet(setId) { it.copy(completedAt = now()) }
+    override suspend fun reopenSet(setId: String) = writeSet(setId) { it.copy(completedAt = null) }
+
+    override suspend fun deleteSet(setId: String) = writeWorkout { workout ->
+        workout.copy(exercises = workout.exercises.map { e -> e.copy(sets = e.sets.filterNot { it.id == setId }) })
+    }
+
+    /** The set with [setId] in the stored workout. */
+    fun set(setId: String): WorkoutSet = activeWorkout.value!!.exercises.flatMap { it.sets }.first { it.id == setId }
+
+    private fun writeSet(setId: String, change: (WorkoutSet) -> WorkoutSet) = writeWorkout { workout ->
+        workout.copy(
+            exercises = workout.exercises.map { e -> e.copy(sets = e.sets.map { if (it.id == setId) change(it) else it }) },
+        )
+    }
+
+    private fun writeWorkout(change: (Workout) -> Workout) {
+        writeError?.let { throw it }
+        activeWorkout.value = change(requireNotNull(activeWorkout.value) { "No workout" })
+    }
 }
