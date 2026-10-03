@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="splash_background">#FF2A5FA8</color>
+
+    <!-- Before API 31 the splash icon can't animate, so it shows the launcher artwork as-is. -->
+    <drawable name="splash_icon">@drawable/ic_launcher_foreground</drawable>
+
+    <!-- avd_splash_icon timing: the dumbbell swings up, then the sparkle pops in. -->
+    <integer name="splash_dumbbell_duration_ms">600</integer>
+    <integer name="splash_spark_duration_ms">300</integer>
+    <integer name="splash_icon_duration_ms">900</integer>
+    <integer name="splash_exit_duration_ms">350</integer>
+</resources>

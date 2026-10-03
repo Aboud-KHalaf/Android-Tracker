@@ -1,0 +1,91 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <!-- Same artwork as ic_launcher_foreground, in its pre-animation pose. -->
+        <vector
+            android:width="108dp"
+            android:height="108dp"
+            android:viewportWidth="108"
+            android:viewportHeight="108">
+            <!-- Dumbbell, tilted to read as "going up". -->
+            <group
+                android:name="dumbbell"
+                android:pivotX="54"
+                android:pivotY="54"
+                android:rotation="0"
+                android:scaleX="0.4"
+                android:scaleY="0.4">
+                <path
+                    android:fillColor="#FFD6E3FF"
+                    android:pathData="M28,43.5H28.5A3,3 0,0 1,31.5,46.5V61.5A3,3 0,0 1,28.5,64.5H28A3,3 0,0 1,25,61.5V46.5A3,3 0,0 1,28,43.5Z M79.5,43.5H80A3,3 0,0 1,83,46.5V61.5A3,3 0,0 1,80,64.5H79.5A3,3 0,0 1,76.5,61.5V46.5A3,3 0,0 1,79.5,43.5Z" />
+                <path
+                    android:fillColor="#FFFFFFFF"
+                    android:pathData="M41,51H67A3,3 0,0 1,70,54V54A3,3 0,0 1,67,57H41A3,3 0,0 1,38,54V54A3,3 0,0 1,41,51Z M36,38H37A3.5,3.5 0,0 1,40.5,41.5V66.5A3.5,3.5 0,0 1,37,70H36A3.5,3.5 0,0 1,32.5,66.5V41.5A3.5,3.5 0,0 1,36,38Z M71,38H72A3.5,3.5 0,0 1,75.5,41.5V66.5A3.5,3.5 0,0 1,72,70H71A3.5,3.5 0,0 1,67.5,66.5V41.5A3.5,3.5 0,0 1,71,38Z" />
+            </group>
+            <!-- Personal-record sparkle. -->
+            <group
+                android:name="spark"
+                android:pivotX="36"
+                android:pivotY="36"
+                android:scaleX="0"
+                android:scaleY="0">
+                <path
+                    android:fillColor="#FFFFB95C"
+                    android:pathData="M36,28L38.4,33.6L44,36L38.4,38.4L36,44L33.6,38.4L28,36L33.6,33.6Z" />
+            </group>
+        </vector>
+    </aapt:attr>
+
+    <target android:name="dumbbell">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="@integer/splash_dumbbell_duration_ms"
+                    android:interpolator="@android:anim/overshoot_interpolator"
+                    android:propertyName="rotation"
+                    android:valueFrom="0"
+                    android:valueTo="-45" />
+                <objectAnimator
+                    android:duration="@integer/splash_dumbbell_duration_ms"
+                    android:interpolator="@android:anim/overshoot_interpolator"
+                    android:propertyName="scaleX"
+                    android:valueFrom="0.4"
+                    android:valueTo="1" />
+                <objectAnimator
+                    android:duration="@integer/splash_dumbbell_duration_ms"
+                    android:interpolator="@android:anim/overshoot_interpolator"
+                    android:propertyName="scaleY"
+                    android:valueFrom="0.4"
+                    android:valueTo="1" />
+            </set>
+        </aapt:attr>
+    </target>
+
+    <target android:name="spark">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="@integer/splash_spark_duration_ms"
+                    android:interpolator="@android:anim/overshoot_interpolator"
+                    android:propertyName="scaleX"
+                    android:startOffset="@integer/splash_dumbbell_duration_ms"
+                    android:valueFrom="0"
+                    android:valueTo="1" />
+                <objectAnimator
+                    android:duration="@integer/splash_spark_duration_ms"
+                    android:interpolator="@android:anim/overshoot_interpolator"
+                    android:propertyName="scaleY"
+                    android:startOffset="@integer/splash_dumbbell_duration_ms"
+                    android:valueFrom="0"
+                    android:valueTo="1" />
+                <objectAnimator
+                    android:duration="@integer/splash_spark_duration_ms"
+                    android:interpolator="@android:anim/decelerate_interpolator"
+                    android:propertyName="rotation"
+                    android:startOffset="@integer/splash_dumbbell_duration_ms"
+                    android:valueFrom="-90"
+                    android:valueTo="0" />
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>
