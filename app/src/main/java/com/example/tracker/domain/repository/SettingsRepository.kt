@@ -25,6 +25,6 @@ interface SettingsRepository {
 
     suspend fun markNotificationPermissionRequested()
 
-    /** Permanently deletes every exercise, plan, workout and nutrition entry on this device. Preferences stay. */
+    /** Permanently deletes every exercise, plan, workout, nutrition and weight entry on this device. Preferences stay. */
     suspend fun deleteAllData()
 }

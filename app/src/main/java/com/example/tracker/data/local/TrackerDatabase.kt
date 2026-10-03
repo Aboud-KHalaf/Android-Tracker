@@ -8,7 +8,9 @@ import androidx.room.RoomDatabase
 import com.example.tracker.data.local.dao.ExerciseDao
 import com.example.tracker.data.local.dao.NutritionDao
 import com.example.tracker.data.local.dao.PlanDao
+import com.example.tracker.data.local.dao.WeightDao
 import com.example.tracker.data.local.dao.WorkoutDao
+import com.example.tracker.data.local.entity.BodyWeightEntity
 import com.example.tracker.data.local.entity.DailyNutritionEntity
 import com.example.tracker.data.local.entity.ExerciseEntity
 import com.example.tracker.data.local.entity.PlanEntity
@@ -26,12 +28,15 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         WorkoutExerciseEntity::class,
         WorkoutSetEntity::class,
         DailyNutritionEntity::class,
+        BodyWeightEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
     autoMigrations = [
         // Adds daily_nutrition.
         AutoMigration(from = 1, to = 2),
+        // Adds body_weight.
+        AutoMigration(from = 2, to = 3),
     ],
 )
 abstract class TrackerDatabase : RoomDatabase() {
@@ -39,6 +44,7 @@ abstract class TrackerDatabase : RoomDatabase() {
     abstract fun planDao(): PlanDao
     abstract fun workoutDao(): WorkoutDao
     abstract fun nutritionDao(): NutritionDao
+    abstract fun weightDao(): WeightDao
 
     companion object {
         private const val NAME = "tracker.db"
