@@ -1,5 +1,6 @@
 package com.example.tracker.ui.home
 
+import com.example.tracker.ui.common.SetValueUi
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -57,12 +58,6 @@ data class PersonalBestUi(
     val value: SetValueUi,
     val achievedOn: DayOfWeek,
 )
-
-/** A set's result, as shown in summaries. */
-sealed interface SetValueUi {
-    data class WeightReps(val weightKg: Double, val reps: Int) : SetValueUi
-    data class Hold(val seconds: Int) : SetValueUi
-}
 
 data class PlanItemUi(val id: String, val name: String, val exerciseCount: Int)
 

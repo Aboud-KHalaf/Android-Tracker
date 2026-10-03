@@ -7,6 +7,7 @@ import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.domain.plan.suggestNextPlan
+import com.example.tracker.ui.common.SetValueUi
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
