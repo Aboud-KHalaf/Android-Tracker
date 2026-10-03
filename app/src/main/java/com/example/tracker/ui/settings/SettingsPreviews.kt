@@ -17,6 +17,7 @@ private fun SettingsScreenPreview() {
             onSelectThemeMode = {},
             onSetNutritionReminder = {},
             onDeleteAllData = {},
+            appVersion = "1.0",
         )
     }
 }

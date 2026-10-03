@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,6 +41,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import com.example.tracker.BuildConfig
 import androidx.compose.foundation.selection.toggleable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -94,6 +103,7 @@ fun SettingsRoute(
             if (enabled) ensureNotifications()
         },
         onDeleteAllData = viewModel::onDeleteAllData,
+        appVersion = BuildConfig.VERSION_NAME,
         snackbarHostState = snackbarHostState,
         modifier = modifier,
     )
@@ -108,6 +118,7 @@ fun SettingsScreen(
     onSelectThemeMode: (ThemeMode) -> Unit,
     onSetNutritionReminder: (Boolean) -> Unit,
     onDeleteAllData: () -> Unit,
+    appVersion: String,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
@@ -164,6 +175,17 @@ fun SettingsScreen(
                     isDeleting = uiState.isDeletingData,
                     onClick = { showDeleteDialog = true },
                 )
+
+                SectionHeader(
+                    title = stringResource(R.string.settings_about),
+                    modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, top = spacing.lg),
+                )
+                VersionItem(appVersion = appVersion)
+                BuiltByText(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = spacing.lg, vertical = spacing.md),
+                )
             }
         }
     }
@@ -204,5 +226,43 @@ private fun DeleteDataItem(isDeleting: Boolean, onClick: () -> Unit) {
         },
         colors = ListItemDefaults.colors(headlineColor = error, leadingIconColor = error),
         modifier = Modifier.clickable(enabled = !isDeleting, onClick = onClick),
+    )
+}
+
+@Composable
+private fun VersionItem(appVersion: String) {
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.settings_version)) },
+        supportingContent = { Text(appVersion) },
+        leadingContent = { Icon(Icons.Outlined.Info, contentDescription = null) },
+    )
+}
+
+/** "Built by Aboud", where the name opens the author's portfolio in the browser. */
+@Composable
+private fun BuiltByText(modifier: Modifier = Modifier) {
+    val name = stringResource(R.string.settings_author_name)
+    val url = stringResource(R.string.settings_author_url)
+    val fullText = stringResource(R.string.settings_built_by, name)
+    val nameStart = fullText.indexOf(name)
+    val linkStyles = TextLinkStyles(
+        style = SpanStyle(
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.SemiBold,
+            textDecoration = TextDecoration.Underline,
+        ),
+    )
+    val text = buildAnnotatedString {
+        append(fullText)
+        if (nameStart >= 0) {
+            addLink(LinkAnnotation.Url(url, linkStyles), nameStart, nameStart + name.length)
+        }
+    }
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        modifier = modifier,
     )
 }
