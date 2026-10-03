@@ -1,12 +1,15 @@
 package com.example.tracker.data.local
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.tracker.data.local.dao.ExerciseDao
+import com.example.tracker.data.local.dao.NutritionDao
 import com.example.tracker.data.local.dao.PlanDao
 import com.example.tracker.data.local.dao.WorkoutDao
+import com.example.tracker.data.local.entity.DailyNutritionEntity
 import com.example.tracker.data.local.entity.ExerciseEntity
 import com.example.tracker.data.local.entity.PlanEntity
 import com.example.tracker.data.local.entity.PlanExerciseEntity
@@ -22,14 +25,20 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         WorkoutEntity::class,
         WorkoutExerciseEntity::class,
         WorkoutSetEntity::class,
+        DailyNutritionEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
+    autoMigrations = [
+        // Adds daily_nutrition.
+        AutoMigration(from = 1, to = 2),
+    ],
 )
 abstract class TrackerDatabase : RoomDatabase() {
     abstract fun exerciseDao(): ExerciseDao
     abstract fun planDao(): PlanDao
     abstract fun workoutDao(): WorkoutDao
+    abstract fun nutritionDao(): NutritionDao
 
     companion object {
         private const val NAME = "tracker.db"
