@@ -78,7 +78,12 @@ class FakeExerciseRepository : ExerciseRepository {
         createdExercises += name to type
         return "exercise-${createdExercises.size}"
     }
-    override suspend fun renameExercise(id: String, name: String) = TODO("Not used yet")
+    var renameError: Exception? = null
+
+    override suspend fun renameExercise(id: String, name: String) {
+        renameError?.let { throw it }
+        exercises.value = exercises.value.map { if (it.id == id) it.copy(name = name) else it }
+    }
     override suspend fun deleteExercise(id: String) = TODO("Not used yet")
 }
 
@@ -117,7 +122,11 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
         return weekSummary
     }
 
-    override fun observeExerciseSessions(exerciseId: String): Flow<List<ExerciseSession>> = TODO("Not used yet")
+    /** Completed sessions by exercise id. */
+    val sessions = MutableStateFlow<Map<String, List<ExerciseSession>>>(emptyMap())
+
+    override fun observeExerciseSessions(exerciseId: String): Flow<List<ExerciseSession>> =
+        sessions.map { it[exerciseId].orEmpty() }
     override fun observePersonalBests(): Flow<List<PersonalBest>> = personalBests
     override suspend fun lastTimeSets(exerciseId: String): List<WorkoutSet> = lastTimes[exerciseId].orEmpty()
 

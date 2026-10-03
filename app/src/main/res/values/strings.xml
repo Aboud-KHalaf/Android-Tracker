@@ -158,6 +158,55 @@
     </plurals>
     <string name="improvement_hold">+%1$d s</string>
 
+    <!-- Exercise details -->
+    <string name="exercise_error_load">Couldn\'t load this exercise.</string>
+    <string name="exercise_not_found">This exercise no longer exists.</string>
+    <string name="exercise_error_rename">Couldn\'t rename the exercise. Try again.</string>
+    <string name="exercise_options">Exercise options</string>
+    <string name="exercise_rename">Rename exercise</string>
+    <string name="exercise_name_label">Exercise name</string>
+    <string name="exercise_tab_progress">Progress</string>
+    <string name="exercise_tab_history">History</string>
+    <string name="metric_weight">Weight</string>
+    <string name="metric_reps">Reps</string>
+    <string name="metric_volume">Volume</string>
+    <string name="metric_hold">Longest hold</string>
+    <string name="metric_weight_since">Top set weight since %1$s</string>
+    <string name="metric_reps_since">Total reps per session since %1$s</string>
+    <string name="metric_volume_since">Session volume (kg × reps) since %1$s</string>
+    <string name="metric_hold_since">Longest hold since %1$s</string>
+    <string name="range_one_month">1M</string>
+    <string name="range_three_months">3M</string>
+    <string name="range_one_year">1Y</string>
+    <string name="range_all">All</string>
+    <string name="range_group">Time range</string>
+    <string name="range_one_month_description">Last month</string>
+    <string name="range_three_months_description">Last 3 months</string>
+    <string name="range_one_year_description">Last year</string>
+    <string name="range_all_description">All time</string>
+    <string name="trend_up">Improving</string>
+    <string name="trend_down">Below where you started</string>
+    <string name="trend_flat">Holding steady</string>
+    <string name="change_none">No change</string>
+    <string name="value_kg">%1$s kg</string>
+    <plurals name="value_reps">
+        <item quantity="one">%1$s rep</item>
+        <item quantity="other">%1$s reps</item>
+    </plurals>
+    <string name="change_hold">%1$s%2$d s</string>
+    <string name="chart_description">%1$s from %2$s to %3$s: %4$s</string>
+    <string name="chart_point_label">%1$s · %2$s</string>
+    <string name="exercise_personal_best">Personal best</string>
+    <string name="exercise_sessions_logged">Sessions logged</string>
+    <string name="exercise_since">since %1$s</string>
+    <string name="exercise_recent_sessions">Recent sessions</string>
+    <string name="exercise_top_set">Top set %1$s</string>
+    <string name="exercise_longest_hold">Longest hold %1$s</string>
+    <string name="exercise_pb_badge">PB</string>
+    <string name="exercise_no_sessions_title">No sessions yet</string>
+    <string name="exercise_no_sessions_body">Complete a set of this exercise in a workout to see your progress.</string>
+    <string name="exercise_no_sessions_in_range">No sessions in this period. Try a longer range.</string>
+
     <!-- Create plan dialog -->
     <string name="create_plan_title">New plan</string>
     <string name="plan_name_label">Plan name</string>
