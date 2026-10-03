@@ -57,3 +57,31 @@ private fun ActiveWorkoutAllDonePreview() {
         )
     }
 }
+
+@Preview(name = "Timed hold", showBackground = true, heightDp = 844)
+@Preview(name = "Timed hold dark", showBackground = true, heightDp = 844, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ActiveWorkoutHoldPreview() {
+    TrackerTheme {
+        ActiveWorkoutScreen(
+            uiState = previewState.copy(
+                exerciseIndex = 4,
+                exercise = CurrentExerciseUi(
+                    workoutExerciseId = "we5",
+                    exerciseId = "plank",
+                    name = "Plank",
+                    type = ExerciseType.DURATION,
+                    lastTime = listOf(SetValueUi.Hold(45), SetValueUi.Hold(40), SetValueUi.Hold(35)),
+                ),
+                sets = listOf(
+                    SetRowUi.Done("h1", 1, SetValueUi.Hold(50), SetImprovement.Hold(5)),
+                    SetRowUi.Active("h2", 2, SetValueUi.Hold(40), SetEditorUi.Duration(28, null, 40)),
+                    SetRowUi.Upcoming("h3", 3, SetValueUi.Hold(35)),
+                ),
+                previousExerciseName = "Triceps Pushdown",
+                nextExerciseName = null,
+            ),
+            actions = ActiveWorkoutActions(),
+        )
+    }
+}

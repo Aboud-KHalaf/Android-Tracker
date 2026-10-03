@@ -46,11 +46,12 @@ data class WeightRepsEditorActions(
     val onRepsStep: (steps: Int) -> Unit = {},
 )
 
-/** The set being edited: last time's values, its inputs, and Complete set. */
+/** The set being edited: last time's values, its inputs, and Complete. */
 @Composable
 fun ActiveSetCard(
     set: SetRowUi.Active,
-    editorActions: WeightRepsEditorActions,
+    weightRepsActions: WeightRepsEditorActions,
+    durationActions: DurationEditorActions,
     onComplete: () -> Unit,
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
@@ -76,23 +77,8 @@ fun ActiveSetCard(
                 verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
             ) {
                 when (val editor = set.editor) {
-                    is SetEditorUi.WeightReps -> WeightRepsEditor(editor, editorActions)
-                    SetEditorUi.Duration -> Text(
-                        text = stringResource(R.string.workout_duration_unavailable),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Button(
-                    onClick = onComplete,
-                    enabled = (set.editor as? SetEditorUi.WeightReps)?.canComplete == true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(Dimens.setControlSize),
-                ) {
-                    Icon(Icons.Outlined.Check, contentDescription = null)
-                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                    Text(stringResource(R.string.workout_complete_set), style = MaterialTheme.typography.titleMedium)
+                    is SetEditorUi.WeightReps -> WeightRepsEditor(editor, weightRepsActions, onComplete)
+                    is SetEditorUi.Duration -> DurationEditor(editor, durationActions, onComplete)
                 }
             }
         }
@@ -122,7 +108,11 @@ private fun ActiveSetHeader(set: SetRowUi.Active, onRemove: () -> Unit) {
 }
 
 @Composable
-private fun WeightRepsEditor(editor: SetEditorUi.WeightReps, actions: WeightRepsEditorActions) {
+private fun WeightRepsEditor(
+    editor: SetEditorUi.WeightReps,
+    actions: WeightRepsEditorActions,
+    onComplete: () -> Unit,
+) {
     val step = formatWeight(SetInput.WEIGHT_STEP_KG, currentLocale())
     StepperField(
         label = stringResource(R.string.workout_weight_label),
@@ -146,4 +136,15 @@ private fun WeightRepsEditor(editor: SetEditorUi.WeightReps, actions: WeightReps
         onDecrease = { actions.onRepsStep(-1) },
         onIncrease = { actions.onRepsStep(1) },
     )
+    Button(
+        onClick = onComplete,
+        enabled = editor.canComplete,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(Dimens.setControlSize),
+    ) {
+        Icon(Icons.Outlined.Check, contentDescription = null)
+        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+        Text(stringResource(R.string.workout_complete_set), style = MaterialTheme.typography.titleMedium)
+    }
 }

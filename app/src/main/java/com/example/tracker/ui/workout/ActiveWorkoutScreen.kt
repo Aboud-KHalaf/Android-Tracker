@@ -47,6 +47,7 @@ import com.example.tracker.ui.workout.components.ActiveSetCard
 import com.example.tracker.ui.workout.components.AllSetsDoneBanner
 import com.example.tracker.ui.workout.components.DiscardWorkoutDialog
 import com.example.tracker.ui.workout.components.DoneSetRow
+import com.example.tracker.ui.workout.components.DurationEditorActions
 import com.example.tracker.ui.workout.components.ExerciseHeader
 import com.example.tracker.ui.workout.components.FinishWorkoutDialog
 import com.example.tracker.ui.workout.components.UpcomingSetRow
@@ -99,11 +100,15 @@ fun ActiveWorkoutRoute(
             onFinish = viewModel::onFinishWorkout,
             onDiscard = viewModel::onDiscardWorkout,
             onOpenExerciseProgress = onOpenExerciseProgress,
-            editor = WeightRepsEditorActions(
+            weightReps = WeightRepsEditorActions(
                 onWeightChange = viewModel::onWeightTextChange,
                 onRepsChange = viewModel::onRepsTextChange,
                 onWeightStep = viewModel::onWeightStep,
                 onRepsStep = viewModel::onRepsStep,
+            ),
+            duration = DurationEditorActions(
+                onToggle = viewModel::onToggleTimer,
+                onAdjust = viewModel::onAdjustHold,
             ),
             onCompleteSet = viewModel::onCompleteSet,
             onRemoveActiveSet = viewModel::onRemoveActiveSet,
@@ -123,7 +128,8 @@ data class ActiveWorkoutActions(
     val onFinish: () -> Unit = {},
     val onDiscard: () -> Unit = {},
     val onOpenExerciseProgress: (exerciseId: String) -> Unit = {},
-    val editor: WeightRepsEditorActions = WeightRepsEditorActions(),
+    val weightReps: WeightRepsEditorActions = WeightRepsEditorActions(),
+    val duration: DurationEditorActions = DurationEditorActions(),
     val onCompleteSet: () -> Unit = {},
     val onRemoveActiveSet: () -> Unit = {},
     val onSelectSet: (setId: String) -> Unit = {},
@@ -253,7 +259,8 @@ private fun WorkoutContent(
                     is SetRowUi.Upcoming -> UpcomingSetRow(set, onSelect = { actions.onSelectSet(set.id) }, modifier = rowModifier)
                     is SetRowUi.Active -> ActiveSetCard(
                         set = set,
-                        editorActions = actions.editor,
+                        weightRepsActions = actions.weightReps,
+                        durationActions = actions.duration,
                         onComplete = actions.onCompleteSet,
                         onRemove = actions.onRemoveActiveSet,
                         modifier = rowModifier,

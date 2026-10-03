@@ -79,6 +79,39 @@ sealed interface SetEditorUi {
         val canComplete: Boolean get() = isWeightValid && isRepsValid
     }
 
-    /** Timed sets get their own editor; until then they can't be edited here. */
-    data object Duration : SetEditorUi
+    /**
+     * A timed hold. The hold is [bankedSeconds] plus, while running, the time since
+     * [runningSince]; the UI ticks it, so this state only changes on user actions.
+     */
+    data class Duration(
+        val bankedSeconds: Int,
+        val runningSince: Instant?,
+        /** Last time's hold for this set, to beat. */
+        val targetSeconds: Int?,
+    ) : SetEditorUi {
+        val isRunning: Boolean get() = runningSince != null
+
+        fun secondsAt(now: Instant): Int {
+            val running = runningSince?.let { java.time.Duration.between(it, now).seconds.toInt().coerceAtLeast(0) } ?: 0
+            return bankedSeconds + running
+        }
+
+        fun statusAt(now: Instant): HoldStatus {
+            val target = targetSeconds ?: return HoldStatus.NoTarget
+            val seconds = secondsAt(now)
+            return when {
+                seconds > target -> HoldStatus.PastTarget(seconds - target)
+                seconds == target -> HoldStatus.MatchedTarget
+                else -> HoldStatus.BelowTarget(target)
+            }
+        }
+    }
+}
+
+/** How a running hold compares with last time. */
+sealed interface HoldStatus {
+    data object NoTarget : HoldStatus
+    data class BelowTarget(val targetSeconds: Int) : HoldStatus
+    data object MatchedTarget : HoldStatus
+    data class PastTarget(val seconds: Int) : HoldStatus
 }
