@@ -49,7 +49,7 @@
 
     <!-- Create plan dialog -->
     <string name="create_plan_title">New plan</string>
-    <string name="create_plan_name_label">Plan name</string>
+    <string name="plan_name_label">Plan name</string>
     <string name="create_plan_confirm">Create</string>
     <string name="action_cancel">Cancel</string>
 </resources>
