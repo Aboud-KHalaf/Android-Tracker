@@ -47,6 +47,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.NutritionTargets
+import com.example.tracker.ui.common.AnimatedFab
 import com.example.tracker.ui.common.EmptyState
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
@@ -150,7 +151,7 @@ fun NutritionScreen(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            if (uiState is NutritionUiState.Success) {
+            AnimatedFab(visible = uiState is NutritionUiState.Success) {
                 ExtendedFloatingActionButton(
                     text = { Text(stringResource(R.string.nutrition_log_day)) },
                     icon = { Icon(Icons.Outlined.Add, contentDescription = null) },

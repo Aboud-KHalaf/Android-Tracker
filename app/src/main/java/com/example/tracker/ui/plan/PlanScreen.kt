@@ -41,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.ui.common.AnimatedFab
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MessageContent
@@ -162,12 +163,14 @@ fun PlanScreen(
         },
         floatingActionButton = {
             if (success != null) {
-                WorkoutFab(
-                    action = success.workoutAction,
-                    isStartingWorkout = success.isStartingWorkout,
-                    onStart = actions.onStartWorkout,
-                    onResume = actions.onResumeWorkout,
-                )
+                AnimatedFab {
+                    WorkoutFab(
+                        action = success.workoutAction,
+                        isStartingWorkout = success.isStartingWorkout,
+                        onStart = actions.onStartWorkout,
+                        onResume = actions.onResumeWorkout,
+                    )
+                }
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
