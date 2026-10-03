@@ -40,6 +40,7 @@ import com.example.tracker.ui.common.MessageContent
 import com.example.tracker.ui.common.NameInputDialog
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.SectionHeader
+import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.chart.LineChart
 import com.example.tracker.ui.common.label
 import com.example.tracker.ui.exercise.components.ExerciseDetailsTopBar
@@ -144,35 +145,37 @@ fun ExerciseDetailsScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        when (uiState) {
-            ExerciseDetailsUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
-            ExerciseDetailsUiState.Error -> ErrorContent(
-                message = stringResource(R.string.exercise_error_load),
-                onRetry = actions.onRetry,
-                modifier = Modifier.padding(innerPadding),
-            )
+        StateCrossfade(uiState) { state ->
+            when (state) {
+                ExerciseDetailsUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
+                ExerciseDetailsUiState.Error -> ErrorContent(
+                    message = stringResource(R.string.exercise_error_load),
+                    onRetry = actions.onRetry,
+                    modifier = Modifier.padding(innerPadding),
+                )
 
-            ExerciseDetailsUiState.NotFound -> MessageContent(
-                message = stringResource(R.string.exercise_not_found),
-                modifier = Modifier.padding(innerPadding),
-            )
+                ExerciseDetailsUiState.NotFound -> MessageContent(
+                    message = stringResource(R.string.exercise_not_found),
+                    modifier = Modifier.padding(innerPadding),
+                )
 
-            is ExerciseDetailsUiState.Success -> Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.TopCenter,
-            ) {
-                LazyColumn(
+                is ExerciseDetailsUiState.Success -> Box(
                     modifier = Modifier
-                        .widthIn(max = Dimens.maxContentWidth)
-                        .fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = MaterialTheme.spacing.xl),
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.TopCenter,
                 ) {
-                    when {
-                        uiState.sessions.isEmpty() -> item(key = "empty") { NoSessions() }
-                        tab == ExerciseTab.PROGRESS -> progressTab(uiState, actions, onSeeAll = { tab = ExerciseTab.HISTORY })
-                        else -> items(uiState.sessions, key = { it.workoutId }) { SessionRow(it) }
+                    LazyColumn(
+                        modifier = Modifier
+                            .widthIn(max = Dimens.maxContentWidth)
+                            .fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = MaterialTheme.spacing.xl),
+                    ) {
+                        when {
+                            state.sessions.isEmpty() -> item(key = "empty") { NoSessions() }
+                            tab == ExerciseTab.PROGRESS -> progressTab(state, actions, onSeeAll = { tab = ExerciseTab.HISTORY })
+                            else -> items(state.sessions, key = { it.workoutId }) { SessionRow(it) }
+                        }
                     }
                 }
             }

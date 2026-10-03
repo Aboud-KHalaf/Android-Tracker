@@ -54,6 +54,7 @@ import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.PeriodSelector
 import com.example.tracker.ui.common.ScreenTitle
+import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.rememberNotificationPermissionRequest
 import com.example.tracker.ui.nutrition.components.DayEditorDialog
 import com.example.tracker.ui.nutrition.components.NutritionChartCard
@@ -158,22 +159,24 @@ fun NutritionScreen(
             }
         },
     ) { innerPadding ->
-        when (uiState) {
-            NutritionUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
-            NutritionUiState.Error -> ErrorContent(
-                message = stringResource(R.string.nutrition_error_load),
-                onRetry = onRetry,
-                modifier = Modifier.padding(innerPadding),
-            )
+        StateCrossfade(uiState) { state ->
+            when (state) {
+                NutritionUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
+                NutritionUiState.Error -> ErrorContent(
+                    message = stringResource(R.string.nutrition_error_load),
+                    onRetry = onRetry,
+                    modifier = Modifier.padding(innerPadding),
+                )
 
-            is NutritionUiState.Success -> NutritionContent(
-                state = uiState,
-                onOpenDay = onOpenDay,
-                onEditTargets = { showTargetsDialog = true },
-                onSelectPeriod = onSelectPeriod,
-                onSelectMetric = onSelectMetric,
-                contentPadding = innerPadding,
-            )
+                is NutritionUiState.Success -> NutritionContent(
+                    state = state,
+                    onOpenDay = onOpenDay,
+                    onEditTargets = { showTargetsDialog = true },
+                    onSelectPeriod = onSelectPeriod,
+                    onSelectMetric = onSelectMetric,
+                    contentPadding = innerPadding,
+                )
+            }
         }
     }
 

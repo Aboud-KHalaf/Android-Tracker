@@ -41,6 +41,7 @@ import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MessageContent
 import com.example.tracker.ui.common.ObserveAsEvents
+import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 import com.example.tracker.ui.workout.components.ActiveSetCard
@@ -187,16 +188,18 @@ fun ActiveWorkoutScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        when (uiState) {
-            ActiveWorkoutUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
-            ActiveWorkoutUiState.Error -> ErrorContent(
-                message = stringResource(R.string.workout_error_load),
-                onRetry = actions.onRetry,
-                modifier = Modifier.padding(innerPadding),
-            )
+        StateCrossfade(uiState) { state ->
+            when (state) {
+                ActiveWorkoutUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
+                ActiveWorkoutUiState.Error -> ErrorContent(
+                    message = stringResource(R.string.workout_error_load),
+                    onRetry = actions.onRetry,
+                    modifier = Modifier.padding(innerPadding),
+                )
 
-            ActiveWorkoutUiState.NotFound -> MessageContent(stringResource(R.string.workout_not_found), Modifier.padding(innerPadding))
-            is ActiveWorkoutUiState.Success -> WorkoutContent(uiState, actions, innerPadding)
+                ActiveWorkoutUiState.NotFound -> MessageContent(stringResource(R.string.workout_not_found), Modifier.padding(innerPadding))
+                is ActiveWorkoutUiState.Success -> WorkoutContent(state, actions, innerPadding)
+            }
         }
     }
 

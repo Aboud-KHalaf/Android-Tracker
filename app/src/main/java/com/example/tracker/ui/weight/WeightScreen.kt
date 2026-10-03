@@ -41,6 +41,7 @@ import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.PeriodSelector
 import com.example.tracker.ui.common.ScreenTitle
+import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 import com.example.tracker.ui.weight.components.CurrentWeightCard
@@ -129,15 +130,17 @@ fun WeightScreen(
             }
         },
     ) { innerPadding ->
-        when (uiState) {
-            WeightUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
-            WeightUiState.Error -> ErrorContent(
-                message = stringResource(R.string.weight_error_load),
-                onRetry = onRetry,
-                modifier = Modifier.padding(innerPadding),
-            )
+        StateCrossfade(uiState) { state ->
+            when (state) {
+                WeightUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
+                WeightUiState.Error -> ErrorContent(
+                    message = stringResource(R.string.weight_error_load),
+                    onRetry = onRetry,
+                    modifier = Modifier.padding(innerPadding),
+                )
 
-            is WeightUiState.Success -> WeightContent(uiState, onOpenEntry, onSelectPeriod, innerPadding)
+                is WeightUiState.Success -> WeightContent(state, onOpenEntry, onSelectPeriod, innerPadding)
+            }
         }
     }
 }

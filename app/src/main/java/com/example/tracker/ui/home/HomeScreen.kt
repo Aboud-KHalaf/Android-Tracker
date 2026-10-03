@@ -36,6 +36,7 @@ import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.NameInputDialog
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.SectionHeader
+import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.WorkoutSummaryRow
 import com.example.tracker.ui.common.WorkoutSummaryUi
 import com.example.tracker.ui.common.groupedListItemShape
@@ -115,20 +116,22 @@ fun HomeScreen(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        when (uiState) {
-            HomeUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
-            HomeUiState.Error -> ErrorContent(
-                message = stringResource(R.string.home_error_load),
-                onRetry = actions.onRetry,
-                modifier = Modifier.padding(innerPadding),
-            )
+        StateCrossfade(uiState) { state ->
+            when (state) {
+                HomeUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
+                HomeUiState.Error -> ErrorContent(
+                    message = stringResource(R.string.home_error_load),
+                    onRetry = actions.onRetry,
+                    modifier = Modifier.padding(innerPadding),
+                )
 
-            is HomeUiState.Success -> HomeContent(
-                state = uiState,
-                actions = actions,
-                onCreatePlanClick = { showCreatePlan = true },
-                contentPadding = innerPadding,
-            )
+                is HomeUiState.Success -> HomeContent(
+                    state = state,
+                    actions = actions,
+                    onCreatePlanClick = { showCreatePlan = true },
+                    contentPadding = innerPadding,
+                )
+            }
         }
     }
 
