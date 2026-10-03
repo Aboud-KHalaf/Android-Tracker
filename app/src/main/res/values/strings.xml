@@ -1,3 +1,55 @@
 <resources>
     <string name="app_name">tracker</string>
+
+    <!-- Common -->
+    <string name="action_retry">Retry</string>
+    <string name="duration_minutes">%1$d min</string>
+    <string name="duration_hours_minutes">%1$d h %2$d min</string>
+    <string name="separator_dot">" · "</string>
+    <plurals name="exercise_count">
+        <item quantity="one">%d exercise</item>
+        <item quantity="other">%d exercises</item>
+    </plurals>
+    <plurals name="workout_count">
+        <item quantity="one">%d workout</item>
+        <item quantity="other">%d workouts</item>
+    </plurals>
+    <plurals name="personal_record_count">
+        <item quantity="one">%d PR</item>
+        <item quantity="other">%d PRs</item>
+    </plurals>
+    <string name="set_weight_reps">%1$s kg × %2$d</string>
+
+    <!-- Home -->
+    <string name="home_title">Today</string>
+    <string name="home_error_load">Couldn\'t load your workouts.</string>
+    <string name="home_error_start_workout">Couldn\'t start the workout. Try again.</string>
+    <string name="home_error_create_plan">Couldn\'t create the plan. Try again.</string>
+    <string name="home_up_next">Up next</string>
+    <string name="home_last_done">last done %1$s</string>
+    <string name="home_never_done">not done yet</string>
+    <string name="home_start_workout">Start workout</string>
+    <string name="home_in_progress">In progress</string>
+    <string name="home_started_at">Started %1$s</string>
+    <string name="home_resume_workout">Resume workout</string>
+    <string name="home_get_started">Get started</string>
+    <string name="home_create_first_plan">Create your first plan</string>
+    <string name="home_create_first_plan_body">Add the exercises you want to do, then start training.</string>
+    <string name="home_this_week">This week</string>
+    <string name="home_day_trained">%1$s, trained</string>
+    <string name="home_day_today">%1$s, today</string>
+    <string name="home_new_personal_best">New personal best</string>
+    <string name="home_view_progress">View %1$s progress</string>
+    <string name="home_workout_plans">Workout plans</string>
+    <string name="home_new_plan">New plan</string>
+    <string name="home_no_plans">No plans yet. Create one to get started.</string>
+    <string name="home_recent_workouts">Recent workouts</string>
+    <string name="home_see_all">See all</string>
+    <string name="home_no_recent">Finished workouts will show up here.</string>
+
+    <!-- Create plan dialog -->
+    <string name="create_plan_title">New plan</string>
+    <string name="create_plan_name_label">Plan name</string>
+    <string name="create_plan_confirm">Create</string>
+    <string name="action_cancel">Cancel</string>
 </resources>
