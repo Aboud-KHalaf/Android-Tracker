@@ -1,4 +1,4 @@
-package com.example.tracker.ui.exercise.components
+package com.example.tracker.ui.common.chart
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -32,13 +32,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.tracker.R
-import com.example.tracker.domain.progress.ProgressMetric
 import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.common.shortDate
-import com.example.tracker.ui.exercise.axisText
-import com.example.tracker.ui.exercise.chart.ChartModel
-import com.example.tracker.ui.exercise.label
-import com.example.tracker.ui.exercise.valueText
 import com.example.tracker.ui.theme.spacing
 import com.example.tracker.ui.theme.tabularNumbers
 import kotlin.math.roundToInt
@@ -64,23 +59,29 @@ private class PlotArea(val left: Float, val top: Float, val width: Float, val he
     fun y(fraction: Float) = top + (1f - fraction) * height
 }
 
-/** Line chart of a metric over time, with a labelled y-axis and first and last dates. */
+/**
+ * Line chart of a value over time, with a labelled y-axis and first and last dates.
+ * [label] names the value for screen readers; [valueText] and [axisText] format a point's
+ * value and an axis tick.
+ */
 @Composable
-fun ProgressChart(
+fun LineChart(
     chart: ChartModel,
-    metric: ProgressMetric,
+    label: String,
+    valueText: @Composable (Double) -> String,
+    axisText: @Composable (Double) -> String,
     modifier: Modifier = Modifier,
 ) {
     val locale = currentLocale()
     val description = stringResource(
         R.string.chart_description,
-        metric.label(),
+        label,
         chart.first.date.shortDate(locale),
         chart.last.date.shortDate(locale),
-        chart.points.map { metric.valueText(it.value) }.joinToString(),
+        chart.points.map { valueText(it.value) }.joinToString(),
     )
-    val tickLabels = chart.ticks.map { metric.axisText(it.value) }
-    val lastLabel = stringResource(R.string.chart_point_label, metric.valueText(chart.last.value), chart.last.date.shortDate(locale))
+    val tickLabels = chart.ticks.map { axisText(it.value) }
+    val lastLabel = stringResource(R.string.chart_point_label, valueText(chart.last.value), chart.last.date.shortDate(locale))
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)) {
         BoxWithConstraints(

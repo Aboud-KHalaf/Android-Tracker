@@ -40,11 +40,11 @@ import com.example.tracker.ui.common.MessageContent
 import com.example.tracker.ui.common.NameInputDialog
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.SectionHeader
+import com.example.tracker.ui.common.chart.LineChart
 import com.example.tracker.ui.common.label
 import com.example.tracker.ui.exercise.components.ExerciseDetailsTopBar
 import com.example.tracker.ui.exercise.components.MetricSelector
 import com.example.tracker.ui.exercise.components.NoSessions
-import com.example.tracker.ui.exercise.components.ProgressChart
 import com.example.tracker.ui.exercise.components.RangeChips
 import com.example.tracker.ui.exercise.components.SessionRow
 import com.example.tracker.ui.exercise.components.StatCards
@@ -217,7 +217,13 @@ private fun LazyListScope.progressTab(
         if (progress != null) {
             Column(modifier = sectionModifier) {
                 TrendHeadline(progress, state.metric)
-                ProgressChart(progress.chart, state.metric, Modifier.padding(top = MaterialTheme.spacing.lg))
+                LineChart(
+                    chart = progress.chart,
+                    label = state.metric.label(),
+                    valueText = { state.metric.valueText(it) },
+                    axisText = { state.metric.axisText(it) },
+                    modifier = Modifier.padding(top = MaterialTheme.spacing.lg),
+                )
             }
         } else {
             Text(

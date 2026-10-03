@@ -2,8 +2,8 @@ package com.example.tracker.ui.nutrition.chart
 
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.NutritionTargets
-import com.example.tracker.ui.exercise.chart.AxisTick
-import com.example.tracker.ui.exercise.chart.ChartModel
+import com.example.tracker.ui.common.chart.AxisTick
+import com.example.tracker.ui.common.chart.ChartModel
 import com.example.tracker.ui.nutrition.NutritionMetric
 import java.time.LocalDate
 import kotlin.math.ceil
