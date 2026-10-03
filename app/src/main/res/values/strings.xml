@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">tracker</string>
 
     <!-- Common -->
@@ -102,7 +102,7 @@
     <string name="workout_first_time">First time doing this exercise</string>
     <string name="workout_exercise_progress">%1$s progress</string>
     <string name="workout_set_number">Set %1$d</string>
-    <string name="workout_set_done_description">Set %1$d done, %2$s</string>
+    <string name="workout_set_done_description" tools:ignore="PluralsCandidate">Set %1$d done, %2$s</string>
     <string name="workout_set_upcoming_description">Set %1$d, planned %2$s</string>
     <string name="workout_edit_set">Edit</string>
     <string name="workout_go_to_set">Go to set</string>
@@ -120,7 +120,7 @@
     <string name="workout_duration_unavailable">Timed sets can\'t be logged on this screen yet.</string>
     <string name="workout_all_sets_done">All sets done. Add another set or move on.</string>
     <string name="workout_add_set">Add set</string>
-    <string name="workout_set_saved">Set %1$d saved</string>
+    <string name="workout_set_saved" tools:ignore="PluralsCandidate">Set %1$d saved</string>
     <string name="workout_previous_exercise">Previous exercise</string>
     <string name="workout_next_exercise">Next: %1$s</string>
     <string name="workout_finish_workout">Finish workout</string>
