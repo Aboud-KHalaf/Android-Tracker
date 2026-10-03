@@ -50,16 +50,6 @@ interface WorkoutDao {
     )
     fun observeFinishedSummaries(planId: String?): Flow<List<WorkoutSummaryRow>>
 
-    @Query(
-        """
-        SELECT * FROM workouts
-        WHERE finished_at IS NOT NULL AND deleted_at IS NULL
-            AND started_at >= :fromInclusive AND started_at < :toExclusive
-        ORDER BY started_at
-        """
-    )
-    fun observeFinishedStartedBetween(fromInclusive: Long, toExclusive: Long): Flow<List<WorkoutEntity>>
-
     // Exercises and sets of one workout
 
     @Query(
@@ -83,6 +73,9 @@ interface WorkoutDao {
         """
     )
     fun observeSets(workoutId: String): Flow<List<WorkoutSetEntity>>
+
+    @Query("SELECT * FROM workout_exercises WHERE id = :id AND deleted_at IS NULL")
+    suspend fun getWorkoutExercise(id: String): WorkoutExerciseEntity?
 
     @Query("SELECT * FROM workout_sets WHERE id = :id AND deleted_at IS NULL")
     suspend fun getSet(id: String): WorkoutSetEntity?
