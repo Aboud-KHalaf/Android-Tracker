@@ -4,9 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
 import com.example.tracker.ui.exercise.exerciseDetailsScreen
 import com.example.tracker.ui.exercise.navigateToExerciseDetails
+import com.example.tracker.ui.exercises.exerciseListScreen
+import com.example.tracker.ui.history.historyScreen
 import com.example.tracker.ui.home.HomeDestination
 import com.example.tracker.ui.home.homeScreen
 import com.example.tracker.ui.plan.navigateToPlan
@@ -20,16 +21,18 @@ import com.example.tracker.ui.workout.navigateToActiveWorkout
  */
 @Composable
 fun TrackerNavHost(
+    navController: NavHostController,
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController(),
 ) {
     NavHost(navController = navController, startDestination = HomeDestination, modifier = modifier) {
         homeScreen(
             onOpenWorkout = navController::navigateToActiveWorkout,
             onOpenPlan = navController::navigateToPlan,
-            onOpenHistory = {}, // Wired when the History screen exists.
+            onOpenHistory = { navController.navigateToTopLevel(TopLevelDestination.HISTORY) },
             onOpenExerciseProgress = navController::navigateToExerciseDetails,
         )
+        historyScreen()
+        exerciseListScreen(onOpenExercise = navController::navigateToExerciseDetails)
         planScreen(
             onBack = navController::popBackStack,
             onOpenWorkout = navController::navigateToActiveWorkout,

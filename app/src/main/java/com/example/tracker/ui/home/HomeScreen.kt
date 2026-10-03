@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -35,10 +36,11 @@ import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.NameInputDialog
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.SectionHeader
+import com.example.tracker.ui.common.WorkoutSummaryRow
+import com.example.tracker.ui.common.WorkoutSummaryUi
 import com.example.tracker.ui.common.groupedListItemShape
 import com.example.tracker.ui.home.components.HomeHeader
 import com.example.tracker.ui.home.components.PlanRow
-import com.example.tracker.ui.home.components.RecentWorkoutRow
 import com.example.tracker.ui.home.components.UpNextCard
 import com.example.tracker.ui.home.components.WeekCard
 import com.example.tracker.ui.theme.Dimens
@@ -217,7 +219,7 @@ private fun LazyListScope.plansSection(
 }
 
 private fun LazyListScope.recentWorkoutsSection(
-    workouts: List<RecentWorkoutUi>,
+    workouts: List<WorkoutSummaryUi>,
     onSeeAll: () -> Unit,
 ) {
     item(key = "recent-header") {
@@ -232,11 +234,13 @@ private fun LazyListScope.recentWorkoutsSection(
         item(key = "recent-empty") { EmptySectionText(stringResource(R.string.home_no_recent)) }
     }
     itemsIndexed(workouts, key = { _, workout -> "workout-${workout.id}" }) { index, workout ->
-        RecentWorkoutRow(
-            workout = workout,
+        Surface(
             shape = groupedListItemShape(index, workouts.size),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
             modifier = if (index == 0) Modifier else Modifier.padding(top = GroupedListGap),
-        )
+        ) {
+            WorkoutSummaryRow(workout)
+        }
     }
 }
 

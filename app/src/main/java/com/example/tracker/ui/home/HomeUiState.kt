@@ -1,6 +1,7 @@
 package com.example.tracker.ui.home
 
 import com.example.tracker.ui.common.SetValueUi
+import com.example.tracker.ui.common.WorkoutSummaryUi
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -16,7 +17,7 @@ sealed interface HomeUiState {
         val upNext: UpNextUi,
         val week: WeekUi,
         val plans: List<PlanItemUi>,
-        val recentWorkouts: List<RecentWorkoutUi>,
+        val recentWorkouts: List<WorkoutSummaryUi>,
         /** True while a workout is being started, to disable the start button. */
         val isStartingWorkout: Boolean = false,
     ) : HomeUiState
@@ -60,12 +61,3 @@ data class PersonalBestUi(
 )
 
 data class PlanItemUi(val id: String, val name: String, val exerciseCount: Int)
-
-data class RecentWorkoutUi(
-    val id: String,
-    val name: String,
-    val date: LocalDate,
-    val exerciseCount: Int,
-    val duration: Duration,
-    val personalBestCount: Int,
-)

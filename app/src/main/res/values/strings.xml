@@ -207,6 +207,26 @@
     <string name="exercise_no_sessions_body">Complete a set of this exercise in a workout to see your progress.</string>
     <string name="exercise_no_sessions_in_range">No sessions in this period. Try a longer range.</string>
 
+    <!-- History -->
+    <string name="history_title">History</string>
+    <string name="history_error_load">Couldn\'t load your history.</string>
+    <string name="history_filter_group">Filter by plan</string>
+    <string name="history_filter_all">All</string>
+    <string name="history_empty_title">No workouts yet</string>
+    <string name="history_empty_all">Finished workouts will show up here.</string>
+    <string name="history_empty_plan">Finished workouts for this plan will show up here.</string>
+
+    <!-- Progress tab (exercise library) -->
+    <string name="exercises_title">Progress</string>
+    <string name="exercises_error_load">Couldn\'t load your exercises.</string>
+    <string name="exercises_empty_title">No exercises yet</string>
+    <string name="exercises_empty_body">Add exercises to a plan to track their progress here.</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_history">History</string>
+    <string name="nav_progress">Progress</string>
+
     <!-- Create plan dialog -->
     <string name="create_plan_title">New plan</string>
     <string name="plan_name_label">Plan name</string>
