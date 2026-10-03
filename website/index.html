@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tracker — Workouts, Nutrition &amp; Weight</title>
+<meta name="description" content="Tracker is a free, offline-first Android app for logging workouts, nutrition and body weight. No account, no cloud — your data stays on your phone.">
+<meta name="theme-color" content="#2A5FA8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tracker — Workouts, Nutrition & Weight">
+<meta property="og:description" content="A free, offline-first Android app for workouts, nutrition and body weight. No account needed.">
+<meta property="og:url" content="https://aboud-khalaf.github.io/Android-Tracker/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&icon_names=add,android,arrow_forward,check,check_circle,cloud_off,code,contrast,dark_mode,devices,download,emoji_events,fitness_center,history,home,insights,light_mode,lock,monitor_weight,no_accounts,notifications,palette,play_arrow,qr_code_2,remove,restaurant,timer,trending_down&display=block">
+<style>
+/* ---------- Design tokens: mirrors app/src/main/java/.../ui/theme ---------- */
+:root, .scheme-light {
+  --primary:#2A5FA8; --on-primary:#FFFFFF;
+  --primary-container:#D6E3FF; --on-primary-container:#0F3A75;
+  --secondary:#555F71; --secondary-container:#D9E3F8; --on-secondary-container:#3E4758;
+  --tertiary:#8A5100; --tertiary-container:#FFDCBE; --on-tertiary-container:#693C00;
+  --background:#F9F9FF; --on-background:#191C21;
+  --surface:#F9F9FF; --on-surface:#191C21;
+  --surface-variant:#E0E2EC; --on-surface-variant:#44474F;
+  --outline:#74777F; --outline-variant:#C4C6D0;
+  --sc-lowest:#FFFFFF; --sc-low:#F3F3FA; --sc:#EDEDF4; --sc-high:#E7E8EE; --sc-highest:#E1E2E9;
+  --inverse-surface:#2E3036; --inverse-on-surface:#F0F0F7; --inverse-primary:#AAC7FF;
+  --glow-a: rgba(42,95,168,.20); --glow-b: rgba(138,81,0,.10);
+  --shadow: 0 1px 2px rgba(0,0,0,.08), 0 8px 24px rgba(15,58,117,.10);
+  --shadow-lg: 0 2px 6px rgba(0,0,0,.08), 0 30px 60px -10px rgba(15,58,117,.28);
+  color-scheme: light;
+}
+.scheme-dark {
+  --primary:#AAC7FF; --on-primary:#0A305F;
+  --primary-container:#234A86; --on-primary-container:#D6E3FF;
+  --secondary:#BDC7DC; --secondary-container:#3E4759; --on-secondary-container:#D9E3F8;
+  --tertiary:#FFB86E; --tertiary-container:#693C00; --on-tertiary-container:#FFDCBE;
+  --background:#111318; --on-background:#E1E2E9;
+  --surface:#111318; --on-surface:#E1E2E9;
+  --surface-variant:#44474F; --on-surface-variant:#C4C6D0;
+  --outline:#8E9099; --outline-variant:#44474F;
+  --sc-lowest:#0C0E13; --sc-low:#191C21; --sc:#1D2025; --sc-high:#282A2F; --sc-highest:#33353A;
+  --inverse-surface:#E1E2E9; --inverse-on-surface:#2E3036; --inverse-primary:#2A5FA8;
+  --glow-a: rgba(170,199,255,.16); --glow-b: rgba(255,184,110,.07);
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  --shadow-lg: 0 2px 6px rgba(0,0,0,.4), 0 30px 60px -10px rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --primary:#AAC7FF; --on-primary:#0A305F;
+    --primary-container:#234A86; --on-primary-container:#D6E3FF;
+    --secondary:#BDC7DC; --secondary-container:#3E4759; --on-secondary-container:#D9E3F8;
+    --tertiary:#FFB86E; --tertiary-container:#693C00; --on-tertiary-container:#FFDCBE;
+    --background:#111318; --on-background:#E1E2E9;
+    --surface:#111318; --on-surface:#E1E2E9;
+    --surface-variant:#44474F; --on-surface-variant:#C4C6D0;
+    --outline:#8E9099; --outline-variant:#44474F;
+    --sc-lowest:#0C0E13; --sc-low:#191C21; --sc:#1D2025; --sc-high:#282A2F; --sc-highest:#33353A;
+    --inverse-surface:#E1E2E9; --inverse-on-surface:#2E3036; --inverse-primary:#2A5FA8;
+    --glow-a: rgba(170,199,255,.16); --glow-b: rgba(255,184,110,.07);
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    --shadow-lg: 0 2px 6px rgba(0,0,0,.4), 0 30px 60px -10px rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --primary:#AAC7FF; --on-primary:#0A305F;
+  --primary-container:#234A86; --on-primary-container:#D6E3FF;
+  --secondary:#BDC7DC; --secondary-container:#3E4759; --on-secondary-container:#D9E3F8;
+  --tertiary:#FFB86E; --tertiary-container:#693C00; --on-tertiary-container:#FFDCBE;
+  --background:#111318; --on-background:#E1E2E9;
+  --surface:#111318; --on-surface:#E1E2E9;
+  --surface-variant:#44474F; --on-surface-variant:#C4C6D0;
+  --outline:#8E9099; --outline-variant:#44474F;
+  --sc-lowest:#0C0E13; --sc-low:#191C21; --sc:#1D2025; --sc-high:#282A2F; --sc-highest:#33353A;
+  --inverse-surface:#E1E2E9; --inverse-on-surface:#2E3036; --inverse-primary:#2A5FA8;
+  --glow-a: rgba(170,199,255,.16); --glow-b: rgba(255,184,110,.07);
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  --shadow-lg: 0 2px 6px rgba(0,0,0,.4), 0 30px 60px -10px rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+:root {
+  /* Shapes (Shape.kt) */
+  --r-xs:4px; --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:28px; --r-full:999px;
+  /* Spacing (Dimens.kt) */
+  --s-xs:4px; --s-sm:8px; --s-md:12px; --s-lg:16px; --s-xl:24px; --s-xxl:32px;
+  /* Motion (Motion.kt) */
+  --d-short:200ms; --d-medium:300ms; --d-long:400ms; --d-xlong:700ms;
+  --ease-emph:cubic-bezier(.2,0,0,1);
+  --ease-decel:cubic-bezier(.05,.7,.1,1);
+  --ease-accel:cubic-bezier(.3,0,.8,.15);
+  --font:"Roboto Flex", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --max:1200px;
+}
+
+/* ---------- Base ---------- */
+*,*::before,*::after { box-sizing:border-box; }
+html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+body {
+  margin:0; font-family:var(--font); background:var(--background); color:var(--on-background);
+  font-size:16px; line-height:1.5; letter-spacing:.01em; overflow-x:hidden;
+  transition: background-color var(--d-long) var(--ease-emph), color var(--d-long) var(--ease-emph);
+  -webkit-font-smoothing:antialiased;
+}
+a { color:inherit; }
+img,svg { display:block; }
+.num { font-variant-numeric: tabular-nums; }
+.icon {
+  font-family:"Material Symbols Rounded"; font-weight:normal; font-style:normal;
+  font-size:24px; line-height:1; letter-spacing:normal; text-transform:none; display:inline-block;
+  white-space:nowrap; direction:ltr; -webkit-font-feature-settings:"liga"; font-feature-settings:"liga";
+  font-variation-settings:"FILL" 0, "wght" 400, "opsz" 24; user-select:none; flex:none;
+}
+.icon.fill { font-variation-settings:"FILL" 1, "wght" 400, "opsz" 24; }
+.wrap { width:100%; max-width:var(--max); margin:0 auto; padding:0 24px; }
+@media (max-width:600px){ .wrap { padding:0 16px; } }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+:focus-visible { outline:3px solid var(--primary); outline-offset:3px; border-radius:var(--r-sm); }
+.skip { position:absolute; left:16px; top:-60px; z-index:100; background:var(--primary); color:var(--on-primary);
+  padding:12px 16px; border-radius:var(--r-full); text-decoration:none; transition:top var(--d-short) var(--ease-emph); }
+.skip:focus { top:12px; }
+
+/* ---------- Type scale (M3) ---------- */
+.display-l { font-size:clamp(40px, 6.4vw, 72px); line-height:1.04; font-weight:600; letter-spacing:-.025em;
+  font-variation-settings:"opsz" 144; margin:0; }
+.display-s { font-size:clamp(30px, 4.2vw, 48px); line-height:1.1; font-weight:600; letter-spacing:-.02em;
+  font-variation-settings:"opsz" 96; margin:0; }
+.headline-s { font-size:24px; line-height:32px; font-weight:600; margin:0; letter-spacing:-.005em; }
+.title-l { font-size:22px; line-height:28px; font-weight:600; margin:0; }
+.title-m { font-size:16px; line-height:24px; font-weight:600; letter-spacing:.009em; margin:0; }
+.body-l { font-size:clamp(17px,1.6vw,19px); line-height:1.6; color:var(--on-surface-variant); margin:0; }
+.body-m { font-size:14px; line-height:20px; color:var(--on-surface-variant); margin:0; }
+.label-l { font-size:14px; line-height:20px; font-weight:600; letter-spacing:.006em; }
+.label-m { font-size:12px; line-height:16px; font-weight:600; letter-spacing:.04em; }
+.overline { font-size:13px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--primary); margin:0 0 12px; }
+
+/* ---------- Buttons (M3 filled / tonal / outlined) ---------- */
+.btn {
+  --bg:var(--primary); --fg:var(--on-primary);
+  position:relative; overflow:hidden; isolation:isolate; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  min-height:48px; padding:0 24px 0 20px; border-radius:var(--r-full); border:0; cursor:pointer;
+  background:var(--bg); color:var(--fg); font:inherit; font-size:15px; font-weight:600; letter-spacing:.01em;
+  text-decoration:none; white-space:nowrap;
+  transition: transform var(--d-short) var(--ease-emph), box-shadow var(--d-short) var(--ease-emph), background-color var(--d-long) var(--ease-emph);
+}
+.btn::before { content:""; position:absolute; inset:0; background:currentColor; opacity:0; z-index:-1;
+  transition:opacity var(--d-short) var(--ease-emph); }
+.btn:hover::before { opacity:.08; }
+.btn:active::before { opacity:.12; }
+.btn:hover { box-shadow:0 1px 3px rgba(0,0,0,.15), 0 4px 12px -2px var(--glow-a); }
+.btn:active { transform:scale(.97); }
+.btn.lg { min-height:56px; padding:0 28px 0 24px; font-size:16px; }
+.btn.tonal { --bg:var(--secondary-container); --fg:var(--on-secondary-container); }
+.btn.outlined { --bg:transparent; --fg:var(--primary); box-shadow:inset 0 0 0 1px var(--outline); }
+.btn.outlined:hover { box-shadow:inset 0 0 0 1px var(--outline); }
+.btn.text { --bg:transparent; --fg:var(--primary); padding:0 16px; }
+.btn.text:hover { box-shadow:none; }
+.ripple { position:absolute; border-radius:50%; background:currentColor; opacity:.22; transform:scale(0); pointer-events:none;
+  animation:ripple 600ms var(--ease-decel) forwards; z-index:-1; }
+@keyframes ripple { to { transform:scale(1); opacity:0; } }
+.icon-btn { width:48px; height:48px; border-radius:var(--r-full); border:0; background:transparent; color:var(--on-surface-variant);
+  display:grid; place-items:center; cursor:pointer; position:relative; overflow:hidden; isolation:isolate; }
+.icon-btn::before { content:""; position:absolute; inset:0; background:currentColor; opacity:0; z-index:-1; transition:opacity var(--d-short); }
+.icon-btn:hover::before { opacity:.08; }
+
+/* ---------- Top app bar ---------- */
+.progress-bar { position:fixed; top:0; left:0; height:3px; width:100%; transform-origin:0 50%; transform:scaleX(0);
+  background:linear-gradient(90deg, var(--primary), var(--tertiary)); z-index:60; }
+.topbar { position:fixed; inset:0 0 auto 0; z-index:50; height:68px; display:flex; align-items:center;
+  transition: background-color var(--d-medium) var(--ease-emph), box-shadow var(--d-medium) var(--ease-emph), backdrop-filter var(--d-medium); }
+.topbar.scrolled { background:color-mix(in srgb, var(--sc) 82%, transparent); backdrop-filter:saturate(1.6) blur(14px);
+  -webkit-backdrop-filter:saturate(1.6) blur(14px); box-shadow:0 1px 0 var(--outline-variant); }
+.topbar .wrap { display:flex; align-items:center; gap:12px; }
+.brand { display:flex; align-items:center; gap:10px; text-decoration:none; font-weight:700; font-size:20px; letter-spacing:-.01em; margin-right:auto; }
+.brand svg { width:36px; height:36px; border-radius:10px; box-shadow:var(--shadow); }
+.nav { display:flex; gap:4px; }
+.nav a { text-decoration:none; color:var(--on-surface-variant); font-size:14px; font-weight:600; padding:10px 14px; border-radius:var(--r-full);
+  transition:background-color var(--d-short), color var(--d-short); }
+.nav a:hover { background:color-mix(in srgb, var(--on-surface) 8%, transparent); color:var(--on-surface); }
+@media (max-width:860px){ .nav { display:none; } }
+@media (max-width:420px){ .topbar .btn .lbl-long { display:none; } .topbar .btn { padding:0 18px; } }
+
+/* ---------- Hero ---------- */
+.hero { position:relative; padding:132px 0 96px; overflow:hidden; }
+.hero-bg { position:absolute; inset:0; z-index:-1; pointer-events:none; overflow:hidden; }
+.blob { position:absolute; border-radius:50%; filter:blur(70px); opacity:.9; will-change:transform; }
+.blob.a { width:620px; height:620px; background:var(--glow-a); top:-180px; right:-120px; animation:drift 18s var(--ease-emph) infinite alternate; }
+.blob.b { width:460px; height:460px; background:var(--glow-b); bottom:-160px; left:-120px; animation:drift 22s var(--ease-emph) infinite alternate-reverse; }
+.blob.c { width:300px; height:300px; background:var(--glow-a); top:40%; left:38%; animation:drift 26s var(--ease-emph) infinite alternate; opacity:.6; }
+@keyframes drift { 0% { transform:translate(0,0) scale(1); } 50% { transform:translate(40px,-30px) scale(1.08); } 100% { transform:translate(-30px,40px) scale(.95); } }
+.dots { position:absolute; inset:0; background-image:radial-gradient(color-mix(in srgb, var(--on-surface) 9%, transparent) 1px, transparent 1px);
+  background-size:26px 26px; mask-image:radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+  -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%); }
+.hero-grid { display:grid; grid-template-columns:1.1fr .9fr; gap:56px; align-items:center; }
+@media (max-width:960px){ .hero-grid { grid-template-columns:1fr; gap:64px; text-align:center; } .hero { padding-top:112px; } }
+.chip { display:inline-flex; align-items:center; gap:8px; height:32px; padding:0 14px 0 8px; border-radius:var(--r-sm);
+  background:var(--sc-low); box-shadow:inset 0 0 0 1px var(--outline-variant); font-size:13px; font-weight:600; color:var(--on-surface-variant); text-decoration:none; }
+.chip .icon { font-size:18px; color:var(--primary); }
+.chip .pulse { width:8px; height:8px; border-radius:50%; background:#3BB273; margin-left:6px; box-shadow:0 0 0 0 rgba(59,178,115,.6); animation:pulse 2s infinite; }
+@keyframes pulse { 70% { box-shadow:0 0 0 8px rgba(59,178,115,0); } 100% { box-shadow:0 0 0 0 rgba(59,178,115,0); } }
+.hero h1 { margin:20px 0 20px; }
+.grad-text { background:linear-gradient(100deg, var(--primary) 10%, color-mix(in srgb, var(--primary) 50%, var(--tertiary)) 55%, var(--tertiary) 95%);
+  background-size:200% 100%; -webkit-background-clip:text; background-clip:text; color:transparent; animation:shine 8s var(--ease-emph) infinite alternate; }
+@keyframes shine { to { background-position:100% 0; } }
+.word { display:inline-block; overflow:hidden; vertical-align:bottom; padding-bottom:.08em; margin-bottom:-.08em; }
+.word > span { display:inline-block; transform:translateY(110%); animation:rise 900ms var(--ease-decel) forwards; animation-delay:calc(var(--i) * 90ms + 150ms); }
+@keyframes rise { to { transform:none; } }
+.hero .body-l { max-width:540px; }
+@media (max-width:960px){ .hero .body-l { margin:0 auto; } }
+.cta-row { display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; }
+@media (max-width:960px){ .cta-row { justify-content:center; } }
+.meta-row { display:flex; flex-wrap:wrap; gap:8px 20px; margin-top:24px; color:var(--on-surface-variant); font-size:14px; }
+.meta-row span { display:inline-flex; align-items:center; gap:6px; }
+.meta-row .icon { font-size:18px; color:var(--primary); }
+@media (max-width:960px){ .meta-row { justify-content:center; } }
+.fade-up { opacity:0; transform:translateY(16px); animation:fadeUp 900ms var(--ease-decel) forwards; animation-delay:var(--delay, 0ms); }
+@keyframes fadeUp { to { opacity:1; transform:none; } }
+
+/* ---------- Phone mockup ---------- */
+.phone-stage { position:relative; display:grid; place-items:center; perspective:1400px; min-height:640px; }
+.phone-wrap { position:relative; transform-style:preserve-3d; transition:transform 600ms var(--ease-emph); animation:float 7s ease-in-out infinite; }
+@keyframes float { 0%,100% { translate:0 0; } 50% { translate:0 -14px; } }
+.phone {
+  position:relative; width:300px; height:630px; border-radius:46px; padding:10px; background:#0d0f14;
+  box-shadow: 0 0 0 1.5px #3a3d46, inset 0 0 0 1px #000, var(--shadow-lg);
+}
+.phone::after { /* camera punch hole */ content:""; position:absolute; top:22px; left:50%; width:12px; height:12px; margin-left:-6px;
+  border-radius:50%; background:#000; box-shadow:inset 0 0 0 2px #1d2028; z-index:5; }
+.screen { position:relative; width:100%; height:100%; border-radius:37px; overflow:hidden; background:var(--surface); color:var(--on-surface);
+  transition:background-color var(--d-long) var(--ease-emph); font-size:13px; line-height:1.35; }
+@media (max-width:420px){ .phone { transform:scale(.88); } .phone-stage { min-height:580px; } }
+.statusbar { height:40px; display:flex; align-items:center; justify-content:space-between; padding:6px 24px 0; font-size:12px; font-weight:600; }
+.statusbar .sys { display:flex; gap:4px; align-items:center; }
+.statusbar .sys i { display:block; width:14px; height:9px; border-radius:2px; background:currentColor; opacity:.85; }
+.statusbar .sys i:first-child { width:12px; height:10px; clip-path:polygon(0 100%,100% 0,100% 100%); border-radius:0; }
+.views { position:absolute; top:40px; left:0; right:0; bottom:72px; }
+.view { position:absolute; inset:0; padding:4px 16px 0; opacity:0; transform:translateX(24px); pointer-events:none;
+  transition: opacity var(--d-medium) var(--ease-emph), transform var(--d-long) var(--ease-emph); }
+.view.active { opacity:1; transform:none; }
+.view.leaving { opacity:0; transform:translateX(-24px); }
+.app-title { font-size:22px; font-weight:600; margin:10px 4px 14px; letter-spacing:-.01em; }
+.app-sub { font-size:12px; color:var(--on-surface-variant); margin:8px 4px -10px; }
+.m-card { background:var(--sc-low); border-radius:var(--r-lg); padding:14px; margin-bottom:10px; }
+.m-card.primary { background:var(--primary-container); color:var(--on-primary-container); }
+.m-label { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; opacity:.8; }
+.m-title { font-size:18px; font-weight:600; margin:2px 0 2px; }
+.m-meta { font-size:12px; opacity:.8; }
+.m-btn { margin-top:12px; height:36px; border-radius:var(--r-full); background:var(--primary); color:var(--on-primary); font-weight:600; font-size:13px;
+  display:flex; align-items:center; justify-content:center; gap:6px; }
+.m-btn .icon { font-size:18px; }
+.m-row { display:flex; gap:10px; }
+.m-row > * { flex:1; }
+.m-stat .v { font-size:22px; font-weight:600; }
+.m-stat .k { font-size:11px; color:var(--on-surface-variant); }
+.m-stat .icon { font-size:18px; color:var(--primary); margin-bottom:4px; }
+.m-stat .icon.pb { color:var(--tertiary); }
+.m-list-item { display:flex; align-items:center; gap:12px; padding:10px 4px; }
+.m-list-item + .m-list-item { border-top:1px solid var(--outline-variant); }
+.m-avatar { width:36px; height:36px; border-radius:50%; background:var(--secondary-container); color:var(--on-secondary-container); display:grid; place-items:center; flex:none; }
+.m-avatar .icon { font-size:18px; }
+.m-list-item .t { font-weight:600; font-size:13px; }
+.m-list-item .s { font-size:11px; color:var(--on-surface-variant); }
+.m-chips { display:flex; gap:6px; margin-bottom:10px; flex-wrap:nowrap; }
+.m-chip { height:28px; padding:0 10px; border-radius:var(--r-sm); font-size:11px; font-weight:600; display:flex; align-items:center; gap:4px;
+  box-shadow:inset 0 0 0 1px var(--outline-variant); color:var(--on-surface-variant); white-space:nowrap; }
+.m-chip.on { background:var(--secondary-container); color:var(--on-secondary-container); box-shadow:none; }
+.m-chip.on .icon { font-size:14px; }
+.navbar { position:absolute; left:0; right:0; bottom:0; height:72px; background:var(--sc); display:flex; padding:10px 4px 14px;
+  transition:background-color var(--d-long) var(--ease-emph); }
+.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10.5px; font-weight:600; color:var(--on-surface-variant); position:relative; }
+.nav-item .pill { width:52px; height:30px; border-radius:var(--r-full); display:grid; place-items:center; position:relative; }
+.nav-item .pill::before { content:""; position:absolute; inset:0; border-radius:inherit; background:var(--secondary-container); transform:scaleX(.3); opacity:0;
+  transition: transform var(--d-long) var(--ease-emph), opacity var(--d-short); }
+.nav-item .icon { position:relative; font-size:20px; transition:font-variation-settings var(--d-medium); }
+.nav-item.on { color:var(--on-surface); }
+.nav-item.on .pill::before { transform:none; opacity:1; }
+.nav-item.on .icon { font-variation-settings:"FILL" 1, "wght" 400, "opsz" 24; color:var(--on-secondary-container); }
+.ring-wrap { position:relative; width:150px; height:150px; margin:4px auto 14px; }
+.ring-wrap svg { width:100%; height:100%; transform:rotate(-90deg); }
+.ring-wrap .c { position:absolute; inset:0; display:grid; place-content:center; text-align:center; }
+.ring-wrap .c b { font-size:26px; font-weight:600; }
+.ring-wrap .c small { font-size:11px; color:var(--on-surface-variant); }
+.ring-track { fill:none; stroke:var(--sc-highest); stroke-width:12; }
+.ring-val { fill:none; stroke:var(--primary); stroke-width:12; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:1;
+  transition: stroke-dashoffset 1400ms var(--ease-emph); }
+.macro { margin-bottom:12px; }
+.macro .top { display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; }
+.macro .top span:last-child { color:var(--on-surface-variant); }
+.lp { height:6px; border-radius:var(--r-full); background:transparent; display:flex; gap:4px; }
+.lp .f { height:100%; border-radius:inherit; background:var(--primary); width:0; transition:width 1200ms var(--ease-emph); }
+.lp .t { height:100%; flex:1; border-radius:inherit; background:var(--secondary-container); }
+.m-big { font-size:34px; font-weight:600; letter-spacing:-.02em; }
+.m-big small { font-size:16px; font-weight:500; color:var(--on-surface-variant); margin-left:4px; }
+.delta { display:inline-flex; align-items:center; gap:2px; font-size:12px; font-weight:600; color:var(--primary); background:var(--primary-container);
+  padding:2px 8px 2px 4px; border-radius:var(--r-sm); }
+.delta .icon { font-size:16px; }
+.mini-chart { width:100%; height:120px; overflow:visible; }
+.chart-line { fill:none; stroke:var(--primary); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:1; stroke-dashoffset:1; }
+.chart-area { fill:url(#areaGrad); opacity:0; transition:opacity 900ms var(--ease-emph) 400ms; }
+.drawn .chart-line { transition:stroke-dashoffset 1400ms var(--ease-emph); stroke-dashoffset:0; }
+.drawn .chart-area { opacity:1; }
+.grid-line { stroke:var(--outline-variant); stroke-width:1; stroke-dasharray:3 4; }
+.fab { position:absolute; right:16px; bottom:86px; width:56px; height:56px; border-radius:var(--r-lg); background:var(--primary-container); color:var(--on-primary-container);
+  display:grid; place-items:center; box-shadow:0 3px 8px rgba(0,0,0,.18); opacity:0; transform:scale(.6); transition:all var(--d-long) var(--ease-emph); }
+.fab.show { opacity:1; transform:none; }
+
+/* Floating badges around the phone */
+.floater { position:absolute; display:flex; align-items:center; gap:10px; padding:10px 16px 10px 10px; border-radius:var(--r-lg);
+  background:color-mix(in srgb, var(--sc-lowest) 88%, transparent); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  box-shadow:var(--shadow), inset 0 0 0 1px var(--outline-variant); font-size:13px; z-index:3; white-space:nowrap; }
+.floater b { display:block; font-size:14px; }
+.floater span.s { color:var(--on-surface-variant); font-size:12px; }
+.floater .ic { width:36px; height:36px; border-radius:var(--r-md); display:grid; place-items:center; background:var(--primary-container); color:var(--on-primary-container); }
+.floater .ic.pb { background:var(--tertiary-container); color:var(--on-tertiary-container); }
+.floater.f1 { top:150px; left:-96px; animation:popIn 700ms var(--ease-decel) var(--delay) forwards, bob 6s ease-in-out infinite; }
+.floater.f2 { bottom:130px; right:-80px; animation:popIn 700ms var(--ease-decel) var(--delay) forwards, bob 7s ease-in-out -2s infinite; }
+.floater.f3 { top:40%; right:-100px; animation:popIn 700ms var(--ease-decel) var(--delay) forwards, bob 8s ease-in-out -4s infinite; }
+@keyframes bob { 0%,100% { transform:translateY(0) rotate(-1deg); } 50% { transform:translateY(-12px) rotate(1deg); } }
+@media (max-width:1100px){ .floater.f3 { display:none; } }
+@media (max-width:520px){ .floater.f1 { left:-6px; top:40px; } .floater.f2 { right:-6px; bottom:70px; } }
+.pop-in { opacity:0; scale:.8; animation:popIn 700ms var(--ease-decel) forwards; animation-delay:var(--delay); }
+@keyframes popIn { to { opacity:1; scale:1; } }
+
+/* ---------- Marquee strip ---------- */
+.strip { padding:22px 0; border-block:1px solid var(--outline-variant); background:var(--sc-low); overflow:hidden; position:relative; }
+.strip::before,.strip::after { content:""; position:absolute; top:0; bottom:0; width:120px; z-index:2; pointer-events:none; }
+.strip::before { left:0; background:linear-gradient(90deg, var(--sc-low), transparent); }
+.strip::after { right:0; background:linear-gradient(-90deg, var(--sc-low), transparent); }
+.marquee { display:flex; gap:48px; width:max-content; animation:marquee 40s linear infinite; }
+.strip:hover .marquee { animation-play-state:paused; }
+.marquee span { display:inline-flex; align-items:center; gap:10px; font-weight:600; color:var(--on-surface-variant); font-size:15px; white-space:nowrap; }
+.marquee .icon { color:var(--primary); }
+@keyframes marquee { to { transform:translateX(-50%); } }
+
+/* ---------- Sections ---------- */
+section { position:relative; }
+.section { padding:112px 0; }
+@media (max-width:700px){ .section { padding:80px 0; } }
+.section-head { max-width:720px; margin:0 auto 56px; text-align:center; }
+.section-head .body-l { margin-top:16px; }
+.reveal { opacity:0; transform:translateY(32px); transition: opacity 900ms var(--ease-decel), transform 900ms var(--ease-decel); transition-delay:var(--d, 0ms); }
+.reveal.in { opacity:1; transform:none; }
+
+/* ---------- Bento ---------- */
+.bento { display:grid; grid-template-columns:repeat(6, 1fr); gap:16px; }
+.card { position:relative; background:var(--sc-low); border-radius:var(--r-xl); padding:28px; overflow:hidden; isolation:isolate;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--outline-variant) 60%, transparent);
+  transition: transform var(--d-long) var(--ease-emph), box-shadow var(--d-long) var(--ease-emph), background-color var(--d-long) var(--ease-emph); }
+.card::before { /* cursor spotlight */ content:""; position:absolute; inset:0; z-index:-1; opacity:0; transition:opacity var(--d-medium);
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%), var(--glow-a), transparent 60%); }
+.card:hover { transform:translateY(-4px); box-shadow:inset 0 0 0 1px var(--outline-variant), var(--shadow); }
+.card:hover::before { opacity:1; }
+.card .feat-ic { width:48px; height:48px; border-radius:var(--r-lg); display:grid; place-items:center; background:var(--primary-container); color:var(--on-primary-container); margin-bottom:16px; }
+.card .feat-ic.pb { background:var(--tertiary-container); color:var(--on-tertiary-container); }
+.card h3 { margin-bottom:8px; }
+.card .demo { margin-top:24px; }
+.span-3 { grid-column:span 3; } .span-2 { grid-column:span 2; } .span-4 { grid-column:span 4; }
+@media (max-width:1000px){ .bento { grid-template-columns:repeat(2,1fr); } .span-3,.span-2,.span-4 { grid-column:span 1; } .span-wide-md { grid-column:span 2; } }
+@media (max-width:680px){ .bento { grid-template-columns:1fr; } .span-wide-md { grid-column:span 1; } .card { padding:22px; } }
+.surface { background:var(--surface); border-radius:var(--r-lg); padding:16px; box-shadow:inset 0 0 0 1px var(--outline-variant); }
+
+/* Set logger demo */
+.set-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.set-head .timer { font-size:13px; color:var(--on-surface-variant); display:flex; align-items:center; gap:4px; }
+.set-head .timer .icon { font-size:16px; }
+.sets { display:flex; flex-direction:column; gap:6px; min-height:166px; }
+.set-row { display:grid; grid-template-columns:28px 1fr auto auto; gap:10px; align-items:center; padding:8px 10px; border-radius:var(--r-md);
+  background:var(--sc); font-size:14px; animation:rowIn 500ms var(--ease-decel); }
+.set-row .n { width:24px; height:24px; border-radius:50%; background:var(--secondary-container); color:var(--on-secondary-container); display:grid; place-items:center; font-size:12px; font-weight:700; }
+.set-row .ok { color:var(--primary); font-size:20px; }
+.set-row.pr { background:var(--tertiary-container); color:var(--on-tertiary-container); }
+.set-row.pr .n { background:var(--tertiary); color:var(--background); }
+.set-row.pr .ok { color:var(--tertiary); }
+.pr-badge { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:700; padding:2px 8px; border-radius:var(--r-sm); background:var(--tertiary); color:var(--background);
+  animation:prPop 700ms var(--ease-decel); }
+.pr-badge .icon { font-size:14px; }
+@keyframes rowIn { from { opacity:0; transform:translateY(-8px) scale(.98); } }
+@keyframes prPop { 0% { transform:scale(0) rotate(-15deg); } 60% { transform:scale(1.2) rotate(4deg); } 100% { transform:none; } }
+.steppers { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+.stepper { display:flex; align-items:center; justify-content:space-between; background:var(--sc); border-radius:var(--r-lg); padding:6px; }
+.stepper .sb { width:40px; height:40px; border-radius:var(--r-md); background:var(--secondary-container); color:var(--on-secondary-container); display:grid; place-items:center;
+  transition:transform var(--d-short) var(--ease-emph); }
+.stepper .sb.press { transform:scale(.86); background:var(--primary); color:var(--on-primary); }
+.stepper .val { text-align:center; line-height:1.1; }
+.stepper .val b { font-size:20px; display:block; }
+.stepper .val small { font-size:11px; color:var(--on-surface-variant); }
+.flip { display:inline-block; animation:flip 360ms var(--ease-decel); }
+@keyframes flip { from { transform:translateY(-60%); opacity:0; } }
+.log-btn { margin-top:12px; height:44px; border-radius:var(--r-full); background:var(--primary); color:var(--on-primary); display:flex; align-items:center; justify-content:center; gap:6px; font-weight:600; font-size:14px;
+  transition:transform var(--d-short) var(--ease-emph); }
+.log-btn.press { transform:scale(.96); filter:brightness(1.1); }
+
+/* Progress chart demo */
+.seg { display:inline-flex; border-radius:var(--r-full); box-shadow:inset 0 0 0 1px var(--outline); overflow:hidden; margin-bottom:12px; }
+.seg button { border:0; background:transparent; color:var(--on-surface); font:inherit; font-size:12px; font-weight:600; padding:0 12px; height:36px; cursor:pointer; display:flex; align-items:center; gap:4px;
+  transition:background-color var(--d-medium) var(--ease-emph); min-width:48px; justify-content:center; }
+.seg button + button { box-shadow:inset 1px 0 0 var(--outline); }
+.seg button.on { background:var(--secondary-container); color:var(--on-secondary-container); }
+.seg button .icon { font-size:16px; width:0; overflow:hidden; transition:width var(--d-medium) var(--ease-emph); }
+.seg button.on .icon { width:16px; }
+.chart-big { width:100%; height:180px; overflow:visible; }
+.chart-big .chart-line { stroke-width:3; }
+.pt { fill:var(--surface); stroke:var(--primary); stroke-width:2.5; opacity:0; transition:opacity var(--d-medium) var(--ease-emph); }
+.drawn .pt { opacity:1; }
+.pt.pr { fill:var(--tertiary); stroke:var(--surface); stroke-width:3; }
+.pr-tag { opacity:0; transform:translateY(6px); transition:all 500ms var(--ease-decel) 1200ms; }
+.drawn .pr-tag { opacity:1; transform:none; }
+.chart-val { display:flex; align-items:baseline; gap:10px; margin-bottom:4px; }
+.chart-val b { font-size:30px; font-weight:600; letter-spacing:-.02em; }
+
+/* Hold timer */
+.hold { display:grid; place-items:center; padding:8px 0 4px; }
+.hold-ring { position:relative; width:180px; height:180px; }
+.hold-ring svg { width:100%; height:100%; transform:rotate(-90deg); }
+.hold-ring .track { fill:none; stroke:var(--sc-highest); stroke-width:10; }
+.hold-ring .val { fill:none; stroke:var(--primary); stroke-width:10; stroke-linecap:round; stroke-dasharray:1; transition:stroke-dashoffset 1000ms linear; }
+.hold-ring .c { position:absolute; inset:0; display:grid; place-content:center; text-align:center; }
+.hold-ring .c b { font-size:40px; font-weight:600; letter-spacing:-.02em; }
+.hold-ring .c small { color:var(--on-surface-variant); font-size:13px; }
+.hold-ring.done .val { stroke:var(--tertiary); }
+
+/* Theme demo */
+.theme-demo { position:relative; height:220px; border-radius:var(--r-lg); overflow:hidden; box-shadow:inset 0 0 0 1px var(--outline-variant); }
+.theme-demo .pane { position:absolute; inset:0; padding:18px; background:var(--surface); color:var(--on-surface); }
+.theme-demo .pane.scheme-dark { clip-path:inset(0 0 0 50%); animation:wipe 6s var(--ease-emph) infinite; }
+@keyframes wipe { 0%,10% { clip-path:inset(0 0 0 85%); } 45%,55% { clip-path:inset(0 0 0 15%); } 90%,100% { clip-path:inset(0 0 0 85%); } }
+.theme-demo .divider { position:absolute; top:0; bottom:0; width:2px; background:var(--primary); left:85%; animation:divider 6s var(--ease-emph) infinite; z-index:2; }
+.theme-demo .divider::after { content:""; position:absolute; top:50%; left:50%; width:32px; height:32px; margin:-16px; border-radius:50%; background:var(--primary);
+  box-shadow:0 2px 8px rgba(0,0,0,.25); }
+@keyframes divider { 0%,10% { left:85%; } 45%,55% { left:15%; } 90%,100% { left:85%; } }
+.mode-switch { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
+
+/* Reminder demo */
+.lock { position:relative; height:220px; border-radius:var(--r-lg); overflow:hidden;
+  background:linear-gradient(160deg, #16458A, #3B7BD4 55%, #8A5100 130%); color:#fff; display:flex; flex-direction:column; align-items:center; padding-top:22px; }
+.lock .clock { font-size:54px; font-weight:500; letter-spacing:-.02em; line-height:1; }
+.lock .date { font-size:13px; opacity:.85; margin-top:6px; }
+.notif { position:absolute; left:14px; right:14px; bottom:16px; background:rgba(249,249,255,.94); color:#191C21; border-radius:var(--r-xl); padding:12px 14px; display:flex; gap:12px; align-items:center;
+  transform:translateY(140%); opacity:0; box-shadow:0 10px 30px rgba(0,0,0,.25); }
+.notif.show { animation:notifIn 4.4s var(--ease-emph) forwards; }
+@keyframes notifIn { 0% { transform:translateY(140%); opacity:0; } 12% { transform:none; opacity:1; } 85% { transform:none; opacity:1; } 100% { transform:translateY(-20%); opacity:0; } }
+.notif .app-ic { width:36px; height:36px; border-radius:50%; overflow:hidden; flex:none; }
+.notif .app-ic svg { width:100%; height:100%; }
+.notif b { font-size:13px; display:block; }
+.notif span { font-size:12px; color:#44474F; }
+.notif .when { margin-left:auto; align-self:flex-start; font-size:11px; color:#74777F; }
+
+/* ---------- Showcase (screens carousel) ---------- */
+.showcase { background:var(--sc-low); border-block:1px solid var(--outline-variant); overflow:hidden; }
+
+/* ---------- Install steps ---------- */
+.steps { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; position:relative; counter-reset:step; }
+.steps-line { position:absolute; top:36px; left:16%; right:16%; height:2px; background:var(--outline-variant); z-index:0; overflow:hidden; }
+.steps-line i { position:absolute; inset:0; background:linear-gradient(90deg, var(--primary), var(--tertiary)); transform-origin:0; transform:scaleX(0); transition:transform 1600ms var(--ease-emph) 300ms; }
+.steps.in .steps-line i { transform:none; }
+.step { position:relative; z-index:1; text-align:center; padding:0 12px; }
+.step .num-c { width:72px; height:72px; border-radius:50%; margin:0 auto 20px; display:grid; place-items:center; background:var(--background);
+  box-shadow:inset 0 0 0 2px var(--outline-variant); position:relative; transition:box-shadow 600ms var(--ease-emph); transition-delay:var(--sd); }
+.step .num-c .icon { font-size:30px; color:var(--primary); }
+.step .num-c::after { counter-increment:step; content:counter(step); position:absolute; top:-4px; right:-4px; width:26px; height:26px; border-radius:50%;
+  background:var(--primary); color:var(--on-primary); font-size:13px; font-weight:700; display:grid; place-items:center; }
+.steps.in .step .num-c { box-shadow:inset 0 0 0 2px var(--primary), 0 0 0 8px color-mix(in srgb, var(--primary) 12%, transparent); }
+.step h3 { margin-bottom:8px; }
+@media (max-width:760px){ .steps { grid-template-columns:1fr; gap:40px; } .steps-line { display:none; } }
+.note { margin:40px auto 0; max-width:720px; display:flex; gap:12px; align-items:flex-start; padding:16px 20px; border-radius:var(--r-lg);
+  background:var(--secondary-container); color:var(--on-secondary-container); font-size:14px; }
+.note .icon { font-size:20px; margin-top:1px; }
+
+/* ---------- Privacy ---------- */
+.privacy { background:var(--inverse-surface); color:var(--inverse-on-surface); overflow:hidden; }
+.privacy .overline { color:var(--inverse-primary); }
+.privacy .body-l { color:color-mix(in srgb, var(--inverse-on-surface) 75%, transparent); }
+.priv-grid { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; }
+@media (max-width:900px){ .priv-grid { grid-template-columns:1fr; gap:48px; } }
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.stat { padding:24px 16px; border-radius:var(--r-xl); background:color-mix(in srgb, var(--inverse-on-surface) 6%, transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--inverse-on-surface) 12%, transparent); text-align:center; }
+.stat .icon { font-size:28px; color:var(--inverse-primary); }
+.stat b { display:block; font-size:clamp(30px,4vw,44px); font-weight:600; letter-spacing:-.02em; margin:8px 0 2px; }
+.stat span { font-size:13px; opacity:.75; }
+@media (max-width:480px){ .stats { grid-template-columns:1fr; } }
+.shield { position:relative; width:min(340px, 80vw); aspect-ratio:1; margin:0 auto; display:grid; place-items:center; }
+.shield .orbit { position:absolute; inset:0; border-radius:50%; border:1px dashed color-mix(in srgb, var(--inverse-on-surface) 25%, transparent); animation:spin 40s linear infinite; }
+.shield .orbit.o2 { inset:16%; animation-duration:28s; animation-direction:reverse; }
+.shield .orbit.o3 { inset:32%; border-style:solid; border-color:color-mix(in srgb, var(--inverse-primary) 40%, transparent); animation:none; }
+.shield .orbit .sat { position:absolute; top:-18px; left:50%; margin-left:-18px; width:36px; height:36px; border-radius:50%; display:grid; place-items:center;
+  background:var(--inverse-surface); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--inverse-on-surface) 25%, transparent); color:var(--inverse-primary); }
+.shield .orbit .sat .icon { font-size:18px; animation:spin 40s linear infinite reverse; }
+.shield .orbit.o2 .sat .icon { animation-duration:28s; animation-direction:normal; }
+.shield .orbit .sat.b { top:auto; bottom:-18px; }
+.shield .core { width:34%; aspect-ratio:1; border-radius:28%; overflow:hidden; box-shadow:0 0 0 10px color-mix(in srgb, var(--inverse-primary) 12%, transparent), 0 0 80px color-mix(in srgb, var(--inverse-primary) 40%, transparent); }
+.shield .core svg { width:100%; height:100%; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ---------- Open source / architecture ---------- */
+.arch { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0; margin:8px auto 48px; max-width:900px; }
+.arch .node { padding:14px 20px; border-radius:var(--r-lg); background:var(--sc); box-shadow:inset 0 0 0 1px var(--outline-variant); font-weight:600; font-size:14px; text-align:center; }
+.arch .node small { display:block; font-weight:500; color:var(--on-surface-variant); font-size:12px; }
+.arch .link { width:56px; height:2px; background:var(--outline-variant); position:relative; overflow:hidden; }
+.arch .link::after { content:""; position:absolute; top:-2px; left:-12px; width:12px; height:6px; border-radius:3px; background:var(--primary); animation:flow 1.8s var(--ease-emph) infinite; animation-delay:var(--fd); }
+@keyframes flow { to { left:100%; } }
+@media (max-width:760px){ .arch { flex-direction:column; } .arch .link { width:2px; height:28px; } .arch .link::after { top:-12px; left:-2px; width:6px; height:12px; animation-name:flowV; } }
+@keyframes flowV { to { top:100%; } }
+.tech { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:820px; margin:0 auto; }
+.tech .chip { padding:0 14px; height:36px; font-size:14px; }
+
+/* ---------- Final CTA ---------- */
+.cta-card { position:relative; border-radius:40px; padding:clamp(32px,6vw,72px); overflow:hidden; isolation:isolate;
+  background:var(--primary-container); color:var(--on-primary-container);
+  display:grid; grid-template-columns:1fr auto; gap:48px; align-items:center; }
+.cta-card::before { content:""; position:absolute; inset:-40%; z-index:-1;
+  background:conic-gradient(from 0deg, transparent, color-mix(in srgb, var(--primary) 22%, transparent), transparent 40%, color-mix(in srgb, var(--tertiary) 14%, transparent), transparent 75%);
+  animation:spin 18s linear infinite; }
+.cta-card .body-l { color:inherit; opacity:.85; }
+.cta-card .display-s { margin-bottom:16px; }
+@media (max-width:820px){ .cta-card { grid-template-columns:1fr; text-align:center; } .cta-card .cta-row { justify-content:center; } }
+.qr { background:#fff; padding:16px; border-radius:var(--r-xl); text-align:center; color:#191C21; box-shadow:var(--shadow-lg); justify-self:center; }
+.qr #qrcode { width:148px; height:148px; display:grid; place-items:center; }
+.qr #qrcode img, .qr #qrcode canvas { width:148px !important; height:148px !important; }
+.qr small { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:10px; font-size:12px; font-weight:600; color:#44474F; }
+.qr small .icon { font-size:16px; }
+@media (hover:none) and (max-width:820px){ .qr { display:none; } }
+
+/* ---------- Footer ---------- */
+footer { padding:48px 0 40px; color:var(--on-surface-variant); font-size:14px; }
+footer .wrap { display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; }
+footer a { color:var(--primary); text-decoration:none; font-weight:600; }
+footer a:hover { text-decoration:underline; }
+footer .links { display:flex; gap:20px; flex-wrap:wrap; }
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important; scroll-behavior:auto !important; }
+  .reveal { opacity:1; transform:none; }
+  .marquee { animation:none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress-bar" id="progress" aria-hidden="true"></div>
+
+<!-- Reusable app icon -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="appBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B7BD4"/><stop offset="1" stop-color="#16458A"/></linearGradient>
+    <symbol id="appIcon" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="url(#appBg)"/>
+      <g transform="rotate(-45 54 54)">
+        <path fill="#D6E3FF" d="M28,43.5H28.5A3,3 0,0 1,31.5,46.5V61.5A3,3 0,0 1,28.5,64.5H28A3,3 0,0 1,25,61.5V46.5A3,3 0,0 1,28,43.5Z M79.5,43.5H80A3,3 0,0 1,83,46.5V61.5A3,3 0,0 1,80,64.5H79.5A3,3 0,0 1,76.5,61.5V46.5A3,3 0,0 1,79.5,43.5Z"/>
+        <path fill="#FFFFFF" d="M41,51H67A3,3 0,0 1,70,54V54A3,3 0,0 1,67,57H41A3,3 0,0 1,38,54V54A3,3 0,0 1,41,51Z M36,38H37A3.5,3.5 0,0 1,40.5,41.5V66.5A3.5,3.5 0,0 1,37,70H36A3.5,3.5 0,0 1,32.5,66.5V41.5A3.5,3.5 0,0 1,36,38Z M71,38H72A3.5,3.5 0,0 1,75.5,41.5V66.5A3.5,3.5 0,0 1,72,70H71A3.5,3.5 0,0 1,67.5,66.5V41.5A3.5,3.5 0,0 1,71,38Z"/>
+      </g>
+      <path class="spark" fill="#FFB95C" d="M36,28L38.4,33.6L44,36L38.4,38.4L36,44L33.6,38.4L28,36L33.6,33.6Z"/>
+    </symbol>
+    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--primary)" stop-opacity=".28"/><stop offset="1" stop-color="var(--primary)" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<header class="topbar" id="topbar">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Tracker home">
+      <svg viewBox="0 0 108 108" aria-hidden="true"><use href="#appIcon"/></svg>
+      Tracker
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#open-source">Open source</a>
+    </nav>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Theme: system">
+      <span class="icon" id="themeIcon">contrast</span>
+    </button>
+    <a class="btn" data-apk href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest/download/app-release.apk">
+      <span class="icon">download</span><span>Get <span class="lbl-long">the app</span></span>
+    </a>
+  </div>
+</header>
+
+<main id="main">
+<!-- ================= HERO ================= -->
+<section class="hero" id="top">
+  <div class="hero-bg" aria-hidden="true"><div class="dots"></div><div class="blob a"></div><div class="blob b"></div><div class="blob c"></div></div>
+  <div class="wrap hero-grid">
+    <div>
+      <a class="chip fade-up" style="--delay:0ms" href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest" target="_blank" rel="noopener">
+        <span class="icon fill">android</span><span data-version>v1.0</span> is out — free &amp; open source<span class="pulse"></span>
+      </a>
+      <h1 class="display-l" aria-label="Train. Eat. Track. All on your phone.">
+        <span class="word"><span style="--i:0">Train.</span></span>
+        <span class="word"><span style="--i:1">Eat.</span></span>
+        <span class="word"><span style="--i:2">Track.</span></span><br>
+        <span class="word"><span style="--i:3" class="grad-text">All on your phone.</span></span>
+      </h1>
+      <p class="body-l fade-up" style="--delay:500ms">Tracker brings your <strong>workouts</strong>, <strong>nutrition</strong> and <strong>body weight</strong> into one beautiful Android app. It's offline-first, so you don't need an account or an internet connection.</p>
+      <div class="cta-row fade-up" style="--delay:650ms">
+        <a class="btn lg" data-apk href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest/download/app-release.apk">
+          <span class="icon">download</span>Download APK
+        </a>
+        <a class="btn lg outlined" href="https://github.com/Aboud-KHalaf/Android-Tracker" target="_blank" rel="noopener">
+          <span class="icon">code</span>View source
+        </a>
+      </div>
+      <div class="meta-row fade-up" style="--delay:800ms">
+        <span><span class="icon">android</span>Android 7.0+</span>
+        <span><span class="icon">download</span><span data-size>12 MB</span></span>
+        <span><span class="icon">cloud_off</span>Works offline</span>
+        <span><span class="icon">no_accounts</span>No sign-up</span>
+      </div>
+    </div>
+
+    <div class="phone-stage" id="phoneStage">
+      <div class="phone-wrap" id="phoneWrap">
+        <div class="floater f1 pop-in" style="--delay:900ms"><div class="ic pb"><span class="icon fill">emoji_events</span></div><div><b>New personal best</b><span class="s">Bench Press · 82.5 kg</span></div></div>
+        <div class="floater f2 pop-in" style="--delay:1100ms"><div class="ic"><span class="icon">restaurant</span></div><div><b class="num"><span data-count="142">0</span> g protein</b><span class="s">89% of today's goal</span></div></div>
+        <div class="floater f3 pop-in" style="--delay:1300ms"><div class="ic"><span class="icon">trending_down</span></div><div><b>−1.2 kg</b><span class="s">this month</span></div></div>
+
+        <div class="phone" role="img" aria-label="Tracker app preview cycling through the Home, Progress, Nutrition and Weight screens">
+          <div class="screen">
+            <div class="statusbar"><span class="num" id="clock">9:41</span><span class="sys"><i></i><i></i></span></div>
+            <div class="views" aria-hidden="true">
+              <!-- Home -->
+              <div class="view active" data-tab="0">
+                <p class="app-sub">Good evening</p>
+                <p class="app-title">Ready to train?</p>
+                <div class="m-card primary">
+                  <div class="m-label">Up next</div>
+                  <div class="m-title">Push Day</div>
+                  <div class="m-meta">6 exercises · last trained 3 days ago</div>
+                  <div class="m-btn"><span class="icon fill">play_arrow</span>Start workout</div>
+                </div>
+                <div class="m-row">
+                  <div class="m-card m-stat"><span class="icon">fitness_center</span><div class="v num">4</div><div class="k">workouts this week</div></div>
+                  <div class="m-card m-stat"><span class="icon fill pb">emoji_events</span><div class="v num">12</div><div class="k">PRs this month</div></div>
+                </div>
+                <div class="m-list-item"><div class="m-avatar"><span class="icon">fitness_center</span></div><div><div class="t">Pull Day</div><div class="s">Tue · 52 min · 18 sets</div></div></div>
+                <div class="m-list-item"><div class="m-avatar"><span class="icon">fitness_center</span></div><div><div class="t">Legs</div><div class="s">Sun · 61 min · 21 sets</div></div></div>
+              </div>
+              <!-- Progress -->
+              <div class="view" data-tab="2">
+                <p class="app-sub">Exercise</p>
+                <p class="app-title">Bench Press</p>
+                <div class="m-chips"><span class="m-chip on"><span class="icon">check</span>Est. 1RM</span><span class="m-chip">Max weight</span><span class="m-chip">Volume</span></div>
+                <div class="m-card">
+                  <div class="m-label" style="color:var(--on-surface-variant)">Estimated 1RM</div>
+                  <div class="m-big num">103<small>kg</small></div>
+                  <svg class="mini-chart" viewBox="0 0 240 110" preserveAspectRatio="none" data-chart="phone-progress"></svg>
+                </div>
+                <div class="m-list-item"><div class="m-avatar" style="background:var(--tertiary-container);color:var(--on-tertiary-container)"><span class="icon fill">emoji_events</span></div><div><div class="t">82.5 kg × 6</div><div class="s">Personal best · today</div></div></div>
+              </div>
+              <!-- Nutrition -->
+              <div class="view" data-tab="3">
+                <p class="app-sub">Nutrition</p>
+                <p class="app-title">Today</p>
+                <div class="ring-wrap">
+                  <svg viewBox="0 0 120 120"><circle class="ring-track" cx="60" cy="60" r="50"/><circle class="ring-val" cx="60" cy="60" r="50" pathLength="1" data-ring="0.77"/></svg>
+                  <div class="c"><b class="num">1,840</b><small>of 2,400 kcal</small></div>
+                </div>
+                <div class="macro"><div class="top"><span>Protein</span><span class="num">142 / 160 g</span></div><div class="lp"><div class="f" data-w="89"></div><div class="t"></div></div></div>
+                <div class="macro"><div class="top"><span>Carbs</span><span class="num">180 / 260 g</span></div><div class="lp"><div class="f" data-w="69"></div><div class="t"></div></div></div>
+                <div class="macro"><div class="top"><span>Fat</span><span class="num">58 / 70 g</span></div><div class="lp"><div class="f" data-w="83"></div><div class="t"></div></div></div>
+              </div>
+              <!-- Weight -->
+              <div class="view" data-tab="4">
+                <p class="app-sub">Body weight</p>
+                <p class="app-title">Weight</p>
+                <div class="m-card">
+                  <div class="m-label" style="color:var(--on-surface-variant)">Current</div>
+                  <div style="display:flex;align-items:center;gap:10px"><span class="m-big num">78.4<small>kg</small></span><span class="delta"><span class="icon">trending_down</span>1.2 kg</span></div>
+                  <svg class="mini-chart" viewBox="0 0 240 110" preserveAspectRatio="none" data-chart="phone-weight"></svg>
+                </div>
+                <div class="m-list-item"><div class="m-avatar"><span class="icon">monitor_weight</span></div><div><div class="t num">78.4 kg</div><div class="s">Today</div></div></div>
+                <div class="m-list-item"><div class="m-avatar"><span class="icon">monitor_weight</span></div><div><div class="t num">78.7 kg</div><div class="s">3 days ago</div></div></div>
+              </div>
+            </div>
+            <div class="fab" id="fab"><span class="icon">add</span></div>
+            <div class="navbar" aria-hidden="true">
+              <div class="nav-item" data-nav="0"><div class="pill"><span class="icon">home</span></div>Home</div>
+              <div class="nav-item" data-nav="1"><div class="pill"><span class="icon">history</span></div>History</div>
+              <div class="nav-item" data-nav="2"><div class="pill"><span class="icon">insights</span></div>Progress</div>
+              <div class="nav-item" data-nav="3"><div class="pill"><span class="icon">restaurant</span></div>Nutrition</div>
+              <div class="nav-item" data-nav="4"><div class="pill"><span class="icon">monitor_weight</span></div>Weight</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MARQUEE ================= -->
+<div class="strip" aria-hidden="true">
+  <div class="marquee" id="marquee">
+    <span><span class="icon">fitness_center</span>Workout plans</span>
+    <span><span class="icon">timer</span>Hold timer</span>
+    <span><span class="icon">insights</span>Progress charts</span>
+    <span><span class="icon fill" style="color:var(--tertiary)">emoji_events</span>Personal bests</span>
+    <span><span class="icon">restaurant</span>Nutrition targets</span>
+    <span><span class="icon">monitor_weight</span>Body weight</span>
+    <span><span class="icon">notifications</span>Daily reminder</span>
+    <span><span class="icon">dark_mode</span>Light &amp; dark themes</span>
+    <span><span class="icon">devices</span>Adaptive layouts</span>
+    <span><span class="icon">lock</span>100% on-device</span>
+  </div>
+</div>
+
+<!-- ================= FEATURES ================= -->
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <p class="overline">Features</p>
+      <h2 class="display-s">Everything you need to make progress</h2>
+      <p class="body-l">Log a set in seconds, see your strength go up, hit your macros and watch your weight trend. All in one place.</p>
+    </div>
+
+    <div class="bento">
+      <!-- Workout logger -->
+      <article class="card span-3 reveal" data-demo="sets">
+        <div class="feat-ic"><span class="icon">fitness_center</span></div>
+        <h3 class="title-l">Log sets in seconds</h3>
+        <p class="body-m">Create plans, and the Home screen tells you what to train next. Large −/+ steppers make logging weight and reps easy, even mid-set.</p>
+        <div class="demo surface" aria-hidden="true">
+          <div class="set-head"><span class="title-m">Bench Press</span><span class="timer num"><span class="icon">timer</span><span id="wkTimer">24:13</span></span></div>
+          <div class="sets" id="sets"></div>
+          <div class="steppers">
+            <div class="stepper"><div class="sb" data-sb="w-"><span class="icon">remove</span></div><div class="val"><b class="num" id="wVal">80</b><small>kg</small></div><div class="sb" data-sb="w+"><span class="icon">add</span></div></div>
+            <div class="stepper"><div class="sb" data-sb="r-"><span class="icon">remove</span></div><div class="val"><b class="num" id="rVal">8</b><small>reps</small></div><div class="sb" data-sb="r+"><span class="icon">add</span></div></div>
+          </div>
+          <div class="log-btn" id="logBtn"><span class="icon">check</span>Log set</div>
+        </div>
+      </article>
+
+      <!-- Progress chart -->
+      <article class="card span-3 reveal" style="--d:100ms" data-demo="progress">
+        <div class="feat-ic pb"><span class="icon fill">insights</span></div>
+        <h3 class="title-l">See your strength climb</h3>
+        <p class="body-m">Every exercise has its own progress chart and full history. Switch metrics and time ranges, and personal bests are highlighted.</p>
+        <div class="demo surface">
+          <div class="seg" role="group" aria-label="Progress metric">
+            <button type="button" class="on" data-metric="orm"><span class="icon">check</span>Est. 1RM</button>
+            <button type="button" data-metric="max"><span class="icon">check</span>Max weight</button>
+            <button type="button" data-metric="vol"><span class="icon">check</span>Volume</button>
+          </div>
+          <div class="chart-val"><b class="num" id="pVal">103 kg</b><span class="delta"><span class="icon" style="transform:scaleY(-1)">trending_down</span><span id="pDelta">+17%</span></span></div>
+          <svg class="chart-big" viewBox="0 0 320 180" preserveAspectRatio="none" id="progressChart" aria-label="Progress chart"></svg>
+        </div>
+      </article>
+
+      <!-- Hold timer -->
+      <article class="card span-2 reveal" data-demo="hold">
+        <div class="feat-ic"><span class="icon">timer</span></div>
+        <h3 class="title-l">Built-in hold timer</h3>
+        <p class="body-m">For timed sets like planks and holds. Start it and keep your focus.</p>
+        <div class="demo hold" aria-hidden="true">
+          <div class="hold-ring" id="holdRing">
+            <svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="52"/><circle class="val" id="holdVal" cx="60" cy="60" r="52" pathLength="1" style="stroke-dashoffset:0"/></svg>
+            <div class="c"><b class="num" id="holdTxt">0:30</b><small id="holdLbl">Plank</small></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Nutrition -->
+      <article class="card span-2 reveal" style="--d:100ms" data-demo="nutrition">
+        <div class="feat-ic"><span class="icon">restaurant</span></div>
+        <h3 class="title-l">Hit your daily targets</h3>
+        <p class="body-m">Set your own goals, log each day and edit any past day.</p>
+        <div class="demo" aria-hidden="true">
+          <div class="macro"><div class="top"><span>Calories</span><span class="num"><span data-count="1840">0</span> / 2,400</span></div><div class="lp"><div class="f" data-w="77"></div><div class="t"></div></div></div>
+          <div class="macro"><div class="top"><span>Protein</span><span class="num"><span data-count="142">0</span> / 160 g</span></div><div class="lp"><div class="f" data-w="89"></div><div class="t"></div></div></div>
+          <div class="macro"><div class="top"><span>Carbs</span><span class="num"><span data-count="180">0</span> / 260 g</span></div><div class="lp"><div class="f" data-w="69"></div><div class="t"></div></div></div>
+          <div class="macro"><div class="top"><span>Fat</span><span class="num"><span data-count="58">0</span> / 70 g</span></div><div class="lp"><div class="f" data-w="83"></div><div class="t"></div></div></div>
+        </div>
+      </article>
+
+      <!-- Weight -->
+      <article class="card span-2 reveal span-wide-md" style="--d:200ms" data-demo="weight">
+        <div class="feat-ic"><span class="icon">monitor_weight</span></div>
+        <h3 class="title-l">Watch the trend</h3>
+        <p class="body-m">Your current weight, a clear chart and your full history.</p>
+        <div class="demo" aria-hidden="true">
+          <div style="display:flex;align-items:center;gap:10px"><span class="m-big num"><span data-count="78.4" data-dec="1">0</span><small>kg</small></span><span class="delta"><span class="icon">trending_down</span>1.2 kg</span></div>
+          <svg class="mini-chart" viewBox="0 0 240 110" preserveAspectRatio="none" data-chart="weight"></svg>
+        </div>
+      </article>
+
+      <!-- Reminder -->
+      <article class="card span-3 reveal" data-demo="reminder">
+        <div class="feat-ic"><span class="icon">notifications</span></div>
+        <h3 class="title-l">A gentle nudge at 9 PM</h3>
+        <p class="body-m">If you haven't logged your nutrition yet, an optional daily reminder helps you keep your streak. You can turn it off any time in Settings.</p>
+        <div class="demo lock" aria-hidden="true">
+          <div class="clock num">9:00</div>
+          <div class="date">Saturday, October 3</div>
+          <div class="notif" id="notif">
+            <div class="app-ic"><svg viewBox="0 0 108 108"><use href="#appIcon"/></svg></div>
+            <div><b>Log today's nutrition</b><span>You haven't logged anything today.</span></div>
+            <div class="when">now</div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Themes -->
+      <article class="card span-3 reveal" style="--d:100ms" data-demo="theme">
+        <div class="feat-ic"><span class="icon">palette</span></div>
+        <h3 class="title-l">Light, dark or system</h3>
+        <p class="body-m">Material Design 3 with a calm blue theme, smooth transitions and layouts that adapt to tablets and larger screens.</p>
+        <div class="demo theme-demo" aria-hidden="true">
+          <div class="pane scheme-light">
+            <div class="m-card primary" style="margin:0 0 10px"><div class="m-label">Up next</div><div class="m-title">Leg Day</div><div class="m-meta">5 exercises</div><div class="m-btn"><span class="icon fill">play_arrow</span>Start workout</div></div>
+            <div class="m-chips"><span class="m-chip on"><span class="icon">check</span>All plans</span><span class="m-chip">Push</span><span class="m-chip">Pull</span><span class="m-chip">Legs</span></div>
+          </div>
+          <div class="pane scheme-dark">
+            <div class="m-card primary" style="margin:0 0 10px"><div class="m-label">Up next</div><div class="m-title">Leg Day</div><div class="m-meta">5 exercises</div><div class="m-btn"><span class="icon fill">play_arrow</span>Start workout</div></div>
+            <div class="m-chips"><span class="m-chip on"><span class="icon">check</span>All plans</span><span class="m-chip">Push</span><span class="m-chip">Pull</span><span class="m-chip">Legs</span></div>
+          </div>
+          <div class="divider"></div>
+        </div>
+        <div class="mode-switch">
+          <button class="btn tonal" type="button" data-set-theme="light"><span class="icon">light_mode</span>Light</button>
+          <button class="btn tonal" type="button" data-set-theme="dark"><span class="icon">dark_mode</span>Dark</button>
+          <button class="btn tonal" type="button" data-set-theme="system"><span class="icon">contrast</span>System</button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= INSTALL ================= -->
+<section class="section showcase" id="install">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <p class="overline">Install</p>
+      <h2 class="display-s">Up and running in a minute</h2>
+      <p class="body-l">Tracker isn't on the Play Store yet. You install it straight from the APK, which takes three quick steps.</p>
+    </div>
+    <div class="steps reveal" id="steps">
+      <div class="steps-line"><i></i></div>
+      <div class="step" style="--sd:200ms">
+        <div class="num-c"><span class="icon">download</span></div>
+        <h3 class="title-l">Download</h3>
+        <p class="body-m">Tap <strong>Download APK</strong> on your Android phone to get the latest release from GitHub.</p>
+      </div>
+      <div class="step" style="--sd:900ms">
+        <div class="num-c"><span class="icon">lock</span></div>
+        <h3 class="title-l">Allow the install</h3>
+        <p class="body-m">Open the file. If Android asks, allow <em>Install unknown apps</em> for your browser or file manager.</p>
+      </div>
+      <div class="step" style="--sd:1600ms">
+        <div class="num-c"><span class="icon fill">fitness_center</span></div>
+        <h3 class="title-l">Start training</h3>
+        <p class="body-m">Open Tracker, create your first plan and log your first set. No sign-up needed.</p>
+      </div>
+    </div>
+    <div class="note reveal"><span class="icon">android</span><span>Requires <strong>Android 7.0 (API 24)</strong> or newer. Updates are published on the <a href="https://github.com/Aboud-KHalaf/Android-Tracker/releases" target="_blank" rel="noopener">Releases page</a>. To update, download the new APK and install it over the old one. Your data is kept.</span></div>
+  </div>
+</section>
+
+<!-- ================= PRIVACY ================= -->
+<section class="section privacy" id="privacy">
+  <div class="wrap priv-grid">
+    <div class="reveal">
+      <p class="overline">Privacy</p>
+      <h2 class="display-s">Your data never leaves your phone</h2>
+      <p class="body-l" style="margin:16px 0 32px">There are no accounts, no cloud sync, no ads and no analytics. Everything is stored in a local database on your device, and you can delete all of it from Settings with one tap.</p>
+      <div class="stats">
+        <div class="stat"><span class="icon">no_accounts</span><b class="num"><span data-count="0">0</span></b><span>accounts needed</span></div>
+        <div class="stat"><span class="icon">cloud_off</span><b class="num"><span data-count="0">0</span></b><span>servers involved</span></div>
+        <div class="stat"><span class="icon">lock</span><b class="num"><span data-count="100">0</span>%</b><span>on-device</span></div>
+      </div>
+    </div>
+    <div class="shield reveal" style="--d:150ms" aria-hidden="true">
+      <div class="orbit"><div class="sat"><span class="icon">cloud_off</span></div><div class="sat b"><span class="icon">no_accounts</span></div></div>
+      <div class="orbit o2"><div class="sat"><span class="icon">lock</span></div><div class="sat b"><span class="icon">devices</span></div></div>
+      <div class="orbit o3"></div>
+      <div class="core"><svg viewBox="0 0 108 108"><use href="#appIcon"/></svg></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= OPEN SOURCE ================= -->
+<section class="section" id="open-source">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <p class="overline">Open source</p>
+      <h2 class="display-s">Built with modern Android</h2>
+      <p class="body-l">Kotlin, Jetpack Compose and Material 3, with a clean MVVM architecture and unidirectional data flow. The full source is on GitHub.</p>
+    </div>
+    <div class="arch reveal" aria-label="Architecture: Compose UI, ViewModels, Repositories, Room database">
+      <div class="node">Compose UI<small>Screens</small></div><div class="link" style="--fd:0s"></div>
+      <div class="node">ViewModels<small>StateFlow</small></div><div class="link" style="--fd:.4s"></div>
+      <div class="node">Repositories<small>Domain logic</small></div><div class="link" style="--fd:.8s"></div>
+      <div class="node">Room<small>On-device DB</small></div>
+    </div>
+    <div class="tech reveal">
+      <span class="chip">Kotlin</span><span class="chip">Jetpack Compose</span><span class="chip">Material 3</span><span class="chip">MVVM</span>
+      <span class="chip">StateFlow</span><span class="chip">Navigation Compose</span><span class="chip">Room</span><span class="chip">kotlinx.serialization</span>
+      <span class="chip">AlarmManager</span><span class="chip">JUnit</span><span class="chip">Robolectric</span><span class="chip">Compose UI tests</span>
+    </div>
+    <div class="cta-row reveal" style="justify-content:center">
+      <a class="btn tonal" href="https://github.com/Aboud-KHalaf/Android-Tracker" target="_blank" rel="noopener"><span class="icon">code</span>Browse the code<span class="icon">arrow_forward</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="cta-card reveal">
+      <div>
+        <h2 class="display-s">Start tracking today</h2>
+        <p class="body-l">It's free, open source and private by design. Download the latest release and log your first workout in under a minute.</p>
+        <div class="cta-row">
+          <a class="btn lg" data-apk href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest/download/app-release.apk"><span class="icon">download</span>Download <span data-version>v1.0</span></a>
+          <a class="btn lg text" href="https://github.com/Aboud-KHalaf/Android-Tracker/releases" target="_blank" rel="noopener">All releases<span class="icon">arrow_forward</span></a>
+        </div>
+      </div>
+      <div class="qr" id="qrBox">
+        <div id="qrcode" aria-label="QR code that downloads the APK"></div>
+        <small><span class="icon">qr_code_2</span>Scan with your phone</small>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div style="display:flex;align-items:center;gap:10px">
+      <svg viewBox="0 0 108 108" width="28" height="28" style="border-radius:8px" aria-hidden="true"><use href="#appIcon"/></svg>
+      <span>© <span id="year">2026</span> Tracker · Built by <a href="https://aboud-khalaf.github.io/My-Portfolio/" target="_blank" rel="noopener">Aboud</a></span>
+    </div>
+    <div class="links">
+      <a href="https://github.com/Aboud-KHalaf/Android-Tracker" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/Aboud-KHalaf/Android-Tracker/releases" target="_blank" rel="noopener">Releases</a>
+      <a href="https://github.com/Aboud-KHalaf/Android-Tracker/issues" target="_blank" rel="noopener">Report an issue</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script>
+(() => {
+  const REPO = "Aboud-KHalaf/Android-Tracker";
+  let apkUrl = `https://github.com/${REPO}/releases/latest/download/app-release.apk`;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  $("#year").textContent = new Date().getFullYear();
+
+  /* ---------- Theme ---------- */
+  const store = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch {} } };
+  const themeIcons = { system:"contrast", light:"light_mode", dark:"dark_mode" };
+  function applyTheme(mode) {
+    if (mode === "system") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", mode);
+    $("#themeIcon").textContent = themeIcons[mode];
+    $("#themeBtn").setAttribute("aria-label", `Theme: ${mode}`);
+    store.set("theme", mode);
+  }
+  let theme = store.get("theme") || "system";
+  applyTheme(theme);
+  $("#themeBtn").addEventListener("click", () => {
+    const order = ["system", "light", "dark"];
+    theme = order[(order.indexOf(theme) + 1) % 3];
+    applyTheme(theme);
+  });
+  $$("[data-set-theme]").forEach(b => b.addEventListener("click", () => { theme = b.dataset.setTheme; applyTheme(theme); }));
+
+  /* ---------- Scroll: progress bar + elevated top bar ---------- */
+  const bar = $("#progress"), top = $("#topbar");
+  const onScroll = () => {
+    const h = document.documentElement;
+    const p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
+    bar.style.transform = `scaleX(${p})`;
+    top.classList.toggle("scrolled", h.scrollTop > 8);
+  };
+  addEventListener("scroll", onScroll, { passive:true }); onScroll();
+
+  /* ---------- Ripple ---------- */
+  document.addEventListener("pointerdown", e => {
+    const b = e.target.closest(".btn, .icon-btn"); if (!b || reduce) return;
+    const r = b.getBoundingClientRect(), size = Math.max(r.width, r.height) * 2.2;
+    const s = document.createElement("span");
+    s.className = "ripple";
+    s.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size/2}px;top:${e.clientY - r.top - size/2}px`;
+    b.appendChild(s); setTimeout(() => s.remove(), 650);
+  });
+
+  /* ---------- Card spotlight ---------- */
+  $$(".card").forEach(c => c.addEventListener("pointermove", e => {
+    const r = c.getBoundingClientRect();
+    c.style.setProperty("--mx", `${e.clientX - r.left}px`); c.style.setProperty("--my", `${e.clientY - r.top}px`);
+  }));
+
+  /* ---------- Count-up ---------- */
+  function countUp(el) {
+    if (el.dataset.done) return; el.dataset.done = 1;
+    const to = parseFloat(el.dataset.count), dec = +(el.dataset.dec || 0), dur = reduce ? 1 : 1400, t0 = performance.now();
+    const fmt = v => v.toLocaleString("en-US", { minimumFractionDigits:dec, maximumFractionDigits:dec });
+    const step = t => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 4); el.textContent = fmt(to * e); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+  function fillBars(root) { $$(".lp .f", root).forEach(f => f.style.width = `calc(${f.dataset.w}% - 4px)`); }
+
+  /* ---------- Smooth charts ---------- */
+  function smoothPath(pts) {
+    let d = `M${pts[0][0]},${pts[0][1]}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i-1] || pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2] || p2;
+      const c1 = [p1[0] + (p2[0]-p0[0])/6, p1[1] + (p2[1]-p0[1])/6], c2 = [p2[0] - (p3[0]-p1[0])/6, p2[1] - (p3[1]-p1[1])/6];
+      d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0]},${p2[1].toFixed(1)}`;
+    }
+    return d;
+  }
+  function renderChart(svg, data, { w, h, pad = 10, points = false, prLast = false }) {
+    const min = Math.min(...data), max = Math.max(...data), span = (max - min) || 1;
+    const pts = data.map((v, i) => [pad + i * (w - pad*2) / (data.length - 1), pad + (h - pad*2) * (1 - (v - min) / span)]);
+    const line = smoothPath(pts);
+    const ns = "http://www.w3.org/2000/svg";
+    let html = "";
+    for (let g = 1; g <= 3; g++) html += `<line class="grid-line" x1="0" x2="${w}" y1="${(h/4)*g}" y2="${(h/4)*g}"/>`;
+    html += `<path class="chart-area" d="${line} L${pts.at(-1)[0]},${h} L${pts[0][0]},${h} Z"/>`;
+    html += `<path class="chart-line" pathLength="1" d="${line}"/>`;
+    if (points) pts.forEach((p, i) => {
+      const pr = prLast && i === pts.length - 1;
+      html += `<circle class="pt${pr ? " pr" : ""}" cx="${p[0]}" cy="${p[1]}" r="${pr ? 6 : 3.5}" style="transition-delay:${200 + i*90}ms"/>`;
+    });
+    if (prLast) {
+      const p = pts.at(-1);
+      html += `<g class="pr-tag"><rect x="${p[0]-58}" y="${p[1]+40}" rx="8" width="52" height="22" fill="var(--tertiary)"/><text x="${p[0]-32}" y="${p[1]+55}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--background)" font-family="inherit">PR ★</text></g>`;
+    }
+    svg.innerHTML = html;
+    svg.classList.remove("drawn"); void svg.getBoundingClientRect();
+    requestAnimationFrame(() => requestAnimationFrame(() => svg.classList.add("drawn")));
+  }
+  const DATA = {
+    orm:{ v:[88,90,89.5,93,92,95,97,96.5,101,103], label:"103 kg", delta:"+17%" },
+    max:{ v:[75,77.5,77.5,80,80,80,82.5,82.5,82.5,85], label:"85 kg", delta:"+13%" },
+    vol:{ v:[3200,3420,3300,3650,3800,3720,4010,4100,4320,4560], label:"4,560 kg", delta:"+43%" },
+    weight:[80.2,80.0,79.8,79.9,79.5,79.3,79.4,79.0,78.8,78.7,78.4],
+  };
+
+  /* ---------- Hero phone: cycle through tabs ---------- */
+  const views = $$(".view"), navs = $$(".nav-item"), fab = $("#fab");
+  let vi = 0, phoneVisible = true;
+  function showView(i) {
+    views.forEach((v, j) => { v.classList.toggle("leaving", v.classList.contains("active") && j !== i); v.classList.toggle("active", j === i); });
+    setTimeout(() => views.forEach(v => v.classList.remove("leaving")), 420);
+    const tab = +views[i].dataset.tab;
+    navs.forEach(n => n.classList.toggle("on", +n.dataset.nav === tab));
+    fab.classList.toggle("show", tab === 3 || tab === 4);
+    const v = views[i];
+    if (tab === 2) renderChart($("[data-chart=phone-progress]", v), DATA.orm.v, { w:240, h:110, pad:6 });
+    if (tab === 4) renderChart($("[data-chart=phone-weight]", v), DATA.weight, { w:240, h:110, pad:6 });
+    if (tab === 3) {
+      $$(".lp .f", v).forEach(f => f.style.width = 0); const ring = $(".ring-val", v); ring.style.strokeDashoffset = 1;
+      requestAnimationFrame(() => requestAnimationFrame(() => { fillBars(v); ring.style.strokeDashoffset = 1 - ring.dataset.ring; }));
+    }
+  }
+  showView(0);
+  if (!reduce) setInterval(() => { if (phoneVisible && !document.hidden) { vi = (vi + 1) % views.length; showView(vi); } }, 3600);
+  const clock = () => { const d = new Date(); $("#clock").textContent = `${d.getHours() % 12 || 12}:${String(d.getMinutes()).padStart(2,"0")}`; };
+  clock(); setInterval(clock, 30000);
+
+  // 3D tilt following the pointer
+  const stage = $("#phoneStage"), wrap = $("#phoneWrap");
+  if (!reduce && matchMedia("(hover:hover)").matches) {
+    stage.addEventListener("pointermove", e => {
+      const r = stage.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      wrap.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 10}deg)`;
+    });
+    stage.addEventListener("pointerleave", () => wrap.style.transform = "");
+  }
+  new IntersectionObserver(([e]) => phoneVisible = e.isIntersecting).observe(stage);
+
+  /* ---------- Marquee: duplicate for seamless loop ---------- */
+  const mq = $("#marquee"); mq.innerHTML += mq.innerHTML;
+
+  /* ---------- Demos ---------- */
+  const demos = {
+    async sets(card) {
+      const list = $("#sets"), wEl = $("#wVal"), rEl = $("#rVal"), logBtn = $("#logBtn");
+      const plan = [ { w:80, r:8 }, { w:80, r:8 }, { w:82.5, r:6, pr:true } ];
+      const setVal = (el, v) => { el.innerHTML = `<span class="flip">${v}</span>`; };
+      const press = async el => { el.classList.add("press"); await sleep(180); el.classList.remove("press"); };
+      // Workout elapsed time
+      let secs = 24 * 60 + 13; setInterval(() => { secs++; $("#wkTimer").textContent = `${Math.floor(secs/60)}:${String(secs%60).padStart(2,"0")}`; }, 1000);
+      while (true) {
+        list.innerHTML = ""; setVal(wEl, 80); setVal(rEl, 8);
+        await sleep(900);
+        for (let i = 0; i < plan.length; i++) {
+          const s = plan[i];
+          let w = parseFloat(wEl.textContent), r = parseInt(rEl.textContent);
+          while (w < s.w) { await press($("[data-sb='w+']")); w += 2.5; setVal(wEl, w); await sleep(260); }
+          while (r > s.r) { await press($("[data-sb='r-']")); r -= 1; setVal(rEl, r); await sleep(220); }
+          await sleep(350); await press(logBtn);
+          const row = document.createElement("div");
+          row.className = "set-row" + (s.pr ? " pr" : "");
+          row.innerHTML = `<span class="n">${i+1}</span><span class="num"><b>${s.w}</b> kg × <b>${s.r}</b></span>${s.pr ? '<span class="pr-badge"><span class="icon fill">emoji_events</span>PR</span>' : "<span></span>"}<span class="icon ok fill">check_circle</span>`;
+          list.appendChild(row);
+          await sleep(1300);
+        }
+        await sleep(2600);
+      }
+    },
+    progress(card) {
+      const svg = $("#progressChart");
+      const draw = m => { renderChart(svg, DATA[m].v, { w:320, h:180, pad:14, points:true, prLast:true }); $("#pVal").textContent = DATA[m].label; $("#pDelta").textContent = DATA[m].delta; };
+      $$("[data-metric]", card).forEach(b => b.addEventListener("click", () => {
+        $$("[data-metric]", card).forEach(x => x.classList.toggle("on", x === b)); draw(b.dataset.metric);
+      }));
+      draw("orm");
+    },
+    async hold() {
+      const total = 30, ring = $("#holdRing"), val = $("#holdVal"), txt = $("#holdTxt"), lbl = $("#holdLbl");
+      while (true) {
+        ring.classList.remove("done"); lbl.textContent = "Plank";
+        val.style.transition = "none"; val.style.strokeDashoffset = 0; void val.getBoundingClientRect(); val.style.transition = "";
+        for (let t = total; t >= 0; t--) {
+          txt.textContent = `0:${String(t).padStart(2,"0")}`;
+          val.style.strokeDashoffset = 1 - t / total;
+          await sleep(t === 0 ? 0 : (reduce ? 1000 : 400));
+        }
+        ring.classList.add("done"); lbl.textContent = "Done!"; await sleep(2200);
+      }
+    },
+    nutrition(card) { fillBars(card); $$("[data-count]", card).forEach(countUp); },
+    weight(card) { renderChart($("[data-chart=weight]", card), DATA.weight, { w:240, h:110, pad:6 }); $$("[data-count]", card).forEach(countUp); },
+    async reminder() {
+      const n = $("#notif");
+      while (true) { n.classList.remove("show"); void n.offsetWidth; n.classList.add("show"); await sleep(6000); }
+    },
+    theme() {},
+  };
+
+  /* ---------- Reveal on scroll + start demos ---------- */
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target; el.classList.add("in"); io.unobserve(el);
+    $$("[data-count]", el).forEach(c => { if (!c.closest("[data-demo]")) countUp(c); });
+    const d = el.dataset.demo; if (d && demos[d]) demos[d](el);
+  }), { threshold:.18, rootMargin:"0px 0px -40px 0px" });
+  $$(".reveal").forEach(el => io.observe(el));
+  setTimeout(() => $$(".floater [data-count]").forEach(countUp), 1200);
+
+  /* ---------- Latest release: version, size, direct APK link ---------- */
+  function updateLinks() {
+    $$("[data-apk]").forEach(a => a.href = apkUrl);
+    if (window.QRCode && !$("#qrcode").children.length) {
+      new QRCode($("#qrcode"), { text:apkUrl, width:296, height:296, colorDark:"#0F3A75", colorLight:"#ffffff", correctLevel:QRCode.CorrectLevel.M });
+    }
+  }
+  fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers:{ Accept:"application/vnd.github+json" } })
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(rel => {
+      const apk = (rel.assets || []).find(a => a.name.endsWith(".apk"));
+      if (apk) { apkUrl = apk.browser_download_url; $$("[data-size]").forEach(s => s.textContent = `${(apk.size / 1048576).toFixed(0)} MB`); }
+      if (rel.tag_name) $$("[data-version]").forEach(v => v.textContent = rel.tag_name);
+      $("#qrcode").innerHTML = ""; updateLinks();
+    })
+    .catch(() => {});
+  addEventListener("load", () => { updateLinks(); if (!window.QRCode) $("#qrBox").style.display = "none"; });
+})();
+</script>
+</body>
+</html>

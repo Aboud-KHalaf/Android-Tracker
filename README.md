@@ -4,6 +4,8 @@ An offline-first Android app for tracking your **workouts**, **nutrition** and *
 
 All data stays on your device. You don't need an account or an internet connection.
 
+🌐 **Website:** [aboud-khalaf.github.io/Android-Tracker](https://aboud-khalaf.github.io/Android-Tracker/)
+
 ## ✨ Features
 
 ### 🏋️ Workouts
@@ -38,7 +40,7 @@ All data stays on your device. You don't need an account or an internet connecti
 
 ## 📦 Download
 
-Get the latest APK from the [Releases](https://github.com/Aboud-KHalaf/Android-Tracker/releases) page and open it on your phone. Requires **Android 7.0 (API 24)** or newer.
+Get the latest APK from the [website](https://aboud-khalaf.github.io/Android-Tracker/) or the [Releases](https://github.com/Aboud-KHalaf/Android-Tracker/releases) page and open it on your phone. Requires **Android 7.0 (API 24)** or newer.
 
 ## 🛠️ Tech Stack
 
@@ -114,6 +116,16 @@ Then run:
 ```
 
 The APK is written to `app/build/outputs/apk/release/app-release.apk`.
+
+## 🌐 Website
+
+The landing page lives in [`website/`](website/) as a single static HTML file that uses the app's Material 3 tokens. On every push to `main` that changes `website/`, the [Deploy website](.github/workflows/pages.yml) workflow publishes it to GitHub Pages. Its download buttons always point to the APK in the latest GitHub release.
+
+To preview it locally:
+
+```bash
+python3 -m http.server 8765 --directory website
+```
 
 ## 👤 Author
 
