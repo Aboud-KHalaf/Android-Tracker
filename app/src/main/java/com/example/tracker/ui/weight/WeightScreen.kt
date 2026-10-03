@@ -204,10 +204,14 @@ private fun WeightContent(
             state.months.forEach { group ->
                 item(key = "month-${group.month}") {
                     val count = group.entries.size
-                    MonthHeader(group.month, pluralStringResource(R.plurals.weight_entry_count, count, count))
+                    MonthHeader(
+                        month = group.month,
+                        countText = pluralStringResource(R.plurals.weight_entry_count, count, count),
+                        modifier = Modifier.animateItem(),
+                    )
                 }
                 items(group.entries, key = { it.entry.date.toEpochDay() }) { row ->
-                    WeightRow(row, onClick = { onOpenEntry(row.entry.date) })
+                    WeightRow(row, onClick = { onOpenEntry(row.entry.date) }, modifier = Modifier.animateItem())
                 }
             }
         }

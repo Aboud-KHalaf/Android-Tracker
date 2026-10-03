@@ -264,7 +264,7 @@ private fun NutritionContent(
                     MonthHeader(group.month, pluralStringResource(R.plurals.nutrition_day_count, count, count))
                 }
                 items(group.days, key = { it.date.toEpochDay() }) { day ->
-                    NutritionDayRow(day, onClick = { onOpenDay(day.date) })
+                    NutritionDayRow(day, onClick = { onOpenDay(day.date) }, modifier = Modifier.animateItem())
                 }
             }
         }

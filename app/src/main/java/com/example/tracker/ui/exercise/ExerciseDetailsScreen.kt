@@ -264,5 +264,5 @@ private fun LazyListScope.progressTab(
             modifier = Modifier.padding(start = MaterialTheme.spacing.lg, end = MaterialTheme.spacing.sm, top = MaterialTheme.spacing.xl),
         )
     }
-    items(state.recentSessions, key = { "recent-${it.workoutId}" }) { SessionRow(it) }
+    items(state.recentSessions, key = { "recent-${it.workoutId}" }) { SessionRow(it, Modifier.animateItem()) }
 }

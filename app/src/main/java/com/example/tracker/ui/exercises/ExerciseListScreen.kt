@@ -114,7 +114,9 @@ private fun ExerciseList(
                         )
                     },
                     trailingContent = { Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = null) },
-                    modifier = Modifier.clickable { onOpenExercise(exercise.id) },
+                    modifier = Modifier
+                        .animateItem()
+                        .clickable { onOpenExercise(exercise.id) },
                 )
             }
         }

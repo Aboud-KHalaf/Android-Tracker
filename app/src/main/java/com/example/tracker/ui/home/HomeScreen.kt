@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
@@ -216,14 +217,16 @@ private fun LazyListScope.plansSection(
         )
     }
     if (plans.isEmpty()) {
-        item(key = "plans-empty") { EmptySectionText(stringResource(R.string.home_no_plans)) }
+        item(key = "plans-empty") { EmptySectionText(stringResource(R.string.home_no_plans), Modifier.animateItem()) }
     }
     itemsIndexed(plans, key = { _, plan -> "plan-${plan.id}" }) { index, plan ->
         PlanRow(
             plan = plan,
             shape = groupedListItemShape(index, plans.size),
             onClick = { onOpenPlan(plan.id) },
-            modifier = if (index == 0) Modifier else Modifier.padding(top = GroupedListGap),
+            modifier = Modifier
+                .animateItem()
+                .padding(top = if (index == 0) 0.dp else GroupedListGap),
         )
     }
 }
@@ -241,13 +244,15 @@ private fun LazyListScope.recentWorkoutsSection(
         )
     }
     if (workouts.isEmpty()) {
-        item(key = "recent-empty") { EmptySectionText(stringResource(R.string.home_no_recent)) }
+        item(key = "recent-empty") { EmptySectionText(stringResource(R.string.home_no_recent), Modifier.animateItem()) }
     }
     itemsIndexed(workouts, key = { _, workout -> "workout-${workout.id}" }) { index, workout ->
         Surface(
             shape = groupedListItemShape(index, workouts.size),
             color = MaterialTheme.colorScheme.surfaceContainerLow,
-            modifier = if (index == 0) Modifier else Modifier.padding(top = GroupedListGap),
+            modifier = Modifier
+                .animateItem()
+                .padding(top = if (index == 0) 0.dp else GroupedListGap),
         ) {
             WorkoutSummaryRow(workout)
         }
@@ -255,9 +260,10 @@ private fun LazyListScope.recentWorkoutsSection(
 }
 
 @Composable
-private fun EmptySectionText(text: String) {
+private fun EmptySectionText(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
+        modifier = modifier,
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )

@@ -115,9 +115,13 @@ private fun HistoryContent(
             state.months.forEach { group ->
                 item(key = "month-${group.month}") {
                     val count = group.workouts.size
-                    MonthHeader(group.month, pluralStringResource(R.plurals.workout_count, count, count))
+                    MonthHeader(
+                        month = group.month,
+                        countText = pluralStringResource(R.plurals.workout_count, count, count),
+                        modifier = Modifier.animateItem(),
+                    )
                 }
-                items(group.workouts, key = { it.id }) { WorkoutSummaryRow(it) }
+                items(group.workouts, key = { it.id }) { WorkoutSummaryRow(it, Modifier.animateItem()) }
             }
         }
     }
