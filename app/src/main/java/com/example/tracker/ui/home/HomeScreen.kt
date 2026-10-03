@@ -32,10 +32,10 @@ import com.example.tracker.R
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.GroupedListGap
 import com.example.tracker.ui.common.LoadingContent
+import com.example.tracker.ui.common.NameInputDialog
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.SectionHeader
 import com.example.tracker.ui.common.groupedListItemShape
-import com.example.tracker.ui.home.components.CreatePlanDialog
 import com.example.tracker.ui.home.components.HomeHeader
 import com.example.tracker.ui.home.components.PlanRow
 import com.example.tracker.ui.home.components.RecentWorkoutRow
@@ -128,8 +128,11 @@ fun HomeScreen(
     }
 
     if (showCreatePlan) {
-        CreatePlanDialog(
-            onCreate = { name ->
+        NameInputDialog(
+            title = stringResource(R.string.create_plan_title),
+            label = stringResource(R.string.plan_name_label),
+            confirmLabel = stringResource(R.string.create_plan_confirm),
+            onConfirm = { name ->
                 showCreatePlan = false
                 actions.onCreatePlan(name)
             },

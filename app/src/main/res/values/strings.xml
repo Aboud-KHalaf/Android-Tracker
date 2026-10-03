@@ -47,9 +47,51 @@
     <string name="home_see_all">See all</string>
     <string name="home_no_recent">Finished workouts will show up here.</string>
 
+    <!-- Workout plan -->
+    <string name="plan_error_load">Couldn\'t load this plan.</string>
+    <string name="plan_not_found">This plan no longer exists.</string>
+    <string name="plan_error_start_workout">Couldn\'t start the workout. Try again.</string>
+    <string name="plan_error_update">Couldn\'t update the plan. Try again.</string>
+    <string name="plan_error_add_exercise">Couldn\'t add the exercise. Try again.</string>
+    <string name="plan_error_delete">Couldn\'t delete the plan. Try again.</string>
+    <string name="plan_options">Plan options</string>
+    <string name="plan_rename">Rename plan</string>
+    <string name="plan_rename_confirm">Save</string>
+    <string name="plan_delete">Delete plan</string>
+    <string name="plan_delete_title">Delete %1$s?</string>
+    <string name="plan_delete_body">The plan and its exercise list are deleted. Finished workouts stay in your history.</string>
+    <string name="plan_delete_confirm">Delete</string>
+    <string name="plan_exercise_options">More options for %1$s</string>
+    <string name="plan_move_up">Move up</string>
+    <string name="plan_move_down">Move down</string>
+    <string name="plan_remove">Remove</string>
+    <string name="plan_exercise_removed">%1$s removed</string>
+    <string name="action_undo">Undo</string>
+    <string name="plan_empty_title">No exercises yet</string>
+    <string name="plan_empty_body">Add the exercises you want to do in this plan.</string>
+    <string name="plan_add_exercise">Add exercise</string>
+    <string name="plan_start_workout">Start workout</string>
+    <string name="plan_resume_workout">Resume workout</string>
+    <string name="exercise_type_weight_reps">Weight × reps</string>
+    <string name="exercise_type_duration">Duration</string>
+    <plurals name="set_count">
+        <item quantity="one">%d set</item>
+        <item quantity="other">%d sets</item>
+    </plurals>
+    <string name="action_back">Back</string>
+
+    <!-- Add exercise sheet -->
+    <string name="add_exercise_title">Add exercise</string>
+    <string name="add_exercise_create">Create new exercise</string>
+    <string name="add_exercise_library_empty">Every exercise in your library is already in this plan.</string>
+    <string name="add_exercise_new_title">New exercise</string>
+    <string name="add_exercise_name_label">Exercise name</string>
+    <string name="add_exercise_type_label">Measured by</string>
+    <string name="add_exercise_confirm">Add to plan</string>
+
     <!-- Create plan dialog -->
     <string name="create_plan_title">New plan</string>
-    <string name="create_plan_name_label">Plan name</string>
+    <string name="plan_name_label">Plan name</string>
     <string name="create_plan_confirm">Create</string>
     <string name="action_cancel">Cancel</string>
 </resources>
