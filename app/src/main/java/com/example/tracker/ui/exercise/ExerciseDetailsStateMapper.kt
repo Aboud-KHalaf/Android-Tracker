@@ -10,7 +10,7 @@ import com.example.tracker.domain.progress.currentPersonalBest
 import com.example.tracker.domain.progress.findPersonalBests
 import com.example.tracker.domain.progress.stats
 import com.example.tracker.ui.common.SetValueUi
-import com.example.tracker.ui.exercise.chart.ChartModel
+import com.example.tracker.ui.common.chart.ChartModel
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId

@@ -10,13 +10,15 @@ import com.example.tracker.data.repository.LocalSettingsRepository
 import com.example.tracker.data.repository.OfflineFirstExerciseRepository
 import com.example.tracker.data.repository.OfflineFirstNutritionRepository
 import com.example.tracker.data.repository.OfflineFirstPlanRepository
+import com.example.tracker.data.repository.OfflineFirstWeightRepository
 import com.example.tracker.data.repository.OfflineFirstWorkoutRepository
+import com.example.tracker.domain.reminder.NutritionReminder
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
 import com.example.tracker.domain.repository.SettingsRepository
+import com.example.tracker.domain.repository.WeightRepository
 import com.example.tracker.domain.repository.WorkoutRepository
-import com.example.tracker.domain.reminder.NutritionReminder
 import com.example.tracker.reminder.AlarmReminderScheduler
 import com.example.tracker.reminder.NotificationReminderNotifier
 import kotlinx.coroutines.CoroutineScope
@@ -35,6 +37,7 @@ class AppContainer(context: Context) {
     val planRepository: PlanRepository by lazy { OfflineFirstPlanRepository(database, time, ids) }
     val workoutRepository: WorkoutRepository by lazy { OfflineFirstWorkoutRepository(database, time, ids) }
     val nutritionRepository: NutritionRepository by lazy { OfflineFirstNutritionRepository(database, time) }
+    val weightRepository: WeightRepository by lazy { OfflineFirstWeightRepository(database, time) }
     val settingsRepository: SettingsRepository by lazy {
         val preferences = context.applicationContext
             .getSharedPreferences(LocalSettingsRepository.PREFERENCES_NAME, Context.MODE_PRIVATE)

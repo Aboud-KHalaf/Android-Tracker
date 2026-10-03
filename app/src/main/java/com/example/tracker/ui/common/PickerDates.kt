@@ -1,4 +1,4 @@
-package com.example.tracker.ui.nutrition
+package com.example.tracker.ui.common
 
 import java.time.Instant
 import java.time.LocalDate

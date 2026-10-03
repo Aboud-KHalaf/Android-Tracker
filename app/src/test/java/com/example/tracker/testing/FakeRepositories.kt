@@ -8,6 +8,7 @@ import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.PersonalBest
 import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.ThemeMode
+import com.example.tracker.domain.model.WeightEntry
 import com.example.tracker.domain.model.WeekSummary
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutPlan
@@ -17,6 +18,7 @@ import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
 import com.example.tracker.domain.repository.SettingsRepository
+import com.example.tracker.domain.repository.WeightRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import java.time.Duration
 import java.time.Instant
@@ -252,5 +254,39 @@ class FakeNutritionRepository : NutritionRepository {
 
     fun put(vararg logged: DailyNutrition) {
         days.value += logged.associateBy { it.date }
+    }
+}
+
+class FakeWeightRepository : WeightRepository {
+    /** Entries by date. */
+    val entries = MutableStateFlow<Map<LocalDate, WeightEntry>>(emptyMap())
+
+    /** When set, [observeEntries] fails with it, so screens can show their error state. */
+    var observeError: Exception? = null
+
+    /** When set, every write fails with it. */
+    var writeError: Exception? = null
+
+    override fun observeEntries(from: LocalDate, to: LocalDate): Flow<List<WeightEntry>> = flow {
+        observeError?.let { throw it }
+        emitAll(entries.map { all -> all.values.filter { it.date in from..to }.sortedByDescending { it.date } })
+    }
+
+    override fun observeLatest(): Flow<WeightEntry?> = entries.map { all -> all.values.maxByOrNull { it.date } }
+
+    override fun observeEntry(date: LocalDate): Flow<WeightEntry?> = entries.map { it[date] }
+
+    override suspend fun saveEntry(entry: WeightEntry) {
+        writeError?.let { throw it }
+        entries.value += entry.date to entry
+    }
+
+    override suspend fun deleteEntry(date: LocalDate) {
+        writeError?.let { throw it }
+        entries.value -= date
+    }
+
+    fun put(vararg logged: WeightEntry) {
+        entries.value += logged.associateBy { it.date }
     }
 }

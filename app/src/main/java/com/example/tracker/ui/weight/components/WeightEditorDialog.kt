@@ -1,4 +1,4 @@
-package com.example.tracker.ui.nutrition.components
+package com.example.tracker.ui.weight.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,23 +28,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.tracker.R
-import com.example.tracker.domain.model.DailyNutrition
+import com.example.tracker.domain.model.WeightEntry
 import com.example.tracker.ui.common.DayPickerDialog
 import com.example.tracker.ui.common.currentLocale
+import com.example.tracker.ui.common.formatWeight
 import com.example.tracker.ui.common.longDate
-import com.example.tracker.ui.nutrition.DayEditorState
-import com.example.tracker.ui.nutrition.formatAmount
 import com.example.tracker.ui.theme.spacing
+import com.example.tracker.ui.weight.WeightEditorState
 import java.time.LocalDate
 
-/** Logs or edits one day: its date, calories and protein. */
+/** Logs or edits one day's weight. */
 @Composable
-fun DayEditorDialog(
-    state: DayEditorState,
+fun WeightEditorDialog(
+    state: WeightEditorState,
     today: LocalDate,
     onDateChange: (LocalDate) -> Unit,
-    onCaloriesChange: (String) -> Unit,
-    onProteinChange: (String) -> Unit,
+    onWeightChange: (String) -> Unit,
     onSave: () -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
@@ -54,34 +53,39 @@ fun DayEditorDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(if (state.isExisting) R.string.nutrition_edit_day else R.string.nutrition_log_day)) },
+        title = { Text(stringResource(if (state.isExisting) R.string.weight_edit else R.string.weight_log)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)) {
                 OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
                     Icon(Icons.Outlined.CalendarMonth, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
                     Spacer(Modifier.width(ButtonDefaults.IconSpacing))
                     Text(
-                        text = if (state.date == today) stringResource(R.string.nutrition_today) else state.date.longDate(locale),
+                        text = if (state.date == today) stringResource(R.string.weight_today) else state.date.longDate(locale),
                         modifier = Modifier.weight(1f),
                     )
                 }
-                AmountField(
-                    value = state.calories,
-                    onValueChange = onCaloriesChange,
-                    label = stringResource(R.string.nutrition_calories),
-                    suffix = stringResource(R.string.nutrition_unit_kcal),
-                    isError = state.caloriesError,
-                    errorText = stringResource(R.string.nutrition_error_amount, formatAmount(DailyNutrition.MAX_CALORIES, locale)),
-                    imeAction = ImeAction.Next,
-                )
-                AmountField(
-                    value = state.protein,
-                    onValueChange = onProteinChange,
-                    label = stringResource(R.string.nutrition_protein),
-                    suffix = stringResource(R.string.nutrition_unit_grams),
-                    isError = state.proteinError,
-                    errorText = stringResource(R.string.nutrition_error_amount, formatAmount(DailyNutrition.MAX_PROTEIN_GRAMS, locale)),
-                    imeAction = ImeAction.Done,
+                OutlinedTextField(
+                    value = state.weight,
+                    onValueChange = onWeightChange,
+                    label = { Text(stringResource(R.string.weight_title)) },
+                    suffix = { Text(stringResource(R.string.weight_unit_kg)) },
+                    isError = state.weightError,
+                    supportingText = if (state.weightError) {
+                        {
+                            Text(
+                                stringResource(
+                                    R.string.weight_error_value,
+                                    formatWeight(WeightEntry.MIN_KG, locale),
+                                    formatWeight(WeightEntry.MAX_KG, locale),
+                                ),
+                            )
+                        }
+                    } else {
+                        null
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         },
@@ -113,32 +117,4 @@ fun DayEditorDialog(
             onDismiss = { showDatePicker = false },
         )
     }
-}
-
-/** A whole-number field with a unit suffix and an error message below. */
-@Composable
-internal fun AmountField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    suffix: String,
-    isError: Boolean,
-    errorText: String,
-    imeAction: ImeAction,
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        suffix = { Text(suffix) },
-        isError = isError,
-        supportingText = if (isError) {
-            { Text(errorText) }
-        } else {
-            null
-        },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = imeAction),
-        modifier = Modifier.fillMaxWidth(),
-    )
 }

@@ -1,6 +1,6 @@
-package com.example.tracker.ui.exercise
+package com.example.tracker.ui.common
 
-import com.example.tracker.ui.exercise.chart.ChartModel
+import com.example.tracker.ui.common.chart.ChartModel
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

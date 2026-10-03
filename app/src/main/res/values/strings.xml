@@ -232,9 +232,9 @@
     <string name="settings_error_theme">Couldn\'t change the theme. Try again.</string>
     <string name="settings_data">Data</string>
     <string name="settings_delete_data">Delete all data</string>
-    <string name="settings_delete_data_description">Remove every exercise, plan, workout and nutrition entry from this device</string>
+    <string name="settings_delete_data_description">Remove every exercise, plan, workout, nutrition and weight entry from this device</string>
     <string name="settings_delete_data_title">Delete all data?</string>
-    <string name="settings_delete_data_body">All exercises, plans, workout history and nutrition entries on this device are permanently deleted. This can\'t be undone.</string>
+    <string name="settings_delete_data_body">All exercises, plans, workout history, nutrition and weight entries on this device are permanently deleted. This can\'t be undone.</string>
     <string name="settings_delete_data_confirm">Delete all</string>
     <string name="settings_data_deleted">All data deleted</string>
     <string name="settings_error_delete_data">Couldn\'t delete your data. Try again.</string>
@@ -301,11 +301,11 @@
     <string name="nutrition_targets_body">Leave a field empty for no target.</string>
     <string name="nutrition_error_target">Enter a whole number from 1 to %1$s, or leave it empty</string>
     <string name="nutrition_error_targets">Couldn\'t save your targets. Try again.</string>
-    <string name="nutrition_period_group">Period</string>
-    <string name="nutrition_period_this_month">This month</string>
-    <string name="nutrition_period_last_30_days">Last 30 days</string>
-    <string name="nutrition_period_custom">Custom</string>
-    <string name="nutrition_period_range">%1$s – %2$s</string>
+    <string name="period_group">Period</string>
+    <string name="period_this_month">This month</string>
+    <string name="period_last_30_days">Last 30 days</string>
+    <string name="period_custom">Custom</string>
+    <string name="period_range">%1$s – %2$s</string>
     <string name="nutrition_chart_target">Target %1$s</string>
     <string name="nutrition_chart_point">%1$s: %2$s</string>
     <string name="nutrition_chart_description">Daily %1$s from %2$s to %3$s. %4$s</string>
@@ -321,4 +321,34 @@
     <string name="settings_notifications_blocked">Notifications are off for this app</string>
     <string name="settings_open_system_settings">Settings</string>
     <string name="settings_error_reminder">Couldn\'t change the reminder. Try again.</string>
+
+    <!-- Weight -->
+    <string name="nav_weight">Weight</string>
+    <string name="weight_title">Weight</string>
+    <string name="weight_today">Today</string>
+    <string name="weight_current">Current weight</string>
+    <string name="weight_none_yet">No weight logged yet. Weigh yourself and add it to start a trend.</string>
+    <string name="weight_log_today">Log today</string>
+    <string name="weight_edit_today">Edit</string>
+    <string name="weight_log">Log weight</string>
+    <string name="weight_edit">Edit weight</string>
+    <string name="weight_unit_kg">kg</string>
+    <string name="weight_kg">%1$s kg</string>
+    <string name="weight_change_up">+%1$s kg</string>
+    <string name="weight_change_down">−%1$s kg</string>
+    <string name="weight_change">Change</string>
+    <string name="weight_lowest">Lowest</string>
+    <string name="weight_highest">Highest</string>
+    <plurals name="weight_entry_count">
+        <item quantity="one">%d entry</item>
+        <item quantity="other">%d entries</item>
+    </plurals>
+    <string name="weight_empty_title">No weight in this period</string>
+    <string name="weight_empty_body">Log your weight to see how it changes over time.</string>
+    <string name="weight_error_value">Enter a weight from %1$s to %2$s kg</string>
+    <string name="weight_error_load">Couldn\'t load your weight log.</string>
+    <string name="weight_error_open">Couldn\'t open that day. Try again.</string>
+    <string name="weight_error_save">Couldn\'t save. Try again.</string>
+    <string name="weight_error_delete">Couldn\'t delete that entry. Try again.</string>
+    <string name="weight_deleted">Weight deleted</string>
 </resources>

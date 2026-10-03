@@ -10,8 +10,8 @@ import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.model.DailyNutrition
+import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.NutritionTargets
-import com.example.tracker.domain.nutrition.NutritionPeriod
 import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.ui.common.launchCatching
@@ -45,7 +45,7 @@ class NutritionViewModel(
 
     private val mapper = NutritionStateMapper()
     private val loadAttempt = MutableStateFlow(0)
-    private val period = MutableStateFlow<NutritionPeriod>(NutritionPeriod.ThisMonth)
+    private val period = MutableStateFlow<DatePeriod>(DatePeriod.ThisMonth)
     private val metric = MutableStateFlow(NutritionMetric.CALORIES)
 
     val uiState: StateFlow<NutritionUiState> = combine(loadAttempt, period) { _, period -> period }
@@ -85,7 +85,7 @@ class NutritionViewModel(
     private val _events = Channel<NutritionEvent>(Channel.BUFFERED)
     val events: Flow<NutritionEvent> = _events.receiveAsFlow()
 
-    fun onSelectPeriod(selected: NutritionPeriod) {
+    fun onSelectPeriod(selected: DatePeriod) {
         period.value = selected
     }
 

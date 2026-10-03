@@ -1,8 +1,8 @@
 package com.example.tracker.ui.nutrition
 
 import com.example.tracker.domain.model.DailyNutrition
+import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.NutritionTargets
-import com.example.tracker.domain.nutrition.NutritionPeriod
 import com.example.tracker.domain.nutrition.NutritionSummary
 import com.example.tracker.ui.nutrition.chart.BarChartModel
 import java.time.LocalDate
@@ -15,7 +15,7 @@ internal class NutritionStateMapper {
     fun map(
         today: LocalDate,
         todayEntry: DailyNutrition?,
-        period: NutritionPeriod,
+        period: DatePeriod,
         metric: NutritionMetric,
         days: List<DailyNutrition>,
         targets: NutritionTargets,

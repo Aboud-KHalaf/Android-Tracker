@@ -45,6 +45,31 @@ class TrackerDatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun migrate2To3_keepsNutritionAndAddsWeightTable() {
+        helper.createDatabase(DB_NAME, 2).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO daily_nutrition (epoch_day, calories, protein_grams, created_at, updated_at, deleted_at, sync_state)
+                VALUES (20000, 2300, 150, 0, 0, NULL, 'PENDING')
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 3, true).use { db ->
+            db.query("SELECT calories FROM daily_nutrition").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals(2300, cursor.getInt(0))
+            }
+            db.execSQL(
+                """
+                INSERT INTO body_weight (epoch_day, weight_kg, created_at, updated_at, deleted_at, sync_state)
+                VALUES (20000, 79.4, 0, 0, NULL, 'PENDING')
+                """
+            )
+        }
+    }
+
     private companion object {
         const val DB_NAME = "migration-test.db"
     }

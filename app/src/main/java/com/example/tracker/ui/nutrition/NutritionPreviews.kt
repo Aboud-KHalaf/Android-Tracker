@@ -4,8 +4,8 @@ import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.tracker.domain.model.DailyNutrition
+import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.NutritionTargets
-import com.example.tracker.domain.nutrition.NutritionPeriod
 import com.example.tracker.ui.theme.TrackerTheme
 import java.time.LocalDate
 
@@ -19,7 +19,7 @@ private val previewDays = listOf(
 private val previewState = NutritionStateMapper().map(
     today = today,
     todayEntry = previewDays.first(),
-    period = NutritionPeriod.ThisMonth,
+    period = DatePeriod.ThisMonth,
     metric = NutritionMetric.CALORIES,
     days = previewDays,
     targets = targets,
@@ -46,7 +46,7 @@ private fun NutritionScreenPreview() {
 private fun NutritionScreenEmptyPreview() {
     TrackerTheme {
         NutritionScreen(
-            uiState = NutritionStateMapper().map(today, null, NutritionPeriod.ThisMonth, NutritionMetric.CALORIES, emptyList(), NutritionTargets()),
+            uiState = NutritionStateMapper().map(today, null, DatePeriod.ThisMonth, NutritionMetric.CALORIES, emptyList(), NutritionTargets()),
             onOpenDay = {},
             onSaveTargets = {},
             onSelectPeriod = {},

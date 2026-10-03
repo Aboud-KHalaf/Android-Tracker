@@ -7,7 +7,7 @@ import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.progress.ProgressMetric
 import com.example.tracker.domain.progress.TimeRange
 import com.example.tracker.ui.common.SetValueUi
-import com.example.tracker.ui.exercise.chart.ChartModel
+import com.example.tracker.ui.common.chart.ChartModel
 import com.example.tracker.ui.theme.TrackerTheme
 import java.time.LocalDate
 

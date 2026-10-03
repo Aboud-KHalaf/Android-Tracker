@@ -1,15 +1,15 @@
 package com.example.tracker.ui.nutrition
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -45,19 +45,19 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
+import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.NutritionTargets
-import com.example.tracker.domain.nutrition.NutritionPeriod
 import com.example.tracker.ui.common.EmptyState
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ObserveAsEvents
+import com.example.tracker.ui.common.PeriodSelector
 import com.example.tracker.ui.common.ScreenTitle
 import com.example.tracker.ui.common.rememberNotificationPermissionRequest
 import com.example.tracker.ui.nutrition.components.DayEditorDialog
 import com.example.tracker.ui.nutrition.components.NutritionChartCard
 import com.example.tracker.ui.nutrition.components.NutritionDayRow
-import com.example.tracker.ui.nutrition.components.PeriodSelector
 import com.example.tracker.ui.nutrition.components.PeriodSummaryCard
 import com.example.tracker.ui.nutrition.components.TargetsDialog
 import com.example.tracker.ui.nutrition.components.TodayCard
@@ -138,7 +138,7 @@ fun NutritionScreen(
     uiState: NutritionUiState,
     onOpenDay: (LocalDate?) -> Unit,
     onSaveTargets: (NutritionTargets) -> Unit,
-    onSelectPeriod: (NutritionPeriod) -> Unit,
+    onSelectPeriod: (DatePeriod) -> Unit,
     onSelectMetric: (NutritionMetric) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
@@ -194,7 +194,7 @@ private fun NutritionContent(
     state: NutritionUiState.Success,
     onOpenDay: (LocalDate?) -> Unit,
     onEditTargets: () -> Unit,
-    onSelectPeriod: (NutritionPeriod) -> Unit,
+    onSelectPeriod: (DatePeriod) -> Unit,
     onSelectMetric: (NutritionMetric) -> Unit,
     contentPadding: PaddingValues,
 ) {

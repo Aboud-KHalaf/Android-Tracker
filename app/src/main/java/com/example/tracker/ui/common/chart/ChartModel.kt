@@ -1,4 +1,4 @@
-package com.example.tracker.ui.exercise.chart
+package com.example.tracker.ui.common.chart
 
 import java.time.LocalDate
 import kotlin.math.ceil

@@ -3,8 +3,8 @@ package com.example.tracker.ui.nutrition
 import com.example.tracker.R
 import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.model.DailyNutrition
+import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.NutritionTargets
-import com.example.tracker.domain.nutrition.NutritionPeriod
 import com.example.tracker.testing.FakeNutritionRepository
 import com.example.tracker.testing.FakeSettingsRepository
 import com.example.tracker.testing.MainDispatcherRule
@@ -225,12 +225,12 @@ class NutritionViewModelTest {
         val viewModel = createViewModel()
         val state = collectState(viewModel)
 
-        viewModel.onSelectPeriod(NutritionPeriod.Last30Days)
+        viewModel.onSelectPeriod(DatePeriod.Last30Days)
 
         assertEquals(LocalDate.of(2026, 9, 4), state.success().rangeStart)
         assertEquals(2, state.success().summary!!.loggedDays)
 
-        viewModel.onSelectPeriod(NutritionPeriod.Custom(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
+        viewModel.onSelectPeriod(DatePeriod.Custom(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 30)))
 
         assertEquals(listOf(LocalDate.of(2026, 9, 10)), state.success().months.flatMap { it.days }.map { it.date })
         assertEquals(DailyNutrition(today, 2000, 150), state.success().todayEntry) // today stays visible

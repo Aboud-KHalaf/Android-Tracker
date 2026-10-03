@@ -5,6 +5,7 @@ import com.example.tracker.data.local.dao.PlanExerciseRow
 import com.example.tracker.data.local.dao.PlanSummaryRow
 import com.example.tracker.data.local.dao.WorkoutExerciseRow
 import com.example.tracker.data.local.dao.WorkoutSummaryRow
+import com.example.tracker.data.local.entity.BodyWeightEntity
 import com.example.tracker.data.local.entity.DailyNutritionEntity
 import com.example.tracker.data.local.entity.ExerciseEntity
 import com.example.tracker.data.local.entity.WorkoutEntity
@@ -13,6 +14,7 @@ import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.LoggedSet
 import com.example.tracker.domain.model.PlanExercise
+import com.example.tracker.domain.model.WeightEntry
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutExercise
 import com.example.tracker.domain.model.WorkoutPlan
@@ -94,4 +96,9 @@ internal fun DailyNutritionEntity.toDomain() = DailyNutrition(
     date = LocalDate.ofEpochDay(epochDay),
     calories = calories,
     proteinGrams = proteinGrams,
+)
+
+internal fun BodyWeightEntity.toDomain() = WeightEntry(
+    date = LocalDate.ofEpochDay(epochDay),
+    weightKg = weightKg,
 )
