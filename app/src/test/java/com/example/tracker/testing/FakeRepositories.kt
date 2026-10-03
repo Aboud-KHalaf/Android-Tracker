@@ -3,6 +3,7 @@ package com.example.tracker.testing
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.PersonalBest
 import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.ThemeMode
@@ -187,6 +188,7 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
 
 class FakeSettingsRepository : SettingsRepository {
     override val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
+    override val nutritionTargets = MutableStateFlow(NutritionTargets())
 
     /** When set, every write fails with it. */
     var writeError: Exception? = null
@@ -195,6 +197,11 @@ class FakeSettingsRepository : SettingsRepository {
     override suspend fun setThemeMode(mode: ThemeMode) {
         writeError?.let { throw it }
         themeMode.value = mode
+    }
+
+    override suspend fun setNutritionTargets(targets: NutritionTargets) {
+        writeError?.let { throw it }
+        nutritionTargets.value = targets
     }
 
     override suspend fun deleteAllData() {
