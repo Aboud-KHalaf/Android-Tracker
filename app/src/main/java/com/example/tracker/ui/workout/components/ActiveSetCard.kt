@@ -77,7 +77,7 @@ fun ActiveSetCard(
             ) {
                 when (val editor = set.editor) {
                     is SetEditorUi.WeightReps -> WeightRepsEditor(editor, editorActions)
-                    SetEditorUi.Duration -> Text(
+                    is SetEditorUi.Duration -> Text(
                         text = stringResource(R.string.workout_duration_unavailable),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

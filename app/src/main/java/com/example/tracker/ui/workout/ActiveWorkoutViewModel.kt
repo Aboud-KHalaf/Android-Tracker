@@ -10,8 +10,11 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import com.example.tracker.R
 import com.example.tracker.TrackerApplication
+import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.repository.WorkoutRepository
+import com.example.tracker.ui.common.SetValueUi
 import com.example.tracker.ui.common.launchCatching
+import java.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -33,14 +36,15 @@ import kotlinx.coroutines.flow.update
 /**
  * Active workout: one exercise at a time, logging its sets.
  *
- * Saved sets come from the repository; what the user is choosing or typing lives here as
- * [WorkoutSelection] and [SetDraft] until it is saved. State is exposed as [uiState];
+ * Saved sets come from the repository; what the user is choosing, typing or timing lives
+ * here as [WorkoutSelection] and [SetDraft] until it is saved. State is exposed as [uiState];
  * navigation and messages are sent once through [events].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ActiveWorkoutViewModel(
     private val workoutId: String,
     private val workoutRepository: WorkoutRepository,
+    private val time: TimeProvider,
 ) : ViewModel() {
 
     private val loadAttempt = MutableStateFlow(0)
@@ -89,12 +93,26 @@ class ActiveWorkoutViewModel(
 
     fun onRepsStep(steps: Int) = editActive { it.copy(repsText = SetInput.stepReps(it.repsText, steps)) }
 
+    /** Starts, pauses or resumes the active hold's timer. */
+    fun onToggleTimer() = editHold { hold, now ->
+        if (hold.runningSince == null) {
+            hold.copy(runningSince = now)
+        } else {
+            hold.copy(bankedSeconds = hold.secondsAt(now), runningSince = null)
+        }
+    }
+
+    /** Adds (or with a negative value, removes) seconds from the active hold, never below 0. */
+    fun onAdjustHold(seconds: Int) = editHold { hold, now ->
+        val adjusted = (hold.secondsAt(now) + seconds).coerceAtLeast(0)
+        hold.copy(bankedSeconds = adjusted, runningSince = hold.runningSince?.let { now })
+    }
+
     fun onCompleteSet() {
-        val (active, editor) = activeWeightRepsSet() ?: return
-        val weight = editor.weightKg ?: return
-        val reps = editor.reps ?: return
+        val active = activeSet() ?: return
+        val values = completedValues(active.editor) ?: return
         viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
-            workoutRepository.updateSet(active.id, weight, reps, null)
+            workoutRepository.updateSet(active.id, values.weightKg, values.reps, values.durationSeconds)
             workoutRepository.completeSet(active.id)
             draft.value = null
             selection.update { it.copy(setId = null) }
@@ -104,10 +122,10 @@ class ActiveWorkoutViewModel(
 
     /** Undoes [onCompleteSet]: the set becomes active again. */
     fun onUndoCompleteSet(setId: String) {
+        val row = currentSets().firstOrNull { it.id == setId } as? SetRowUi.Done
         viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
             saveDraft()
-            selection.update { it.copy(setId = setId) }
-            workoutRepository.reopenSet(setId)
+            reopen(setId, row)
         }
     }
 
@@ -117,13 +135,12 @@ class ActiveWorkoutViewModel(
         if (row is SetRowUi.Active) return
         viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
             saveDraft()
-            selection.update { it.copy(setId = setId) }
-            if (row is SetRowUi.Done) workoutRepository.reopenSet(setId)
+            if (row is SetRowUi.Done) reopen(setId, row) else selection.update { it.copy(setId = setId) }
         }
     }
 
     fun onRemoveActiveSet() {
-        val active = currentSets().filterIsInstance<SetRowUi.Active>().firstOrNull() ?: return
+        val active = activeSet() ?: return
         viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
             workoutRepository.deleteSet(active.id)
             draft.value = null
@@ -174,29 +191,57 @@ class ActiveWorkoutViewModel(
         }
     }
 
-    /** Applies [change] to the active set's typed text. */
-    private fun editActive(change: (SetDraft) -> SetDraft) {
-        val (active, editor) = activeWeightRepsSet() ?: return
-        draft.value = change(SetDraft(active.id, editor.weightText, editor.repsText))
+    /** Makes a completed set active again; a hold continues from its recorded time. */
+    private suspend fun reopen(setId: String, row: SetRowUi.Done?) {
+        val hold = row?.value as? SetValueUi.Hold
+        if (hold != null) draft.value = SetDraft.Hold(setId, hold.seconds, runningSince = null)
+        selection.update { it.copy(setId = setId) }
+        workoutRepository.reopenSet(setId)
     }
 
-    /** Saves typed values of the active set if they are valid, then forgets the draft. */
+    /** Applies [change] to the active set's typed weight and reps. */
+    private fun editActive(change: (SetDraft.WeightReps) -> SetDraft.WeightReps) {
+        val active = activeSet() ?: return
+        val editor = active.editor as? SetEditorUi.WeightReps ?: return
+        draft.value = change(SetDraft.WeightReps(active.id, editor.weightText, editor.repsText))
+    }
+
+    /** Applies [change] to the active hold, given the current time. */
+    private fun editHold(change: (SetEditorUi.Duration, Instant) -> SetEditorUi.Duration) {
+        val active = activeSet() ?: return
+        val editor = active.editor as? SetEditorUi.Duration ?: return
+        val changed = change(editor, time.now())
+        draft.value = SetDraft.Hold(active.id, changed.bankedSeconds, changed.runningSince)
+    }
+
+    /** Saves the active set's unsaved input if it is valid, then forgets the draft. */
     private suspend fun saveDraft() {
         val pending = draft.value ?: return
         draft.value = null
-        val weight = SetInput.parseWeight(pending.weightText) ?: return
-        val reps = SetInput.parseReps(pending.repsText) ?: return
-        workoutRepository.updateSet(pending.setId, weight, reps, null)
+        val values = when (pending) {
+            is SetDraft.WeightReps -> completedValues(SetEditorUi.WeightReps(pending.weightText, pending.repsText))
+            is SetDraft.Hold -> completedValues(SetEditorUi.Duration(pending.bankedSeconds, pending.runningSince, null))
+        } ?: return
+        workoutRepository.updateSet(pending.setId, values.weightKg, values.reps, values.durationSeconds)
     }
+
+    /** What the editor's input saves as, or null if it isn't a loggable set yet. */
+    private fun completedValues(editor: SetEditorUi): SetValues? = when (editor) {
+        is SetEditorUi.WeightReps -> {
+            val weight = editor.weightKg
+            val reps = editor.reps
+            if (weight != null && reps != null) SetValues(weight, reps, null) else null
+        }
+
+        is SetEditorUi.Duration -> editor.secondsAt(time.now()).takeIf { it > 0 }?.let { SetValues(null, null, it) }
+    }
+
+    private data class SetValues(val weightKg: Double?, val reps: Int?, val durationSeconds: Int?)
 
     private fun currentSets(): List<SetRowUi> =
         (uiState.value as? ActiveWorkoutUiState.Success)?.sets.orEmpty()
 
-    private fun activeWeightRepsSet(): Pair<SetRowUi.Active, SetEditorUi.WeightReps>? {
-        val active = currentSets().filterIsInstance<SetRowUi.Active>().firstOrNull() ?: return null
-        val editor = active.editor as? SetEditorUi.WeightReps ?: return null
-        return active to editor
-    }
+    private fun activeSet(): SetRowUi.Active? = currentSets().filterIsInstance<SetRowUi.Active>().firstOrNull()
 
     private fun observeLastTimes() = workoutRepository.observeWorkout(workoutId)
         .map { workout -> workout?.exercises?.map { it.exercise.id }?.toSet().orEmpty() }
@@ -216,6 +261,7 @@ class ActiveWorkoutViewModel(
                 ActiveWorkoutViewModel(
                     workoutId = createSavedStateHandle().toRoute<ActiveWorkoutDestination>().workoutId,
                     workoutRepository = container.workoutRepository,
+                    time = container.time,
                 )
             }
         }

@@ -6,12 +6,21 @@ import com.example.tracker.domain.model.WorkoutExercise
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.progress.improvementOver
 import com.example.tracker.ui.common.SetValueUi
+import java.time.Instant
 
 /** What the user has picked; null means "the default". */
 internal data class WorkoutSelection(val exerciseIndex: Int? = null, val setId: String? = null)
 
-/** Text typed into the active set that isn't saved yet. */
-internal data class SetDraft(val setId: String, val weightText: String, val repsText: String)
+/** Input for the active set that isn't saved yet. */
+internal sealed interface SetDraft {
+    val setId: String
+
+    /** Text typed into the weight and reps fields. */
+    data class WeightReps(override val setId: String, val weightText: String, val repsText: String) : SetDraft
+
+    /** A hold being timed: [bankedSeconds] plus the time since [runningSince] while running. */
+    data class Hold(override val setId: String, val bankedSeconds: Int, val runningSince: Instant?) : SetDraft
+}
 
 /** Maps domain data and the user's selection to [ActiveWorkoutUiState]. Pure. */
 internal object ActiveWorkoutStateMapper {
@@ -54,7 +63,7 @@ internal object ActiveWorkoutStateMapper {
                         id = set.id,
                         number = i + 1,
                         lastTime = previous?.toValue(),
-                        editor = editorFor(current, set, draft),
+                        editor = editorFor(current, set, previous, draft),
                     )
 
                     set.isCompleted -> SetRowUi.Done(
@@ -81,16 +90,29 @@ internal object ActiveWorkoutStateMapper {
         return if (open >= 0) open else exercises.lastIndex.coerceAtLeast(0)
     }
 
-    private fun editorFor(exercise: WorkoutExercise, set: WorkoutSet, draft: SetDraft?): SetEditorUi =
-        when (exercise.exercise.type) {
-            ExerciseType.WEIGHT_REPS -> if (draft != null && draft.setId == set.id) {
-                SetEditorUi.WeightReps(draft.weightText, draft.repsText)
+    private fun editorFor(
+        exercise: WorkoutExercise,
+        set: WorkoutSet,
+        previous: WorkoutSet?,
+        draft: SetDraft?,
+    ): SetEditorUi {
+        val ownDraft = draft?.takeIf { it.setId == set.id }
+        return when (exercise.exercise.type) {
+            ExerciseType.WEIGHT_REPS -> if (ownDraft is SetDraft.WeightReps) {
+                SetEditorUi.WeightReps(ownDraft.weightText, ownDraft.repsText)
             } else {
                 SetEditorUi.WeightReps(SetInput.formatWeight(set.weightKg), SetInput.formatReps(set.reps))
             }
 
-            ExerciseType.DURATION -> SetEditorUi.Duration
+            // An open set's stored duration is last time's prefill, i.e. the target, so the
+            // timer starts from zero unless a draft (e.g. a reopened set) says otherwise.
+            ExerciseType.DURATION -> SetEditorUi.Duration(
+                bankedSeconds = (ownDraft as? SetDraft.Hold)?.bankedSeconds ?: 0,
+                runningSince = (ownDraft as? SetDraft.Hold)?.runningSince,
+                targetSeconds = previous?.durationSeconds,
+            )
         }
+    }
 
     private fun WorkoutSet.toValue(): SetValueUi? = when {
         weightKg != null && reps != null -> SetValueUi.WeightReps(weightKg, reps)

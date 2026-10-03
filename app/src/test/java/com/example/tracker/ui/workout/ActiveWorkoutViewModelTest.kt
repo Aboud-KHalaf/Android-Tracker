@@ -1,6 +1,7 @@
 package com.example.tracker.ui.workout
 
 import com.example.tracker.R
+import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.SetImprovement
@@ -10,6 +11,7 @@ import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.testing.FakeWorkoutRepository
 import com.example.tracker.testing.MainDispatcherRule
 import com.example.tracker.ui.common.SetValueUi
+import java.time.Duration
 import java.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -31,7 +33,8 @@ class ActiveWorkoutViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val workouts = FakeWorkoutRepository()
+    private val time = FakeTimeProvider(Instant.parse("2026-10-03T09:00:00Z"))
+    private val workouts = FakeWorkoutRepository(now = { time.now() })
     private val started = Instant.parse("2026-10-03T08:30:00Z")
     private val done = Instant.parse("2026-10-03T08:35:00Z")
 
@@ -60,7 +63,7 @@ class ActiveWorkoutViewModelTest {
         workouts.lastTimes["bench"] = listOf(set("p1", 0, 45.0, 10), set("p2", 1, 50.0, 8), set("p3", 2, 50.0, 8))
     }
 
-    private fun createViewModel() = ActiveWorkoutViewModel("w1", workouts)
+    private fun createViewModel() = ActiveWorkoutViewModel("w1", workouts, time)
 
     private fun TestScope.collectState(viewModel: ActiveWorkoutViewModel): () -> ActiveWorkoutUiState.Success {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
@@ -233,15 +236,123 @@ class ActiveWorkoutViewModelTest {
         assertEquals(ActiveWorkoutEvent.ShowMessage(R.string.workout_error_save), viewModel.events.first())
     }
 
-    @Test
-    fun durationExercise_getsDurationEditor() = runTest {
-        val plank = Exercise("plank", "Plank", ExerciseType.DURATION)
-        workouts.activeWorkout.value = workouts.activeWorkout.value!!.copy(
-            exercises = listOf(WorkoutExercise("we-plank", plank, 0, listOf(WorkoutSet("h1", 0, null, null, 30, null)))),
-        )
+    // --- Timed (duration) sets ---
 
+    private val plank = Exercise("plank", "Plank", ExerciseType.DURATION)
+
+    /** A Plank-only workout: set h1 done at 0:50, h2 and h3 open, prefilled from last time. */
+    private fun usePlankWorkout() {
+        workouts.activeWorkout.value = workouts.activeWorkout.value!!.copy(
+            exercises = listOf(
+                WorkoutExercise(
+                    "we-plank", plank, 0,
+                    listOf(
+                        WorkoutSet("h1", 0, null, null, 50, done),
+                        WorkoutSet("h2", 1, null, null, 40, null),
+                        WorkoutSet("h3", 2, null, null, 35, null),
+                    ),
+                ),
+            ),
+        )
+        workouts.lastTimes["plank"] = listOf(
+            WorkoutSet("q1", 0, null, null, 45, done),
+            WorkoutSet("q2", 1, null, null, 40, done),
+            WorkoutSet("q3", 2, null, null, 35, done),
+        )
+    }
+
+    private fun ActiveWorkoutUiState.Success.hold() = active().editor as SetEditorUi.Duration
+
+    @Test
+    fun durationSet_startsFromZeroWithLastTimeAsTarget() = runTest {
+        usePlankWorkout()
         val state = collectState(createViewModel())()
 
-        assertEquals(SetEditorUi.Duration, state.active().editor)
+        assertEquals(SetRowUi.Done("h1", 1, SetValueUi.Hold(50), SetImprovement.Hold(5)), state.sets[0])
+        assertEquals(SetEditorUi.Duration(bankedSeconds = 0, runningSince = null, targetSeconds = 40), state.hold())
+        assertEquals(HoldStatus.BelowTarget(40), state.hold().statusAt(time.now()))
+    }
+
+    @Test
+    fun timer_runsPausesAndAdjusts() = runTest {
+        usePlankWorkout()
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onToggleTimer()
+        assertTrue(state().hold().isRunning)
+        time.advance(Duration.ofSeconds(30))
+        assertEquals(30, state().hold().secondsAt(time.now()))
+
+        viewModel.onToggleTimer()
+        time.advance(Duration.ofSeconds(10)) // Paused: doesn't count.
+        assertEquals(SetEditorUi.Duration(30, null, 40), state().hold())
+
+        viewModel.onAdjustHold(15)
+        assertEquals(HoldStatus.PastTarget(5), state().hold().statusAt(time.now()))
+        viewModel.onAdjustHold(-60)
+        assertEquals(0, state().hold().secondsAt(time.now()))
+    }
+
+    @Test
+    fun adjustingWhileRunning_keepsRunning() = runTest {
+        usePlankWorkout()
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onToggleTimer()
+        time.advance(Duration.ofSeconds(20))
+        viewModel.onAdjustHold(5)
+        time.advance(Duration.ofSeconds(15))
+
+        assertTrue(state().hold().isRunning)
+        assertEquals(40, state().hold().secondsAt(time.now()))
+        assertEquals(HoldStatus.MatchedTarget, state().hold().statusAt(time.now()))
+    }
+
+    @Test
+    fun completeHold_savesElapsedSecondsAndMovesOn() = runTest {
+        usePlankWorkout()
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onCompleteSet() // 0 s: nothing to log.
+        assertTrue(!workouts.set("h2").isCompleted)
+
+        viewModel.onToggleTimer()
+        time.advance(Duration.ofSeconds(42))
+        viewModel.onCompleteSet()
+
+        assertEquals(42, workouts.set("h2").durationSeconds)
+        assertTrue(workouts.set("h2").isCompleted)
+        assertEquals(SetRowUi.Done("h2", 2, SetValueUi.Hold(42), SetImprovement.Hold(2)), state().sets[1])
+        assertEquals("h3", state().active().id)
+        assertEquals(0, state().hold().bankedSeconds)
+    }
+
+    @Test
+    fun reopenedHold_continuesFromRecordedTime() = runTest {
+        usePlankWorkout()
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onSelectSet("h1")
+
+        assertEquals("h1", state().active().id)
+        assertEquals(50, state().hold().bankedSeconds)
+    }
+
+    @Test
+    fun switchingSets_savesRunningHold() = runTest {
+        usePlankWorkout()
+        val viewModel = createViewModel()
+        collectState(viewModel)
+
+        viewModel.onToggleTimer()
+        time.advance(Duration.ofSeconds(25))
+        viewModel.onSelectSet("h3")
+
+        assertEquals(25, workouts.set("h2").durationSeconds)
+        assertTrue(!workouts.set("h2").isCompleted)
     }
 }
