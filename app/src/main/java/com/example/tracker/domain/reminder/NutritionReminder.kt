@@ -18,7 +18,7 @@ fun interface ReminderNotifier {
 }
 
 /**
- * The daily nutrition reminder: at [ReminderTime.AT], if today has no entry, the user gets a
+ * The daily nutrition reminder: at the time the user picked, if today has no entry, the user gets a
  * notification. Only one alarm is ever pending; each one schedules the next.
  */
 class NutritionReminder(
@@ -31,7 +31,8 @@ class NutritionReminder(
     /** Schedules the next reminder if it is enabled, otherwise cancels it. Safe to call any time. */
     fun sync() {
         if (settings.nutritionReminderEnabled.value) {
-            scheduler.schedule(ReminderTime.nextAfter(time.now().atZone(time.zone())).toInstant())
+            val next = ReminderTime.nextAfter(time.now().atZone(time.zone()), settings.nutritionReminderTime.value)
+            scheduler.schedule(next.toInstant())
         } else {
             scheduler.cancel()
         }

@@ -7,6 +7,7 @@ import com.example.tracker.testing.FakeSettingsRepository
 import java.io.IOException
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -70,6 +71,16 @@ class NutritionReminderTest {
 
         assertEquals(listOf(Instant.parse("2026-10-03T21:00:00Z")), scheduler.scheduled)
         assertEquals(1, scheduler.cancels)
+    }
+
+    @Test
+    fun sync_usesTheChosenTime() {
+        time.current = Instant.parse("2026-10-03T08:00:00Z")
+        settings.nutritionReminderTime.value = LocalTime.of(18, 45)
+
+        reminder.sync()
+
+        assertEquals(listOf(Instant.parse("2026-10-03T18:45:00Z")), scheduler.scheduled)
     }
 
     private class RecordingScheduler : ReminderScheduler {

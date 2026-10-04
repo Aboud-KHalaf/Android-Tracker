@@ -4,6 +4,7 @@ import com.example.tracker.R
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.testing.FakeSettingsRepository
 import com.example.tracker.testing.MainDispatcherRule
+import java.time.LocalTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -94,6 +95,27 @@ class SettingsViewModelTest {
         val viewModel = SettingsViewModel(settings)
 
         viewModel.onSetNutritionReminder(false)
+
+        assertEquals(SettingsEvent.ShowMessage(R.string.settings_error_reminder), viewModel.events.first())
+    }
+
+    @Test
+    fun onSetNutritionReminderTime_savesIt() = runTest {
+        val viewModel = SettingsViewModel(settings)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+
+        viewModel.onSetNutritionReminderTime(LocalTime.of(19, 15))
+
+        assertEquals(LocalTime.of(19, 15), settings.nutritionReminderTime.value)
+        assertEquals(LocalTime.of(19, 15), viewModel.uiState.value.nutritionReminderTime)
+    }
+
+    @Test
+    fun onSetNutritionReminderTime_failure_showsMessage() = runTest {
+        settings.writeError = java.io.IOException("disk")
+        val viewModel = SettingsViewModel(settings)
+
+        viewModel.onSetNutritionReminderTime(LocalTime.of(19, 15))
 
         assertEquals(SettingsEvent.ShowMessage(R.string.settings_error_reminder), viewModel.events.first())
     }

@@ -2,6 +2,7 @@ package com.example.tracker
 
 import android.app.Application
 import com.example.tracker.di.AppContainer
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -13,9 +14,10 @@ class TrackerApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
-        // Keep the reminder alarm in line with the setting: set it now, and again on every change.
+        // Keep the reminder alarm in line with the settings: set it now, and again on every change.
         container.nutritionReminder.sync()
-        container.settingsRepository.nutritionReminderEnabled
+        val settings = container.settingsRepository
+        combine(settings.nutritionReminderEnabled, settings.nutritionReminderTime, ::Pair)
             .drop(1)
             .onEach { container.nutritionReminder.sync() }
             .launchIn(container.applicationScope)

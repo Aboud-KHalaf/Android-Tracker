@@ -6,7 +6,9 @@ import com.example.tracker.data.local.TrackerDatabase
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.ThemeMode
+import com.example.tracker.domain.reminder.ReminderTime
 import com.example.tracker.domain.repository.SettingsRepository
+import java.time.LocalTime
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,6 +61,17 @@ class LocalSettingsRepository(
         _nutritionReminderEnabled.value = enabled
     }
 
+    private val _nutritionReminderTime = MutableStateFlow(readNutritionReminderTime())
+    override val nutritionReminderTime: StateFlow<LocalTime> = _nutritionReminderTime.asStateFlow()
+
+    override suspend fun setNutritionReminderTime(time: LocalTime) {
+        val minuteOfDay = time.hour * MINUTES_PER_HOUR + time.minute
+        withContext(ioDispatcher) {
+            preferences.edit(commit = true) { putInt(KEY_NUTRITION_REMINDER_MINUTE, minuteOfDay) }
+        }
+        _nutritionReminderTime.value = LocalTime.of(time.hour, time.minute)
+    }
+
     private val _notificationPermissionRequested =
         MutableStateFlow(preferences.getBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, false))
     override val notificationPermissionRequested: StateFlow<Boolean> = _notificationPermissionRequested.asStateFlow()
@@ -84,6 +97,14 @@ class LocalSettingsRepository(
         proteinGrams = preferences.getIntOrNull(KEY_PROTEIN_TARGET),
     )
 
+    /** Stored as minutes after midnight; anything unreadable falls back to the default. */
+    private fun readNutritionReminderTime(): LocalTime {
+        val minuteOfDay = preferences.getIntOrNull(KEY_NUTRITION_REMINDER_MINUTE)
+            ?.takeIf { it in 0 until MINUTES_PER_DAY }
+            ?: return ReminderTime.DEFAULT
+        return LocalTime.of(minuteOfDay / MINUTES_PER_HOUR, minuteOfDay % MINUTES_PER_HOUR)
+    }
+
     private fun SharedPreferences.getIntOrNull(key: String): Int? = if (contains(key)) getInt(key, 0) else null
 
     private fun SharedPreferences.Editor.putOrRemove(key: String, value: Int?) {
@@ -96,6 +117,9 @@ class LocalSettingsRepository(
         private const val KEY_CALORIE_TARGET = "calorie_target"
         private const val KEY_PROTEIN_TARGET = "protein_target"
         private const val KEY_NUTRITION_REMINDER = "nutrition_reminder"
+        private const val KEY_NUTRITION_REMINDER_MINUTE = "nutrition_reminder_minute"
+        private const val MINUTES_PER_HOUR = 60
+        private const val MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR
         private const val KEY_NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested"
     }
 }
