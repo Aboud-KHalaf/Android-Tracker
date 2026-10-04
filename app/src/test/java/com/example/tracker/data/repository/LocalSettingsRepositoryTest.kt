@@ -9,6 +9,7 @@ import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.ThemeMode
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -94,6 +95,17 @@ class LocalSettingsRepositoryTest {
         settings.setNutritionReminderEnabled(false)
 
         assertEquals(false, LocalSettingsRepository(preferences, database, dispatcher).nutritionReminderEnabled.value)
+    }
+
+    @Test
+    fun nutritionReminderTime_defaultsToNinePmAndPersists() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val settings = LocalSettingsRepository(preferences, database, dispatcher)
+        assertEquals(LocalTime.of(21, 0), settings.nutritionReminderTime.value)
+
+        settings.setNutritionReminderTime(LocalTime.of(7, 5, 30))
+
+        assertEquals(LocalTime.of(7, 5), LocalSettingsRepository(preferences, database, dispatcher).nutritionReminderTime.value)
     }
 
     @Test

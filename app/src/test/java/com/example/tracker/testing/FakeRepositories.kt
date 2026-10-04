@@ -14,6 +14,7 @@ import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.model.WorkoutSummary
+import com.example.tracker.domain.reminder.ReminderTime
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
@@ -23,6 +24,7 @@ import com.example.tracker.domain.repository.WorkoutRepository
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
@@ -194,7 +196,13 @@ class FakeSettingsRepository : SettingsRepository {
     override val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
     override val nutritionTargets = MutableStateFlow(NutritionTargets())
     override val nutritionReminderEnabled = MutableStateFlow(true)
+    override val nutritionReminderTime = MutableStateFlow(ReminderTime.DEFAULT)
     override val notificationPermissionRequested = MutableStateFlow(false)
+
+    override suspend fun setNutritionReminderTime(time: LocalTime) {
+        writeError?.let { throw it }
+        nutritionReminderTime.value = time
+    }
 
     override suspend fun setNutritionReminderEnabled(enabled: Boolean) {
         writeError?.let { throw it }
