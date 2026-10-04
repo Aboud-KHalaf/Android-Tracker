@@ -35,6 +35,18 @@ class NutritionSummaryTest {
     }
 
     @Test
+    fun of_averagesStepsOverDaysWithSteps_andIsNullWithoutAny() {
+        val days = listOf(
+            DailyNutrition(oct1, 2000, 100, steps = 8_000),
+            DailyNutrition(oct1.plusDays(1), 2000, 100, steps = 11_001),
+            DailyNutrition(oct1.plusDays(2), 2000, 100),
+        )
+
+        assertEquals(9_501, NutritionSummary.of(days, NutritionTargets())!!.averageSteps) // 9,500.5 rounds up
+        assertNull(NutritionSummary.of(listOf(day(0, 2000, 100)), NutritionTargets())!!.averageSteps)
+    }
+
+    @Test
     fun of_countsDaysOnTarget() {
         val days = listOf(
             day(0, 2400, 160), // both on target

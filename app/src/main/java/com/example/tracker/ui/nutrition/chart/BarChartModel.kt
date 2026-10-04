@@ -12,8 +12,8 @@ import kotlin.math.ceil
 data class DayBar(val slot: Int, val date: LocalDate, val value: Int, val height: Float)
 
 /**
- * A bar per logged day across a date range, ready to draw. Days without an entry leave a gap
- * rather than a zero bar. The y-axis starts at 0 and reaches past both the tallest bar and the
+ * A bar per logged day across a date range, ready to draw. Days without an entry, or without a
+ * value for the metric, leave a gap rather than a zero bar; [bars] is empty when no day has one. The y-axis starts at 0 and reaches past both the tallest bar and the
  * target, in round steps.
  */
 data class BarChartModel(
@@ -38,10 +38,13 @@ data class BarChartModel(
             metric: NutritionMetric,
             targets: NutritionTargets,
         ): BarChartModel? {
-            val logged = days.filter { it.date in start..end }.sortedBy { it.date }
-            if (logged.isEmpty()) return null
+            val inRange = days.filter { it.date in start..end }
+            if (inRange.isEmpty()) return null
+            val logged = inRange
+                .mapNotNull { day -> metric.valueOf(day)?.let { day.date to it } }
+                .sortedBy { (date, _) -> date }
             val target = metric.targetOf(targets)
-            val max = maxOf(logged.maxOf { metric.valueOf(it) }, target ?: 0).toDouble()
+            val max = maxOf(logged.maxOfOrNull { (_, value) -> value } ?: 0, target ?: 0).toDouble()
             val step = ChartModel.niceStep(max / TARGET_INTERVALS)
             val high = (ceil(max / step) * step).coerceAtLeast(step)
 
@@ -51,9 +54,8 @@ data class BarChartModel(
                 start = start,
                 end = end,
                 slotCount = (end.toEpochDay() - start.toEpochDay() + 1).toInt(),
-                bars = logged.map { day ->
-                    val value = metric.valueOf(day)
-                    DayBar((day.date.toEpochDay() - start.toEpochDay()).toInt(), day.date, value, height(value.toDouble()))
+                bars = logged.map { (date, value) ->
+                    DayBar((date.toEpochDay() - start.toEpochDay()).toInt(), date, value, height(value.toDouble()))
                 },
                 ticks = (0..Math.round(high / step).toInt()).map { i -> AxisTick(height(i * step), i * step) },
                 target = target,

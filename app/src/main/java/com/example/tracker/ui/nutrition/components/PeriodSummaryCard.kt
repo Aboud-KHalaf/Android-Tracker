@@ -55,6 +55,12 @@ fun PeriodSummaryCard(
                     modifier = Modifier.weight(1f),
                 )
             }
+            summary.averageSteps?.let { steps ->
+                Average(
+                    label = stringResource(R.string.nutrition_steps),
+                    value = stringResource(R.string.nutrition_steps_value, formatAmount(steps, locale)),
+                )
+            }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Detail(pluralStringResource(R.plurals.nutrition_logged_days, rangeDayCount, summary.loggedDays, rangeDayCount))
             summary.caloriesOnTargetDays?.let { hits ->

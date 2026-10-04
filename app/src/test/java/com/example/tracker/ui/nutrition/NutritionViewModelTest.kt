@@ -96,7 +96,7 @@ class NutritionViewModelTest {
 
         viewModel.onOpenEditor()
 
-        assertEquals(DayEditorState(today, "", "", isExisting = false), viewModel.editor.value)
+        assertEquals(DayEditorState(today, "", "", "", isExisting = false), viewModel.editor.value)
     }
 
     @Test
@@ -106,7 +106,7 @@ class NutritionViewModelTest {
 
         viewModel.onOpenEditor(today.minusDays(1))
 
-        assertEquals(DayEditorState(today.minusDays(1), "2300", "150", isExisting = true), viewModel.editor.value)
+        assertEquals(DayEditorState(today.minusDays(1), "2300", "150", "", isExisting = true), viewModel.editor.value)
     }
 
     @Test
@@ -120,6 +120,39 @@ class NutritionViewModelTest {
 
         assertEquals(DailyNutrition(today, 2450, 165), nutrition.days.value[today])
         assertNull(viewModel.editor.value)
+    }
+
+    @Test
+    fun onSaveDay_withSteps_savesThem_andLoggedStepsFillTheDialog() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onOpenEditor()
+        viewModel.onEditorCaloriesChange("2000")
+        viewModel.onEditorProteinChange("150")
+
+        viewModel.onEditorStepsChange("8,500 steps")
+        viewModel.onSaveDay()
+
+        assertEquals(DailyNutrition(today, 2000, 150, steps = 8500), nutrition.days.value[today])
+
+        viewModel.onOpenEditor()
+
+        assertEquals("8500", viewModel.editor.value!!.steps)
+    }
+
+    @Test
+    fun onSaveDay_stepsAboveMaximum_showsErrorAndSavesNothing() = runTest {
+        val viewModel = createViewModel()
+        viewModel.onOpenEditor()
+        viewModel.onEditorCaloriesChange("2000")
+        viewModel.onEditorProteinChange("150")
+        viewModel.onEditorStepsChange("150000")
+
+        viewModel.onSaveDay()
+
+        val editor = viewModel.editor.value!!
+        assertTrue(editor.stepsError)
+        assertFalse(editor.caloriesError)
+        assertTrue(nutrition.days.value.isEmpty())
     }
 
     @Test
@@ -164,11 +197,11 @@ class NutritionViewModelTest {
 
         viewModel.onEditorDateChange(today.minusDays(1))
 
-        assertEquals(DayEditorState(today.minusDays(1), "2300", "150", isExisting = true), viewModel.editor.value)
+        assertEquals(DayEditorState(today.minusDays(1), "2300", "150", "", isExisting = true), viewModel.editor.value)
 
         viewModel.onEditorDateChange(today.minusDays(5))
 
-        assertEquals(DayEditorState(today.minusDays(5), "2300", "150", isExisting = false), viewModel.editor.value)
+        assertEquals(DayEditorState(today.minusDays(5), "2300", "150", "", isExisting = false), viewModel.editor.value)
     }
 
     @Test

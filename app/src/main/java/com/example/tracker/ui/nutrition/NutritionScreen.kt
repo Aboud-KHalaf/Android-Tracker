@@ -71,7 +71,7 @@ import kotlinx.coroutines.launch
 /** Space below the list so the last row can scroll clear of the floating button. */
 private val FabClearance = 88.dp
 
-/** Nutrition destination: connects [NutritionViewModel] to [NutritionScreen]. */
+/** Daily log destination: connects [NutritionViewModel] to [NutritionScreen]. */
 @Composable
 fun NutritionRoute(
     modifier: Modifier = Modifier,
@@ -127,6 +127,7 @@ fun NutritionRoute(
             onDateChange = viewModel::onEditorDateChange,
             onCaloriesChange = viewModel::onEditorCaloriesChange,
             onProteinChange = viewModel::onEditorProteinChange,
+            onStepsChange = viewModel::onEditorStepsChange,
             onSave = viewModel::onSaveDay,
             onDelete = viewModel::onDeleteDay,
             onDismiss = viewModel::onDismissEditor,
@@ -272,7 +273,7 @@ private fun NutritionContent(
     }
 }
 
-/** "Nutrition" with a "Targets" action on the right. */
+/** "Daily log" with a "Targets" action on the right. */
 @Composable
 private fun TitleRow(onEditTargets: () -> Unit, modifier: Modifier = Modifier) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {

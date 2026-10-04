@@ -36,7 +36,7 @@ import com.example.tracker.ui.theme.spacing
 import com.example.tracker.ui.theme.tabularNumbers
 import java.time.LocalDate
 
-/** Today's calories and protein against the targets, or a prompt to log them. */
+/** Today's calories and protein against the targets and steps, or a prompt to log them. */
 @Composable
 fun TodayCard(
     today: LocalDate,
@@ -96,6 +96,15 @@ fun TodayCard(
                     withTarget = R.string.nutrition_grams_of_target,
                     withoutTarget = R.string.nutrition_grams,
                 )
+                entry.steps?.let { steps ->
+                    AmountProgress(
+                        label = stringResource(R.string.nutrition_steps),
+                        value = steps,
+                        target = null,
+                        withTarget = R.string.nutrition_steps_value,
+                        withoutTarget = R.string.nutrition_steps_value,
+                    )
+                }
             }
         }
     }

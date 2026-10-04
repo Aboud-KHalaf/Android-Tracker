@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 /**
- * Nutrition: today's calories and protein against the targets, the history of a period, and
+ * Daily log: today's calories and protein against the targets, and steps, the history of a period, and
  * the dialog that logs one day, and the daily targets. Messages are sent once through [events].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -106,6 +106,7 @@ class NutritionViewModel(
                 date = day,
                 calories = existing?.calories?.toString().orEmpty(),
                 protein = existing?.proteinGrams?.toString().orEmpty(),
+                steps = existing?.steps?.toString().orEmpty(),
                 isExisting = existing != null,
             )
         }
@@ -119,7 +120,13 @@ class NutritionViewModel(
             _editor.update { editor ->
                 when {
                     editor == null -> null
-                    existing != null -> DayEditorState(date, existing.calories.toString(), existing.proteinGrams.toString(), isExisting = true)
+                    existing != null -> DayEditorState(
+                        date = date,
+                        calories = existing.calories.toString(),
+                        protein = existing.proteinGrams.toString(),
+                        steps = existing.steps?.toString().orEmpty(),
+                        isExisting = true,
+                    )
                     else -> editor.copy(date = date, isExisting = false)
                 }
             }
@@ -134,6 +141,10 @@ class NutritionViewModel(
         _editor.update { it?.copy(protein = sanitizeAmount(text), proteinError = false) }
     }
 
+    fun onEditorStepsChange(text: String) {
+        _editor.update { it?.copy(steps = sanitizeAmount(text, MAX_STEPS_LENGTH), stepsError = false) }
+    }
+
     fun onDismissEditor() {
         _editor.value = null
     }
@@ -143,8 +154,13 @@ class NutritionViewModel(
         if (editor.isSaving) return
         val calories = parseAmount(editor.calories, DailyNutrition.MAX_CALORIES)
         val protein = parseAmount(editor.protein, DailyNutrition.MAX_PROTEIN_GRAMS)
-        if (calories == null || protein == null) {
-            _editor.value = editor.copy(caloriesError = calories == null, proteinError = protein == null)
+        val steps = parseOptionalAmount(editor.steps, DailyNutrition.MAX_STEPS)
+        if (calories == null || protein == null || steps !is OptionalAmountInput.Valid) {
+            _editor.value = editor.copy(
+                caloriesError = calories == null,
+                proteinError = protein == null,
+                stepsError = steps is OptionalAmountInput.Invalid,
+            )
             return
         }
         _editor.value = editor.copy(isSaving = true)
@@ -154,7 +170,7 @@ class NutritionViewModel(
                 showMessage(R.string.nutrition_error_save)
             },
         ) {
-            nutritionRepository.saveDay(DailyNutrition(editor.date, calories, protein))
+            nutritionRepository.saveDay(DailyNutrition(editor.date, calories, protein, steps.value))
             _editor.value = null
         }
     }

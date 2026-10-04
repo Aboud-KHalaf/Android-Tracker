@@ -13,6 +13,8 @@ data class NutritionSummary(
     val loggedDays: Int,
     val averageCalories: Int,
     val averageProteinGrams: Int,
+    /** Averaged over the days whose steps were logged; null when none were. */
+    val averageSteps: Int?,
     /** Days within [CALORIE_TOLERANCE] of the calorie target; null without a target. */
     val caloriesOnTargetDays: Int?,
     /** Days at or above the protein target; null without a target. */
@@ -29,6 +31,7 @@ data class NutritionSummary(
                 loggedDays = days.size,
                 averageCalories = days.map { it.calories }.average().roundToInt(),
                 averageProteinGrams = days.map { it.proteinGrams }.average().roundToInt(),
+                averageSteps = days.mapNotNull { it.steps }.takeIf { it.isNotEmpty() }?.average()?.roundToInt(),
                 caloriesOnTargetDays = targets.calories?.let { target -> days.count { isCaloriesOnTarget(it.calories, target) } },
                 proteinOnTargetDays = targets.proteinGrams?.let { target -> days.count { isProteinOnTarget(it.proteinGrams, target) } },
             )

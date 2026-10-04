@@ -37,7 +37,7 @@ import com.example.tracker.ui.nutrition.formatAmount
 import com.example.tracker.ui.theme.spacing
 import java.time.LocalDate
 
-/** Logs or edits one day: its date, calories and protein. */
+/** Logs or edits one day: its date, calories, protein and, optionally, steps. */
 @Composable
 fun DayEditorDialog(
     state: DayEditorState,
@@ -45,6 +45,7 @@ fun DayEditorDialog(
     onDateChange: (LocalDate) -> Unit,
     onCaloriesChange: (String) -> Unit,
     onProteinChange: (String) -> Unit,
+    onStepsChange: (String) -> Unit,
     onSave: () -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
@@ -81,6 +82,15 @@ fun DayEditorDialog(
                     suffix = stringResource(R.string.nutrition_unit_grams),
                     isError = state.proteinError,
                     errorText = stringResource(R.string.nutrition_error_amount, formatAmount(DailyNutrition.MAX_PROTEIN_GRAMS, locale)),
+                    imeAction = ImeAction.Next,
+                )
+                AmountField(
+                    value = state.steps,
+                    onValueChange = onStepsChange,
+                    label = stringResource(R.string.nutrition_steps_optional),
+                    suffix = stringResource(R.string.nutrition_unit_steps),
+                    isError = state.stepsError,
+                    errorText = stringResource(R.string.nutrition_error_steps, formatAmount(DailyNutrition.MAX_STEPS, locale)),
                     imeAction = ImeAction.Done,
                 )
             }

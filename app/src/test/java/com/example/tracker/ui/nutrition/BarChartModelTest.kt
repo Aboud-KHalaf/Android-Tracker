@@ -6,6 +6,7 @@ import com.example.tracker.ui.nutrition.chart.BarChartModel
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class BarChartModelTest {
@@ -53,5 +54,25 @@ class BarChartModelTest {
         val chart = BarChartModel.build(start, end, days, NutritionMetric.CALORIES, NutritionTargets())!!
 
         assertEquals(listOf(2), chart.bars.map { it.slot })
+    }
+
+    @Test
+    fun build_steps_skipsDaysWithoutSteps_andHasNoTarget() {
+        val days = listOf(
+            DailyNutrition(start, 2000, 100, steps = 9_000),
+            DailyNutrition(start.plusDays(1), 2000, 100),
+        )
+
+        val chart = BarChartModel.build(start, end, days, NutritionMetric.STEPS, NutritionTargets(2400, 160))!!
+
+        assertEquals(listOf(0), chart.bars.map { it.slot })
+        assertNull(chart.target)
+    }
+
+    @Test
+    fun build_steps_noneLogged_hasNoBarsButStillAChart() {
+        val chart = BarChartModel.build(start, end, listOf(day(0, 2000, 100)), NutritionMetric.STEPS, NutritionTargets())!!
+
+        assertTrue(chart.bars.isEmpty())
     }
 }

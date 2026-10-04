@@ -66,7 +66,7 @@ private class PlotArea(val left: Float, val top: Float, val width: Float, val he
     fun y(fraction: Float) = top + (1f - fraction) * height
 }
 
-/** Calories / Protein toggle over a bar per logged day, with the target as a dashed line. */
+/** Calories / Protein / Steps toggle over a bar per logged day, with the target as a dashed line. */
 @Composable
 fun NutritionChartCard(
     chart: BarChartModel,
@@ -83,7 +83,15 @@ fun NutritionChartCard(
             verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.lg),
         ) {
             MetricSelector(selected = metric, onSelect = onSelectMetric)
-            BarChart(chart, metric)
+            if (chart.bars.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.nutrition_chart_no_steps),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                BarChart(chart, metric)
+            }
         }
     }
 }
@@ -209,15 +217,17 @@ private fun NutritionMetric.label(): String = stringResource(
     when (this) {
         NutritionMetric.CALORIES -> R.string.nutrition_calories
         NutritionMetric.PROTEIN -> R.string.nutrition_protein
+        NutritionMetric.STEPS -> R.string.nutrition_steps
     },
 )
 
-/** "2,400 kcal" or "160 g". */
+/** "2,400 kcal", "160 g" or "8,500 steps". */
 @Composable
 private fun NutritionMetric.amountText(value: Int, locale: Locale): String = stringResource(
     when (this) {
         NutritionMetric.CALORIES -> R.string.nutrition_kcal
         NutritionMetric.PROTEIN -> R.string.nutrition_grams
+        NutritionMetric.STEPS -> R.string.nutrition_steps_value
     },
     formatAmount(value, locale),
 )
