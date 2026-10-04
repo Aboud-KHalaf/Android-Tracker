@@ -1,5 +1,6 @@
 package com.example.tracker.reminder
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -35,6 +36,8 @@ class ReminderRescheduleReceiver : BroadcastReceiver() {
     }
 
     private companion object {
+        // A plain string; Android versions before 12 just never send the exact alarm broadcast.
+        @SuppressLint("InlinedApi")
         val RESCHEDULE_ACTIONS = setOf(
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_TIME_CHANGED,
