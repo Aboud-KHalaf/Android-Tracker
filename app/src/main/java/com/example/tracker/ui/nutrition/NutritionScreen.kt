@@ -16,7 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Flag
-import androidx.compose.material.icons.outlined.Restaurant
+import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -250,7 +250,7 @@ private fun NutritionContent(
             if (state.summary == null) {
                 item(key = "empty") {
                     EmptyState(
-                        icon = Icons.Outlined.Restaurant,
+                        icon = Icons.Outlined.Today,
                         title = stringResource(R.string.nutrition_empty_title),
                         body = stringResource(R.string.nutrition_empty_body),
                     )
