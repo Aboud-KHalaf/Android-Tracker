@@ -27,6 +27,7 @@ class OfflineFirstNutritionRepository(
     override suspend fun saveDay(day: DailyNutrition) {
         require(day.calories in 0..DailyNutrition.MAX_CALORIES) { "Calories out of range: ${day.calories}" }
         require(day.proteinGrams in 0..DailyNutrition.MAX_PROTEIN_GRAMS) { "Protein out of range: ${day.proteinGrams}" }
+        require(day.steps == null || day.steps in 0..DailyNutrition.MAX_STEPS) { "Steps out of range: ${day.steps}" }
         val now = time.now().toEpochMilli()
         val existing = nutritionDao.getIncludingDeleted(day.date.toEpochDay())
         val sync = when {
@@ -34,7 +35,7 @@ class OfflineFirstNutritionRepository(
             existing.sync.deletedAt != null -> existing.sync.restored(now)
             else -> existing.sync.touched(now)
         }
-        nutritionDao.upsert(listOf(DailyNutritionEntity(day.date.toEpochDay(), day.calories, day.proteinGrams, sync)))
+        nutritionDao.upsert(listOf(DailyNutritionEntity(day.date.toEpochDay(), day.calories, day.proteinGrams, day.steps, sync)))
     }
 
     override suspend fun deleteDay(date: LocalDate) {

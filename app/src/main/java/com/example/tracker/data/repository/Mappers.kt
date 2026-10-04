@@ -96,6 +96,7 @@ internal fun DailyNutritionEntity.toDomain() = DailyNutrition(
     date = LocalDate.ofEpochDay(epochDay),
     calories = calories,
     proteinGrams = proteinGrams,
+    steps = steps,
 )
 
 internal fun BodyWeightEntity.toDomain() = WeightEntry(
