@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tracker — Workouts, Nutrition &amp; Weight</title>
-<meta name="description" content="Tracker is a free, offline-first Android app for logging workouts, nutrition and body weight. No account, no cloud — your data stays on your phone.">
+<title>Tracker — Workouts, Nutrition, Steps &amp; Weight</title>
+<meta name="description" content="Tracker is a free, offline-first Android app for logging workouts, calories, protein, daily steps and body weight. No account, no cloud — your data stays on your phone.">
 <meta name="theme-color" content="#2A5FA8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Tracker — Workouts, Nutrition & Weight">
-<meta property="og:description" content="A free, offline-first Android app for workouts, nutrition and body weight. No account needed.">
+<meta property="og:title" content="Tracker — Workouts, Nutrition, Steps & Weight">
+<meta property="og:description" content="A free, offline-first Android app for workouts, nutrition, daily steps and body weight. No account needed.">
 <meta property="og:url" content="https://aboud-khalaf.github.io/Android-Tracker/">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&icon_names=add,android,arrow_forward,check,check_circle,cloud_off,code,contrast,dark_mode,devices,download,emoji_events,fitness_center,history,home,insights,light_mode,lock,monitor_weight,no_accounts,notifications,palette,play_arrow,qr_code_2,remove,restaurant,timer,trending_down&display=block">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&icon_names=add,android,arrow_forward,check,check_circle,cloud_off,code,contrast,dark_mode,devices,directions_walk,download,emoji_events,fitness_center,history,home,insights,light_mode,lock,monitor_weight,no_accounts,notifications,palette,play_arrow,qr_code_2,remove,restaurant,timer,today,trending_down&display=block">
 <style>
 /* ---------- Design tokens: mirrors app/src/main/java/.../ui/theme ---------- */
 :root, .scheme-light {
@@ -599,7 +599,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         <span class="word"><span style="--i:2">Track.</span></span><br>
         <span class="word"><span style="--i:3" class="grad-text">All on your phone.</span></span>
       </h1>
-      <p class="body-l fade-up" style="--delay:500ms">Tracker brings your <strong>workouts</strong>, <strong>nutrition</strong> and <strong>body weight</strong> into one beautiful Android app. It's offline-first, so you don't need an account or an internet connection.</p>
+      <p class="body-l fade-up" style="--delay:500ms">Tracker brings your <strong>workouts</strong>, a <strong>daily log</strong> of calories, protein and steps, and your <strong>body weight</strong> into one beautiful Android app. It's offline-first, so you don't need an account or an internet connection.</p>
       <div class="cta-row fade-up" style="--delay:650ms">
         <a class="btn lg" data-apk href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest/download/app-release.apk">
           <span class="icon">download</span>Download APK
@@ -622,7 +622,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         <div class="floater f2 pop-in" style="--delay:1100ms"><div class="ic"><span class="icon">restaurant</span></div><div><b class="num"><span data-count="142">0</span> g protein</b><span class="s">89% of today's goal</span></div></div>
         <div class="floater f3 pop-in" style="--delay:1300ms"><div class="ic"><span class="icon">trending_down</span></div><div><b>−1.2 kg</b><span class="s">this month</span></div></div>
 
-        <div class="phone" role="img" aria-label="Tracker app preview cycling through the Home, Progress, Nutrition and Weight screens">
+        <div class="phone" role="img" aria-label="Tracker app preview cycling through the Home, Progress, Daily log and Weight screens">
           <div class="screen">
             <div class="statusbar"><span class="num" id="clock">9:41</span><span class="sys"><i></i><i></i></span></div>
             <div class="views" aria-hidden="true">
@@ -655,17 +655,16 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
                 </div>
                 <div class="m-list-item"><div class="m-avatar" style="background:var(--tertiary-container);color:var(--on-tertiary-container)"><span class="icon fill">emoji_events</span></div><div><div class="t">82.5 kg × 6</div><div class="s">Personal best · today</div></div></div>
               </div>
-              <!-- Nutrition -->
+              <!-- Daily log -->
               <div class="view" data-tab="3">
-                <p class="app-sub">Nutrition</p>
+                <p class="app-sub">Daily log</p>
                 <p class="app-title">Today</p>
                 <div class="ring-wrap">
                   <svg viewBox="0 0 120 120"><circle class="ring-track" cx="60" cy="60" r="50"/><circle class="ring-val" cx="60" cy="60" r="50" pathLength="1" data-ring="0.77"/></svg>
                   <div class="c"><b class="num">1,840</b><small>of 2,400 kcal</small></div>
                 </div>
                 <div class="macro"><div class="top"><span>Protein</span><span class="num">142 / 160 g</span></div><div class="lp"><div class="f" data-w="89"></div><div class="t"></div></div></div>
-                <div class="macro"><div class="top"><span>Carbs</span><span class="num">180 / 260 g</span></div><div class="lp"><div class="f" data-w="69"></div><div class="t"></div></div></div>
-                <div class="macro"><div class="top"><span>Fat</span><span class="num">58 / 70 g</span></div><div class="lp"><div class="f" data-w="83"></div><div class="t"></div></div></div>
+                <div class="macro"><div class="top"><span>Steps</span><span class="num">8,240 steps</span></div></div>
               </div>
               <!-- Weight -->
               <div class="view" data-tab="4">
@@ -685,7 +684,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
               <div class="nav-item" data-nav="0"><div class="pill"><span class="icon">home</span></div>Home</div>
               <div class="nav-item" data-nav="1"><div class="pill"><span class="icon">history</span></div>History</div>
               <div class="nav-item" data-nav="2"><div class="pill"><span class="icon">insights</span></div>Progress</div>
-              <div class="nav-item" data-nav="3"><div class="pill"><span class="icon">restaurant</span></div>Nutrition</div>
+              <div class="nav-item" data-nav="3"><div class="pill"><span class="icon">today</span></div>Daily</div>
               <div class="nav-item" data-nav="4"><div class="pill"><span class="icon">monitor_weight</span></div>Weight</div>
             </div>
           </div>
@@ -703,6 +702,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     <span><span class="icon">insights</span>Progress charts</span>
     <span><span class="icon fill" style="color:var(--tertiary)">emoji_events</span>Personal bests</span>
     <span><span class="icon">restaurant</span>Nutrition targets</span>
+    <span><span class="icon">directions_walk</span>Daily steps</span>
     <span><span class="icon">monitor_weight</span>Body weight</span>
     <span><span class="icon">notifications</span>Daily reminder</span>
     <span><span class="icon">dark_mode</span>Light &amp; dark themes</span>
@@ -766,16 +766,15 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         </div>
       </article>
 
-      <!-- Nutrition -->
+      <!-- Daily log -->
       <article class="card span-2 reveal" style="--d:100ms" data-demo="nutrition">
-        <div class="feat-ic"><span class="icon">restaurant</span></div>
-        <h3 class="title-l">Hit your daily targets</h3>
-        <p class="body-m">Set your own goals, log each day and edit any past day.</p>
+        <div class="feat-ic"><span class="icon">today</span></div>
+        <h3 class="title-l">Log your whole day</h3>
+        <p class="body-m">Track calories and protein against your goals, add your steps, and edit any past day.</p>
         <div class="demo" aria-hidden="true">
           <div class="macro"><div class="top"><span>Calories</span><span class="num"><span data-count="1840">0</span> / 2,400</span></div><div class="lp"><div class="f" data-w="77"></div><div class="t"></div></div></div>
           <div class="macro"><div class="top"><span>Protein</span><span class="num"><span data-count="142">0</span> / 160 g</span></div><div class="lp"><div class="f" data-w="89"></div><div class="t"></div></div></div>
-          <div class="macro"><div class="top"><span>Carbs</span><span class="num"><span data-count="180">0</span> / 260 g</span></div><div class="lp"><div class="f" data-w="69"></div><div class="t"></div></div></div>
-          <div class="macro"><div class="top"><span>Fat</span><span class="num"><span data-count="58">0</span> / 70 g</span></div><div class="lp"><div class="f" data-w="83"></div><div class="t"></div></div></div>
+          <div class="macro"><div class="top"><span>Steps</span><span class="num"><span data-count="8240">0</span> steps</span></div></div>
         </div>
       </article>
 
@@ -794,13 +793,13 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
       <article class="card span-3 reveal" data-demo="reminder">
         <div class="feat-ic"><span class="icon">notifications</span></div>
         <h3 class="title-l">A gentle nudge, when you want it</h3>
-        <p class="body-m">If you haven't logged your nutrition yet, an optional daily reminder helps you keep your streak. Pick its time, or turn it off, in Settings.</p>
+        <p class="body-m">If you haven't filled in today's log yet, an optional daily reminder helps you keep your streak. Pick its time, or turn it off, in Settings.</p>
         <div class="demo lock" aria-hidden="true">
           <div class="clock num">9:00</div>
           <div class="date">Saturday, October 3</div>
           <div class="notif" id="notif">
             <div class="app-ic"><svg viewBox="0 0 108 108"><use href="#appIcon"/></svg></div>
-            <div><b>Log today's nutrition</b><span>You haven't logged anything today.</span></div>
+            <div><b>Fill in today's log</b><span>You haven't added today's calories, protein and steps yet.</span></div>
             <div class="when">now</div>
           </div>
         </div>
