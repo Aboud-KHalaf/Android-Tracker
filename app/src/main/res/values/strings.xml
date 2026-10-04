@@ -317,7 +317,9 @@
     <string name="reminder_text">You haven\'t added today\'s calories and protein yet.</string>
     <string name="settings_notifications">Notifications</string>
     <string name="settings_nutrition_reminder">Daily nutrition reminder</string>
-    <string name="settings_nutrition_reminder_description">At 9 PM if today isn\'t logged</string>
+    <string name="settings_nutrition_reminder_description">Only when today isn\'t logged</string>
+    <string name="settings_reminder_time">Reminder time</string>
+    <string name="settings_reminder_time_title">Remind me at</string>
     <string name="settings_notifications_blocked">Notifications are off for this app</string>
     <string name="settings_open_system_settings">Settings</string>
     <string name="settings_error_reminder">Couldn\'t change the reminder. Try again.</string>

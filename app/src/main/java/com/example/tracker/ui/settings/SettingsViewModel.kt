@@ -11,6 +11,7 @@ import com.example.tracker.TrackerApplication
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.ui.common.launchCatching
+import java.time.LocalTime
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +22,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 
 /**
- * Settings screen: the app theme, the daily reminder, and deleting all local data.
+ * Settings screen: the app theme, the daily reminder and its time, and deleting all local data.
  * State is exposed as [uiState]; messages are sent once through [events].
  */
 class SettingsViewModel(
@@ -38,14 +39,21 @@ class SettingsViewModel(
             settingsRepository.themeMode,
             isDeletingData,
             settingsRepository.nutritionReminderEnabled,
-        ) { themeMode, deleting, reminder ->
-            SettingsUiState(themeMode = themeMode, isDeletingData = deleting, nutritionReminderEnabled = reminder)
+            settingsRepository.nutritionReminderTime,
+        ) { themeMode, deleting, reminder, reminderTime ->
+            SettingsUiState(
+                themeMode = themeMode,
+                isDeletingData = deleting,
+                nutritionReminderEnabled = reminder,
+                nutritionReminderTime = reminderTime,
+            )
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
             SettingsUiState(
                 themeMode = settingsRepository.themeMode.value,
                 nutritionReminderEnabled = settingsRepository.nutritionReminderEnabled.value,
+                nutritionReminderTime = settingsRepository.nutritionReminderTime.value,
             ),
         )
 
@@ -58,6 +66,12 @@ class SettingsViewModel(
     fun onSetNutritionReminder(enabled: Boolean) {
         viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_reminder) }) {
             settingsRepository.setNutritionReminderEnabled(enabled)
+        }
+    }
+
+    fun onSetNutritionReminderTime(time: LocalTime) {
+        viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_reminder) }) {
+            settingsRepository.setNutritionReminderTime(time)
         }
     }
 

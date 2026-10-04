@@ -1,5 +1,6 @@
 package com.example.tracker.ui.settings
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.NotificationsActive
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -39,6 +41,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -63,9 +66,12 @@ import com.example.tracker.ui.common.openAppNotificationSettings
 import com.example.tracker.ui.common.openExactAlarmSettings
 import com.example.tracker.ui.common.rememberNotificationPermissionRequest
 import com.example.tracker.ui.settings.components.DeleteDataDialog
+import com.example.tracker.ui.settings.components.ReminderTimeDialog
 import com.example.tracker.ui.settings.components.ThemeModeOptions
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
 
 /** Settings destination: connects [SettingsViewModel] to [SettingsScreen]. */
@@ -113,6 +119,7 @@ fun SettingsRoute(
             viewModel.onSetNutritionReminder(enabled)
             if (enabled) ensureNotifications()
         },
+        onSetNutritionReminderTime = viewModel::onSetNutritionReminderTime,
         showExactAlarmsItem = uiState.nutritionReminderEnabled && !exactAlarmsAllowed,
         onAllowExactAlarms = context::openExactAlarmSettings,
         onDeleteAllData = viewModel::onDeleteAllData,
@@ -130,6 +137,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onSelectThemeMode: (ThemeMode) -> Unit,
     onSetNutritionReminder: (Boolean) -> Unit,
+    onSetNutritionReminderTime: (LocalTime) -> Unit,
     onDeleteAllData: () -> Unit,
     appVersion: String,
     modifier: Modifier = Modifier,
@@ -138,6 +146,8 @@ fun SettingsScreen(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    var showReminderTimeDialog by rememberSaveable { mutableStateOf(false) }
+    val is24Hour = DateFormat.is24HourFormat(LocalContext.current)
     val spacing = MaterialTheme.spacing
 
     Scaffold(
@@ -181,6 +191,12 @@ fun SettingsScreen(
                     modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, top = spacing.lg),
                 )
                 ReminderItem(enabled = uiState.nutritionReminderEnabled, onToggle = onSetNutritionReminder)
+                ReminderTimeItem(
+                    time = uiState.nutritionReminderTime,
+                    is24Hour = is24Hour,
+                    enabled = uiState.nutritionReminderEnabled,
+                    onClick = { showReminderTimeDialog = true },
+                )
                 if (showExactAlarmsItem) ExactAlarmsItem(onClick = onAllowExactAlarms)
 
                 SectionHeader(
@@ -206,6 +222,18 @@ fun SettingsScreen(
         }
     }
 
+    if (showReminderTimeDialog) {
+        ReminderTimeDialog(
+            initialTime = uiState.nutritionReminderTime,
+            is24Hour = is24Hour,
+            onConfirm = { time ->
+                showReminderTimeDialog = false
+                onSetNutritionReminderTime(time)
+            },
+            onDismiss = { showReminderTimeDialog = false },
+        )
+    }
+
     if (showDeleteDialog) {
         DeleteDataDialog(
             onConfirm = {
@@ -227,6 +255,36 @@ private fun ReminderItem(enabled: Boolean, onToggle: (Boolean) -> Unit) {
         modifier = Modifier.toggleable(value = enabled, role = Role.Switch, onValueChange = onToggle),
     )
 }
+
+/** Shows the reminder time in the user's 12- or 24-hour format; dimmed while the reminder is off. */
+@Composable
+private fun ReminderTimeItem(time: LocalTime, is24Hour: Boolean, enabled: Boolean, onClick: () -> Unit) {
+    val locale = LocalConfiguration.current.locales[0]
+    val formatted = remember(time, is24Hour, locale) {
+        val pattern = DateFormat.getBestDateTimePattern(locale, if (is24Hour) "Hm" else "hma")
+        time.format(DateTimeFormatter.ofPattern(pattern, locale))
+    }
+    val colors = if (enabled) {
+        ListItemDefaults.colors()
+    } else {
+        val disabled = MaterialTheme.colorScheme.onSurface.copy(alpha = DISABLED_ALPHA)
+        ListItemDefaults.colors(
+            headlineColor = disabled,
+            supportingColor = disabled,
+            leadingIconColor = disabled,
+        )
+    }
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.settings_reminder_time)) },
+        supportingContent = { Text(formatted) },
+        leadingContent = { Icon(Icons.Outlined.Schedule, contentDescription = null) },
+        colors = colors,
+        modifier = Modifier.clickable(enabled = enabled, onClick = onClick),
+    )
+}
+
+/** Material's opacity for disabled content. */
+private const val DISABLED_ALPHA = 0.38f
 
 @Composable
 private fun ExactAlarmsItem(onClick: () -> Unit) {

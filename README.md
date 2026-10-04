@@ -23,14 +23,14 @@ All data stays on your device. You don't need an account or an internet connecti
 - Log daily nutrition and edit any past day
 - Set your own daily targets and see today's progress at a glance
 - Nutrition chart with a period selector
-- Optional daily reminder at 9 PM if you haven't logged anything that day
+- Optional daily reminder (9 PM by default, at a time you choose) if you haven't logged anything that day
 
 ### ⚖️ Body Weight
 - See your current weight, a weight chart and your full history
 
 ### ⚙️ Settings
 - Light, dark or system theme
-- Turn the nutrition reminder on or off
+- Turn the nutrition reminder on or off and choose when it arrives
 - Delete all data from the device
 
 ### 🎨 Design
