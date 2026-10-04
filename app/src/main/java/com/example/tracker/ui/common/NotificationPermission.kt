@@ -30,6 +30,13 @@ fun rememberNotificationPermissionRequest(onResult: (granted: Boolean) -> Unit):
     }
 }
 
+/** Opens the Android 12+ "Alarms & reminders" page for this app, where the user can allow exact alarms. */
+fun Context.openExactAlarmSettings() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, android.net.Uri.fromParts("package", packageName, null))
+    startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+}
+
 /** Opens the system page for this app's notifications, where the user can turn them back on. */
 fun Context.openAppNotificationSettings() {
     val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

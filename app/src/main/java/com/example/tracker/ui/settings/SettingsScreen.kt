@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.NotificationsActive
@@ -50,13 +51,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import com.example.tracker.BuildConfig
 import androidx.compose.foundation.selection.toggleable
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.SectionHeader
+import com.example.tracker.reminder.canScheduleExactAlarms
 import com.example.tracker.ui.common.openAppNotificationSettings
+import com.example.tracker.ui.common.openExactAlarmSettings
 import com.example.tracker.ui.common.rememberNotificationPermissionRequest
 import com.example.tracker.ui.settings.components.DeleteDataDialog
 import com.example.tracker.ui.settings.components.ThemeModeOptions
@@ -94,6 +98,13 @@ fun SettingsRoute(
         }
     }
 
+    // Re-checked on every resume, since the user grants it on a system settings page.
+    var exactAlarmsAllowed by remember { mutableStateOf(canScheduleExactAlarms(context)) }
+    LifecycleResumeEffect(Unit) {
+        exactAlarmsAllowed = canScheduleExactAlarms(context)
+        onPauseOrDispose {}
+    }
+
     SettingsScreen(
         uiState = uiState,
         onBack = onBack,
@@ -102,6 +113,8 @@ fun SettingsRoute(
             viewModel.onSetNutritionReminder(enabled)
             if (enabled) ensureNotifications()
         },
+        showExactAlarmsItem = uiState.nutritionReminderEnabled && !exactAlarmsAllowed,
+        onAllowExactAlarms = context::openExactAlarmSettings,
         onDeleteAllData = viewModel::onDeleteAllData,
         appVersion = BuildConfig.VERSION_NAME,
         snackbarHostState = snackbarHostState,
@@ -120,6 +133,8 @@ fun SettingsScreen(
     onDeleteAllData: () -> Unit,
     appVersion: String,
     modifier: Modifier = Modifier,
+    showExactAlarmsItem: Boolean = false,
+    onAllowExactAlarms: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
@@ -166,6 +181,7 @@ fun SettingsScreen(
                     modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, top = spacing.lg),
                 )
                 ReminderItem(enabled = uiState.nutritionReminderEnabled, onToggle = onSetNutritionReminder)
+                if (showExactAlarmsItem) ExactAlarmsItem(onClick = onAllowExactAlarms)
 
                 SectionHeader(
                     title = stringResource(R.string.settings_data),
@@ -209,6 +225,16 @@ private fun ReminderItem(enabled: Boolean, onToggle: (Boolean) -> Unit) {
         leadingContent = { Icon(Icons.Outlined.NotificationsActive, contentDescription = null) },
         trailingContent = { Switch(checked = enabled, onCheckedChange = null) },
         modifier = Modifier.toggleable(value = enabled, role = Role.Switch, onValueChange = onToggle),
+    )
+}
+
+@Composable
+private fun ExactAlarmsItem(onClick: () -> Unit) {
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.settings_exact_alarms)) },
+        supportingContent = { Text(stringResource(R.string.settings_exact_alarms_description)) },
+        leadingContent = { Icon(Icons.Outlined.Alarm, contentDescription = null) },
+        modifier = Modifier.clickable(onClick = onClick),
     )
 }
 
