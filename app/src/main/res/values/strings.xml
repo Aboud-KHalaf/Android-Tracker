@@ -82,12 +82,31 @@
 
     <!-- Add exercise sheet -->
     <string name="add_exercise_title">Add exercise</string>
+    <string name="add_exercise_browse">Browse exercise catalog</string>
+    <string name="add_exercise_browse_body">Pictures, muscles and instructions</string>
     <string name="add_exercise_create">Create new exercise</string>
     <string name="add_exercise_library_empty">Every exercise in your library is already in this plan.</string>
     <string name="add_exercise_new_title">New exercise</string>
     <string name="add_exercise_name_label">Exercise name</string>
     <string name="add_exercise_type_label">Measured by</string>
     <string name="add_exercise_confirm">Add to plan</string>
+
+    <!-- Exercise catalog -->
+    <string name="catalog_title">Exercise catalog</string>
+    <string name="catalog_search_label">Search exercises</string>
+    <string name="catalog_search_clear">Clear search</string>
+    <string name="catalog_error_load">Couldn\'t load the exercise catalog. Check your connection and try again.</string>
+    <string name="catalog_error_add">Couldn\'t add the exercise. Try again.</string>
+    <string name="catalog_empty_title">No matching exercises</string>
+    <string name="catalog_empty_body">Try a different name, or create your own exercise from the plan.</string>
+    <string name="catalog_in_plan">In plan</string>
+    <string name="catalog_added">%1$s added to the plan</string>
+    <string name="catalog_muscles">Muscles</string>
+    <string name="catalog_secondary_muscles">Also works</string>
+    <string name="catalog_equipment">Equipment</string>
+    <string name="catalog_image_description">Demonstration of %1$s</string>
+    <string name="catalog_already_in_plan">Already in this plan</string>
+    <string name="catalog_attribution">Exercise data from wger.de, licensed CC-BY-SA.</string>
 
     <!-- Active workout -->
     <string name="workout_error_load">Couldn\'t load the workout.</string>

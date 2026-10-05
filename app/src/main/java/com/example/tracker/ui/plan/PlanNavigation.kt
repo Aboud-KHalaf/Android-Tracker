@@ -3,6 +3,7 @@ package com.example.tracker.ui.plan
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -13,8 +14,10 @@ fun NavController.navigateToPlan(planId: String) = navigate(PlanDestination(plan
 fun NavGraphBuilder.planScreen(
     onBack: () -> Unit,
     onOpenWorkout: (workoutId: String) -> Unit,
+    onBrowseCatalog: (planId: String) -> Unit,
 ) {
-    composable<PlanDestination> {
-        PlanRoute(onBack = onBack, onOpenWorkout = onOpenWorkout)
+    composable<PlanDestination> { backStackEntry ->
+        val planId = backStackEntry.toRoute<PlanDestination>().planId
+        PlanRoute(onBack = onBack, onOpenWorkout = onOpenWorkout, onBrowseCatalog = { onBrowseCatalog(planId) })
     }
 }

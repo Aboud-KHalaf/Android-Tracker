@@ -6,13 +6,17 @@ import com.example.tracker.core.SystemTimeProvider
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.core.UuidGenerator
 import com.example.tracker.data.local.TrackerDatabase
+import com.example.tracker.data.remote.UrlConnectionHttpClient
+import com.example.tracker.data.remote.wger.WgerApi
 import com.example.tracker.data.repository.LocalSettingsRepository
 import com.example.tracker.data.repository.OfflineFirstExerciseRepository
 import com.example.tracker.data.repository.OfflineFirstNutritionRepository
 import com.example.tracker.data.repository.OfflineFirstPlanRepository
 import com.example.tracker.data.repository.OfflineFirstWeightRepository
 import com.example.tracker.data.repository.OfflineFirstWorkoutRepository
+import com.example.tracker.data.repository.WgerExerciseCatalogRepository
 import com.example.tracker.domain.reminder.NutritionReminder
+import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
@@ -34,6 +38,9 @@ class AppContainer(context: Context) {
     private val database: TrackerDatabase by lazy { TrackerDatabase.create(context.applicationContext) }
 
     val exerciseRepository: ExerciseRepository by lazy { OfflineFirstExerciseRepository(database, time, ids) }
+    val exerciseCatalogRepository: ExerciseCatalogRepository by lazy {
+        WgerExerciseCatalogRepository(WgerApi(UrlConnectionHttpClient()))
+    }
     val planRepository: PlanRepository by lazy { OfflineFirstPlanRepository(database, time, ids) }
     val workoutRepository: WorkoutRepository by lazy { OfflineFirstWorkoutRepository(database, time, ids) }
     val nutritionRepository: NutritionRepository by lazy { OfflineFirstNutritionRepository(database, time) }

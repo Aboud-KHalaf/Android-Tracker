@@ -14,7 +14,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.TravelExplore
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -71,6 +73,7 @@ private val FabClearance = 88.dp
 fun PlanRoute(
     onBack: () -> Unit,
     onOpenWorkout: (workoutId: String) -> Unit,
+    onBrowseCatalog: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PlanViewModel = viewModel(factory = PlanViewModel.Factory),
 ) {
@@ -113,6 +116,7 @@ fun PlanRoute(
             onRemoveExercise = viewModel::onRemoveExercise,
             onAddExercise = viewModel::onAddExercise,
             onCreateExercise = viewModel::onCreateExercise,
+            onBrowseCatalog = onBrowseCatalog,
             onRenamePlan = viewModel::onRenamePlan,
             onDeletePlan = viewModel::onDeletePlan,
             onRetry = viewModel::onRetry,
@@ -131,6 +135,7 @@ data class PlanActions(
     val onRemoveExercise: (planExerciseId: String) -> Unit = {},
     val onAddExercise: (exerciseId: String) -> Unit = {},
     val onCreateExercise: (name: String, type: ExerciseType) -> Unit = { _, _ -> },
+    val onBrowseCatalog: () -> Unit = {},
     val onRenamePlan: (name: String) -> Unit = {},
     val onDeletePlan: () -> Unit = {},
     val onRetry: () -> Unit = {},
@@ -234,6 +239,7 @@ private fun PlanOverlays(
             options = state.availableExercises,
             onAdd = actions.onAddExercise,
             onCreate = actions.onCreateExercise,
+            onBrowseCatalog = actions.onBrowseCatalog,
             onDismiss = onDismiss,
         )
     }
@@ -271,6 +277,12 @@ private fun PlanContent(
             }
             if (state.exercises.isEmpty()) {
                 item(key = "empty") { PlanEmptyState() }
+                item(key = "browse") {
+                    BrowseCatalogButton(
+                        onClick = actions.onBrowseCatalog,
+                        modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.sm),
+                    )
+                }
             }
             item(key = "add") {
                 AddExerciseButton(
@@ -295,6 +307,21 @@ private fun PlanSummary(state: PlanUiState.Success, modifier: Modifier = Modifie
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier,
     )
+}
+
+/** The quickest way to fill a new plan, so it leads while the plan is empty. */
+@Composable
+private fun BrowseCatalogButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = Dimens.minTouchTarget),
+    ) {
+        Icon(Icons.Outlined.TravelExplore, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+        Text(stringResource(R.string.add_exercise_browse))
+    }
 }
 
 @Composable

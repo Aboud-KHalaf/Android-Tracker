@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tracker — Workouts, Nutrition, Steps &amp; Weight</title>
-<meta name="description" content="Tracker is a free, offline-first Android app for logging workouts, calories, protein, daily steps and body weight. No account, no cloud — your data stays on your phone.">
+<meta name="description" content="Tracker is a free, offline-first Android app for logging workouts, calories, protein, daily steps and body weight, with an online exercise catalog to build your plans. No account, no cloud — your data stays on your phone.">
 <meta name="theme-color" content="#2A5FA8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&icon_names=add,android,arrow_forward,check,check_circle,cloud_off,code,contrast,dark_mode,devices,directions_walk,download,emoji_events,fitness_center,history,home,insights,light_mode,lock,monitor_weight,no_accounts,notifications,palette,play_arrow,qr_code_2,remove,restaurant,timer,today,trending_down&display=block">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&icon_names=add,android,arrow_forward,check,check_circle,cloud_off,code,contrast,dark_mode,devices,directions_walk,download,emoji_events,fitness_center,history,home,info,insights,light_mode,lock,monitor_weight,no_accounts,notifications,palette,play_arrow,qr_code_2,remove,restaurant,search,timer,today,travel_explore,trending_down&display=block">
 <style>
 /* ---------- Design tokens: mirrors app/src/main/java/.../ui/theme ---------- */
 :root, .scheme-light {
@@ -364,6 +364,29 @@ section { position:relative; }
 @media (max-width:680px){ .bento { grid-template-columns:1fr; } .span-wide-md { grid-column:span 1; } .card { padding:22px; } }
 .surface { background:var(--surface); border-radius:var(--r-lg); padding:16px; box-shadow:inset 0 0 0 1px var(--outline-variant); }
 
+/* Exercise catalog demo */
+.span-6 { grid-column:1 / -1; }
+.catalog-card { display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:center; }
+.catalog-card .demo { margin-top:0; }
+@media (max-width:860px){ .catalog-card { grid-template-columns:1fr; gap:0; } .catalog-card .demo { margin-top:24px; } }
+.catalog-note { display:flex; gap:8px; align-items:flex-start; margin-top:16px; color:var(--on-surface-variant); }
+.catalog-note .icon { font-size:18px; }
+.search-field { display:flex; align-items:center; gap:10px; height:44px; padding:0 14px; border-radius:var(--r-full); background:var(--sc-high); box-shadow:inset 0 0 0 1px var(--outline-variant); margin-bottom:8px; font-size:14px; }
+.search-field .icon { font-size:20px; color:var(--on-surface-variant); }
+.search-field .caret { width:2px; height:18px; background:var(--primary); margin-left:-8px; animation:caret 1s steps(1) infinite; }
+@keyframes caret { 50% { opacity:0; } }
+.cat-list { position:relative; min-height:186px; }
+.cat-row { opacity:0; transform:translateY(8px); transition:opacity 400ms var(--ease-decel), transform 400ms var(--ease-decel), background-color 300ms; border-radius:var(--r-md); padding-inline:8px; transition-delay:var(--rd, 0ms); }
+.cat-row.show { opacity:1; transform:none; }
+.cat-row + .cat-row { border-top:0; }
+.cat-row.press { background:color-mix(in srgb, var(--primary) 12%, transparent); }
+.cat-row .thumb { width:48px; height:48px; border-radius:var(--r-md); background:var(--sc-highest); color:var(--on-surface-variant); display:grid; place-items:center; flex:none; }
+.cat-row .in-plan { margin-left:auto; color:var(--primary); font-size:22px; transform:scale(0); transition:transform 400ms var(--ease-emph); }
+.cat-row.added .in-plan { transform:none; }
+.cat-toast { margin-top:8px; padding:12px 16px; border-radius:var(--r-sm); background:var(--inverse-surface); color:var(--inverse-on-surface); font-size:13px;
+  opacity:0; transform:translateY(8px); transition:opacity 300ms, transform 300ms var(--ease-decel); }
+.cat-toast.show { opacity:1; transform:none; }
+
 /* Set logger demo */
 .set-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
 .set-head .timer { font-size:13px; color:var(--on-surface-variant); display:flex; align-items:center; gap:4px; }
@@ -599,7 +622,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         <span class="word"><span style="--i:2">Track.</span></span><br>
         <span class="word"><span style="--i:3" class="grad-text">All on your phone.</span></span>
       </h1>
-      <p class="body-l fade-up" style="--delay:500ms">Tracker brings your <strong>workouts</strong>, a <strong>daily log</strong> of calories, protein and steps, and your <strong>body weight</strong> into one beautiful Android app. It's offline-first, so you don't need an account or an internet connection.</p>
+      <p class="body-l fade-up" style="--delay:500ms">Tracker brings your <strong>workouts</strong>, a <strong>daily log</strong> of calories, protein and steps, and your <strong>body weight</strong> into one beautiful Android app. It's offline-first: you don't need an account, and only the optional exercise catalog uses the internet.</p>
       <div class="cta-row fade-up" style="--delay:650ms">
         <a class="btn lg" data-apk href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest/download/app-release.apk">
           <span class="icon">download</span>Download APK
@@ -698,6 +721,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
 <div class="strip" aria-hidden="true">
   <div class="marquee" id="marquee">
     <span><span class="icon">fitness_center</span>Workout plans</span>
+    <span><span class="icon">travel_explore</span>Exercise catalog</span>
     <span><span class="icon">timer</span>Hold timer</span>
     <span><span class="icon">insights</span>Progress charts</span>
     <span><span class="icon fill" style="color:var(--tertiary)">emoji_events</span>Personal bests</span>
@@ -717,10 +741,29 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     <div class="section-head reveal">
       <p class="overline">Features</p>
       <h2 class="display-s">Everything you need to make progress</h2>
-      <p class="body-l">Log a set in seconds, see your strength go up, hit your macros and watch your weight trend. All in one place.</p>
+      <p class="body-l">Build a plan from hundreds of exercises, log a set in seconds, see your strength go up, hit your macros and watch your weight trend. All in one place.</p>
     </div>
 
     <div class="bento">
+      <!-- Exercise catalog -->
+      <article class="card span-6 catalog-card reveal" data-demo="catalog">
+        <div>
+          <div class="feat-ic"><span class="icon">travel_explore</span></div>
+          <h3 class="title-l">Build plans from hundreds of exercises</h3>
+          <p class="body-m">Search the free wger exercise catalog while you build a plan. Each exercise shows a picture, the muscles it works, the equipment and how to do it. Add it with one tap, and it's set to weight × reps or a timed hold for you.</p>
+          <p class="body-m catalog-note"><span class="icon">info</span>Needs a connection only while you browse. Exercise data from wger.de, licensed CC-BY-SA.</p>
+        </div>
+        <div class="demo surface" aria-hidden="true">
+          <div class="search-field"><span class="icon">search</span><span class="q" id="catQuery"></span><span class="caret"></span></div>
+          <div class="cat-list" id="catList">
+            <div class="m-list-item cat-row" data-cat="0"><div class="thumb"><span class="icon">fitness_center</span></div><div><div class="t">Bench Press</div><div class="s">Chest · Barbell, Bench</div></div><span class="icon fill in-plan">check_circle</span></div>
+            <div class="m-list-item cat-row" data-cat="1"><div class="thumb"><span class="icon">fitness_center</span></div><div><div class="t">Benchpress Dumbbells</div><div class="s">Chest · Bench, Dumbbell</div></div><span class="icon fill in-plan">check_circle</span></div>
+            <div class="m-list-item cat-row" data-cat="2"><div class="thumb"><span class="icon">fitness_center</span></div><div><div class="t">Bench Press Narrow Grip</div><div class="s">Arms · Barbell, Bench</div></div><span class="icon fill in-plan">check_circle</span></div>
+          </div>
+          <div class="cat-toast" id="catToast">Bench Press added to the plan</div>
+        </div>
+      </article>
+
       <!-- Workout logger -->
       <article class="card span-3 reveal" data-demo="sets">
         <div class="feat-ic"><span class="icon">fitness_center</span></div>
@@ -867,10 +910,10 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     <div class="reveal">
       <p class="overline">Privacy</p>
       <h2 class="display-s">Your data never leaves your phone</h2>
-      <p class="body-l" style="margin:16px 0 32px">There are no accounts, no cloud sync, no ads and no analytics. Everything is stored in a local database on your device, and you can delete all of it from Settings with one tap.</p>
+      <p class="body-l" style="margin:16px 0 32px">There are no accounts, no cloud sync, no ads and no analytics. Everything you log is stored in a local database on your device, and you can delete all of it from Settings with one tap. The app only goes online when you browse the exercise catalog, and then it sends just your search to wger.de.</p>
       <div class="stats">
         <div class="stat"><span class="icon">no_accounts</span><b class="num"><span data-count="0">0</span></b><span>accounts needed</span></div>
-        <div class="stat"><span class="icon">cloud_off</span><b class="num"><span data-count="0">0</span></b><span>servers involved</span></div>
+        <div class="stat"><span class="icon">cloud_off</span><b class="num"><span data-count="0">0</span></b><span>servers storing your data</span></div>
         <div class="stat"><span class="icon">lock</span><b class="num"><span data-count="100">0</span>%</b><span>on-device</span></div>
       </div>
     </div>
@@ -899,7 +942,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     </div>
     <div class="tech reveal">
       <span class="chip">Kotlin</span><span class="chip">Jetpack Compose</span><span class="chip">Material 3</span><span class="chip">MVVM</span>
-      <span class="chip">StateFlow</span><span class="chip">Navigation Compose</span><span class="chip">Room</span><span class="chip">kotlinx.serialization</span>
+      <span class="chip">StateFlow</span><span class="chip">Navigation Compose</span><span class="chip">Room</span><span class="chip">kotlinx.serialization</span><span class="chip">Coil</span><span class="chip">wger REST API</span>
       <span class="chip">AlarmManager</span><span class="chip">JUnit</span><span class="chip">Robolectric</span><span class="chip">Compose UI tests</span>
     </div>
     <div class="cta-row reveal" style="justify-content:center">
@@ -1129,6 +1172,22 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
           await sleep(t === 0 ? 0 : (reduce ? 1000 : 400));
         }
         ring.classList.add("done"); lbl.textContent = "Done!"; await sleep(2200);
+      }
+    },
+    async catalog(card) {
+      const q = $("#catQuery"), rows = $$(".cat-row", card), toast = $("#catToast");
+      while (true) {
+        q.textContent = ""; toast.classList.remove("show");
+        rows.forEach(r => r.classList.remove("show", "added", "press"));
+        await sleep(700);
+        for (const ch of "bench") { q.textContent += ch; await sleep(reduce ? 0 : 160); }
+        await sleep(400);
+        rows.forEach((r, i) => { r.style.setProperty("--rd", `${i * 120}ms`); r.classList.add("show"); });
+        await sleep(1500);
+        rows[0].classList.add("press"); await sleep(250); rows[0].classList.remove("press");
+        await sleep(500);
+        rows[0].classList.add("added"); toast.classList.add("show");
+        await sleep(4000);
       }
     },
     nutrition(card) { fillBars(card); $$("[data-count]", card).forEach(countUp); },
