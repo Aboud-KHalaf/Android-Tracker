@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 import com.example.tracker.data.local.SyncMetadata
 
 /**
- * What was eaten on one day. The day itself is the key, so there is at most one row per
+ * What was eaten, and how many steps were walked, on one day. The day itself is the key, so there is at most one row per
  * day on every device and rows from different devices merge naturally when synced.
  */
 @Entity(
@@ -20,5 +20,7 @@ data class DailyNutritionEntity(
     @PrimaryKey @ColumnInfo(name = "epoch_day") val epochDay: Long,
     @ColumnInfo(name = "calories") val calories: Int,
     @ColumnInfo(name = "protein_grams") val proteinGrams: Int,
+    /** Null when the day's steps weren't logged. */
+    @ColumnInfo(name = "steps") val steps: Int?,
     @Embedded val sync: SyncMetadata,
 )

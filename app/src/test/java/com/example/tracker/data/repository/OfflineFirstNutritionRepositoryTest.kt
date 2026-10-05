@@ -61,6 +61,17 @@ class OfflineFirstNutritionRepositoryTest {
     }
 
     @Test
+    fun saveDay_withSteps_storesThem_andSavingWithoutStepsClearsThem() = runTest {
+        repository.saveDay(DailyNutrition(oct1, 2300, 150, steps = 8_500))
+
+        assertEquals(8_500, repository.observeDay(oct1).first()?.steps)
+
+        repository.saveDay(DailyNutrition(oct1, 2300, 150))
+
+        assertNull(repository.observeDay(oct1).first()?.steps)
+    }
+
+    @Test
     fun observeDays_returnsOnlyDaysInRangeNewestFirst() = runTest {
         listOf(0L, 1L, 2L, 5L).forEach { repository.saveDay(DailyNutrition(oct1.plusDays(it), 2000, 100)) }
 
@@ -100,5 +111,10 @@ class OfflineFirstNutritionRepositoryTest {
     @Test(expected = IllegalArgumentException::class)
     fun saveDay_proteinAboveMaximum_isRejected() = runTest {
         repository.saveDay(DailyNutrition(oct1, 2000, DailyNutrition.MAX_PROTEIN_GRAMS + 1))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun saveDay_stepsAboveMaximum_isRejected() = runTest {
+        repository.saveDay(DailyNutrition(oct1, 2000, 150, steps = DailyNutrition.MAX_STEPS + 1))
     }
 }

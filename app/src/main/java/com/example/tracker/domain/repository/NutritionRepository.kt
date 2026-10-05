@@ -5,7 +5,7 @@ import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Calories and protein per day, at most one entry per day. Write functions throw
+ * Calories, protein and steps per day, at most one entry per day. Write functions throw
  * [IllegalArgumentException] for out-of-range values; storage failures propagate as exceptions.
  */
 interface NutritionRepository {

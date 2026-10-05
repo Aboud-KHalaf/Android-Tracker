@@ -232,9 +232,9 @@
     <string name="settings_error_theme">Couldn\'t change the theme. Try again.</string>
     <string name="settings_data">Data</string>
     <string name="settings_delete_data">Delete all data</string>
-    <string name="settings_delete_data_description">Remove every exercise, plan, workout, nutrition and weight entry from this device</string>
+    <string name="settings_delete_data_description">Remove every exercise, plan, workout, daily log and weight entry from this device</string>
     <string name="settings_delete_data_title">Delete all data?</string>
-    <string name="settings_delete_data_body">All exercises, plans, workout history, nutrition and weight entries on this device are permanently deleted. This can\'t be undone.</string>
+    <string name="settings_delete_data_body">All exercises, plans, workout history, daily log and weight entries on this device are permanently deleted. This can\'t be undone.</string>
     <string name="settings_delete_data_confirm">Delete all</string>
     <string name="settings_data_deleted">All data deleted</string>
     <string name="settings_error_delete_data">Couldn\'t delete your data. Try again.</string>
@@ -253,12 +253,12 @@
     <string name="action_delete">Delete</string>
     <string name="action_ok">OK</string>
 
-    <!-- Nutrition -->
-    <string name="nav_nutrition">Nutrition</string>
-    <string name="nutrition_title">Nutrition</string>
-    <string name="nutrition_error_load">Couldn\'t load your nutrition log.</string>
+    <!-- Daily log (calories, protein and steps; "nutrition" in code) -->
+    <string name="nav_nutrition">Daily</string>
+    <string name="nutrition_title">Daily log</string>
+    <string name="nutrition_error_load">Couldn\'t load your daily log.</string>
     <string name="nutrition_today">Today</string>
-    <string name="nutrition_today_empty">Nothing logged today yet. Add what you ate at the end of the day.</string>
+    <string name="nutrition_today_empty">Nothing logged today yet. Add what you ate and your steps at the end of the day.</string>
     <string name="nutrition_log_today">Log today</string>
     <string name="nutrition_edit_today">Edit</string>
     <string name="nutrition_calories">Calories</string>
@@ -268,6 +268,13 @@
     <string name="nutrition_kcal_of_target">%1$s / %2$s kcal</string>
     <string name="nutrition_grams_of_target">%1$s / %2$s g</string>
     <string name="nutrition_day_values">%1$s kcal · %2$s g protein</string>
+    <string name="nutrition_steps">Steps</string>
+    <string name="nutrition_steps_optional">Steps (optional)</string>
+    <string name="nutrition_steps_value">%1$s steps</string>
+    <string name="nutrition_unit_steps">steps</string>
+    <string name="nutrition_weekday_steps">%1$s · %2$s steps</string>
+    <string name="nutrition_error_steps">Enter a whole number from 0 to %1$s, or leave it empty</string>
+    <string name="nutrition_chart_no_steps">No steps logged in this period.</string>
     <string name="nutrition_daily_average">Daily average</string>
     <plurals name="nutrition_logged_days">
         <item quantity="one">Logged %1$d of %2$d day</item>
@@ -286,7 +293,7 @@
         <item quantity="other">%d days</item>
     </plurals>
     <string name="nutrition_empty_title">No days logged</string>
-    <string name="nutrition_empty_body">Log your calories and protein at the end of each day to see your history here.</string>
+    <string name="nutrition_empty_body">Log your calories, protein and steps at the end of each day to see your history here.</string>
     <string name="nutrition_log_day">Log day</string>
     <string name="nutrition_edit_day">Edit day</string>
     <string name="nutrition_unit_kcal">kcal</string>
@@ -312,11 +319,11 @@
 
     <!-- Reminders -->
     <string name="reminder_channel_name">Daily reminders</string>
-    <string name="reminder_channel_description">A reminder in the evening when today\'s nutrition isn\'t logged</string>
-    <string name="reminder_title">Log today\'s nutrition</string>
-    <string name="reminder_text">You haven\'t added today\'s calories and protein yet.</string>
+    <string name="reminder_channel_description">A reminder in the evening when today\'s log isn\'t filled in</string>
+    <string name="reminder_title">Fill in today\'s log</string>
+    <string name="reminder_text">You haven\'t added today\'s calories, protein and steps yet.</string>
     <string name="settings_notifications">Notifications</string>
-    <string name="settings_nutrition_reminder">Daily nutrition reminder</string>
+    <string name="settings_nutrition_reminder">Daily log reminder</string>
     <string name="settings_nutrition_reminder_description">Only when today isn\'t logged</string>
     <string name="settings_reminder_time">Reminder time</string>
     <string name="settings_reminder_time_title">Remind me at</string>

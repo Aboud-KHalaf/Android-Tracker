@@ -14,7 +14,10 @@ private val targets = NutritionTargets(calories = 2400, proteinGrams = 160)
 private val previewDays = listOf(
     2300 to 150, 2550 to 172, 2100 to 140, 2450 to 165, 1900 to 120, 2600 to 180, 2350 to 158,
     2200 to 161, 2480 to 170, 2700 to 145, 2000 to 130, 2400 to 166,
-).mapIndexed { i, (calories, protein) -> DailyNutrition(today.minusDays(i.toLong() + (i / 4)), calories, protein) }
+).mapIndexed { i, (calories, protein) ->
+    // Steps on most days, but not all: they're optional.
+    DailyNutrition(today.minusDays(i.toLong() + (i / 4)), calories, protein, steps = (6_000 + i * 731 % 6_000).takeIf { i % 5 != 3 })
+}
 
 private val previewState = NutritionStateMapper().map(
     today = today,

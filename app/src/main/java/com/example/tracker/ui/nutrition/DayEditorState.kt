@@ -8,21 +8,40 @@ data class DayEditorState(
     val date: LocalDate,
     val calories: String,
     val protein: String,
+    /** Optional: blank means the day's steps aren't logged. */
+    val steps: String,
     /** Whether [date] already has an entry: saving replaces it, and it can be deleted. */
     val isExisting: Boolean,
     val caloriesError: Boolean = false,
     val proteinError: Boolean = false,
+    val stepsError: Boolean = false,
     val isSaving: Boolean = false,
 )
 
 /** Longest amount the fields accept; enough for [DailyNutrition.MAX_CALORIES]. */
 internal const val MAX_AMOUNT_LENGTH = 5
 
-/** Keeps only digits, up to [MAX_AMOUNT_LENGTH] of them. */
-internal fun sanitizeAmount(text: String): String = text.filter(Char::isDigit).take(MAX_AMOUNT_LENGTH)
+/** Longest step count the field accepts; enough for [DailyNutrition.MAX_STEPS]. */
+internal const val MAX_STEPS_LENGTH = 6
+
+/** Keeps only digits, up to [maxLength] of them. */
+internal fun sanitizeAmount(text: String, maxLength: Int = MAX_AMOUNT_LENGTH): String =
+    text.filter(Char::isDigit).take(maxLength)
 
 /** The whole number in [text] if it is in 0..[max], otherwise null. */
 internal fun parseAmount(text: String, max: Int): Int? = text.trim().toIntOrNull()?.takeIf { it in 0..max }
+
+/** An optional amount: blank means not logged, otherwise a whole number in 0..max. */
+internal sealed interface OptionalAmountInput {
+    data class Valid(val value: Int?) : OptionalAmountInput
+    data object Invalid : OptionalAmountInput
+}
+
+internal fun parseOptionalAmount(text: String, max: Int): OptionalAmountInput {
+    if (text.isBlank()) return OptionalAmountInput.Valid(null)
+    val value = parseAmount(text, max) ?: return OptionalAmountInput.Invalid
+    return OptionalAmountInput.Valid(value)
+}
 
 /** A typed target: blank clears it, otherwise a whole number in 1..max. */
 internal sealed interface TargetInput {

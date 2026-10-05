@@ -16,7 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Flag
-import androidx.compose.material.icons.outlined.Restaurant
+import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -71,7 +71,7 @@ import kotlinx.coroutines.launch
 /** Space below the list so the last row can scroll clear of the floating button. */
 private val FabClearance = 88.dp
 
-/** Nutrition destination: connects [NutritionViewModel] to [NutritionScreen]. */
+/** Daily log destination: connects [NutritionViewModel] to [NutritionScreen]. */
 @Composable
 fun NutritionRoute(
     modifier: Modifier = Modifier,
@@ -127,6 +127,7 @@ fun NutritionRoute(
             onDateChange = viewModel::onEditorDateChange,
             onCaloriesChange = viewModel::onEditorCaloriesChange,
             onProteinChange = viewModel::onEditorProteinChange,
+            onStepsChange = viewModel::onEditorStepsChange,
             onSave = viewModel::onSaveDay,
             onDelete = viewModel::onDeleteDay,
             onDismiss = viewModel::onDismissEditor,
@@ -249,7 +250,7 @@ private fun NutritionContent(
             if (state.summary == null) {
                 item(key = "empty") {
                     EmptyState(
-                        icon = Icons.Outlined.Restaurant,
+                        icon = Icons.Outlined.Today,
                         title = stringResource(R.string.nutrition_empty_title),
                         body = stringResource(R.string.nutrition_empty_body),
                     )
@@ -272,7 +273,7 @@ private fun NutritionContent(
     }
 }
 
-/** "Nutrition" with a "Targets" action on the right. */
+/** "Daily log" with a "Targets" action on the right. */
 @Composable
 private fun TitleRow(onEditTargets: () -> Unit, modifier: Modifier = Modifier) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {

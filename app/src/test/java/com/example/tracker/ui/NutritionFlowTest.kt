@@ -43,8 +43,8 @@ class NutritionFlowTest {
     private val today get() = container.time.now().atZone(container.time.zone()).toLocalDate()
 
     @Test
-    fun logTodaySetTargetsAndDeleteWithUndo() {
-        compose.onNodeWithText("Nutrition").performClick()
+    fun logTodayWithStepsSetTargetsAndDeleteWithUndo() {
+        compose.onNodeWithText("Daily").performClick()
         waitForNode(hasText("Nothing logged today yet", substring = true))
 
         // Log today.
@@ -52,10 +52,12 @@ class NutritionFlowTest {
         waitForNode(hasSetTextAction() and hasAnyAncestor(isDialog()))
         inDialog(hasSetTextAction() and hasText("Calories")).performTextInput("2300")
         inDialog(hasSetTextAction() and hasText("Protein")).performTextInput("150")
+        inDialog(hasSetTextAction() and hasText("Steps (optional)")).performTextInput("8500")
         inDialog(hasText("Save")).performClick()
 
         waitForNode(hasText("2,300 kcal"))
-        assertEquals(DailyNutrition(today, 2300, 150), stored(today))
+        waitForNode(hasText("8,500 steps"))
+        assertEquals(DailyNutrition(today, 2300, 150, steps = 8500), stored(today))
 
         // Targets turn the amounts into progress against them.
         compose.onNodeWithText("Targets").performClick()
@@ -78,7 +80,7 @@ class NutritionFlowTest {
         compose.onNodeWithText("Undo").performClick()
 
         waitForNode(hasText("2,300 / 2,400 kcal"))
-        assertEquals(DailyNutrition(today, 2300, 150), stored(today))
+        assertEquals(DailyNutrition(today, 2300, 150, steps = 8500), stored(today))
     }
 
     private fun inDialog(matcher: SemanticsMatcher) = compose.onNode(matcher and hasAnyAncestor(isDialog()))

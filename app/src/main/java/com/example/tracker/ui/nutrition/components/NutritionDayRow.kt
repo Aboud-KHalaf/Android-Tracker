@@ -15,7 +15,7 @@ import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.common.fullName
 import com.example.tracker.ui.nutrition.formatAmount
 
-/** Date tile, "2,300 kcal · 150 g protein" and the weekday. Tapping it edits the day. */
+/** Date tile, "2,300 kcal · 150 g protein" and the weekday, with the steps when logged. Tapping it edits the day. */
 @Composable
 fun NutritionDayRow(day: DailyNutrition, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val locale = currentLocale()
@@ -24,7 +24,12 @@ fun NutritionDayRow(day: DailyNutrition, onClick: () -> Unit, modifier: Modifier
         headlineContent = {
             Text(stringResource(R.string.nutrition_day_values, formatAmount(day.calories, locale), formatAmount(day.proteinGrams, locale)))
         },
-        supportingContent = { Text(day.date.dayOfWeek.fullName(locale)) },
+        supportingContent = {
+            val weekday = day.date.dayOfWeek.fullName(locale)
+            Text(
+                day.steps?.let { stringResource(R.string.nutrition_weekday_steps, weekday, formatAmount(it, locale)) } ?: weekday,
+            )
+        },
         leadingContent = { DateTile(day.date) },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )

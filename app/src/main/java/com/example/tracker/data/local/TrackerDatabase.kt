@@ -30,13 +30,15 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         DailyNutritionEntity::class,
         BodyWeightEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
     autoMigrations = [
         // Adds daily_nutrition.
         AutoMigration(from = 1, to = 2),
         // Adds body_weight.
         AutoMigration(from = 2, to = 3),
+        // Adds daily_nutrition.steps.
+        AutoMigration(from = 3, to = 4),
     ],
 )
 abstract class TrackerDatabase : RoomDatabase() {
