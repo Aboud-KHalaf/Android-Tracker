@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.TravelExplore
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -44,8 +45,8 @@ import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 
 /**
- * Picks an exercise from the library to add to the plan, or creates a new one.
- * Calls [onDismiss] after either action.
+ * Picks an exercise from the library to add to the plan, creates a new one, or opens the
+ * online catalog. Calls [onDismiss] after any of these.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +54,7 @@ fun AddExerciseSheet(
     options: List<ExerciseOptionUi>,
     onAdd: (exerciseId: String) -> Unit,
     onCreate: (name: String, type: ExerciseType) -> Unit,
+    onBrowseCatalog: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     var isCreating by rememberSaveable { mutableStateOf(false) }
@@ -73,6 +75,10 @@ fun AddExerciseSheet(
                     onDismiss()
                 },
                 onCreateNew = { isCreating = true },
+                onBrowseCatalog = {
+                    onDismiss()
+                    onBrowseCatalog()
+                },
             )
         }
     }
@@ -83,12 +89,28 @@ private fun ExercisePicker(
     options: List<ExerciseOptionUi>,
     onPick: (String) -> Unit,
     onCreateNew: () -> Unit,
+    onBrowseCatalog: () -> Unit,
 ) {
     LazyColumn(modifier = Modifier.padding(bottom = MaterialTheme.spacing.xl)) {
         item(key = "title") {
             SheetTitle(
                 text = stringResource(R.string.add_exercise_title),
                 modifier = Modifier.padding(horizontal = MaterialTheme.spacing.lg, vertical = MaterialTheme.spacing.sm),
+            )
+        }
+        item(key = "browse") {
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.add_exercise_browse)) },
+                supportingContent = { Text(stringResource(R.string.add_exercise_browse_body)) },
+                leadingContent = {
+                    IconAvatar(
+                        icon = Icons.Outlined.TravelExplore,
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                modifier = Modifier.clickable(onClick = onBrowseCatalog),
             )
         }
         item(key = "create") {

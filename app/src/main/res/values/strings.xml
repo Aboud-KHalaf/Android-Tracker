@@ -82,6 +82,8 @@
 
     <!-- Add exercise sheet -->
     <string name="add_exercise_title">Add exercise</string>
+    <string name="add_exercise_browse">Browse exercise catalog</string>
+    <string name="add_exercise_browse_body">Pictures, muscles and instructions</string>
     <string name="add_exercise_create">Create new exercise</string>
     <string name="add_exercise_library_empty">Every exercise in your library is already in this plan.</string>
     <string name="add_exercise_new_title">New exercise</string>
