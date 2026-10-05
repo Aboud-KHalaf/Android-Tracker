@@ -20,9 +20,6 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,6 +35,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import com.example.tracker.R
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.ui.common.ExerciseTypeSelector
 import com.example.tracker.ui.common.IconAvatar
 import com.example.tracker.ui.common.icon
 import com.example.tracker.ui.common.label
@@ -136,7 +134,6 @@ private fun ExercisePicker(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NewExerciseForm(onCreate: (String, ExerciseType) -> Unit) {
     var name by rememberSaveable { mutableStateOf("") }
@@ -159,17 +156,7 @@ private fun NewExerciseForm(onCreate: (String, ExerciseType) -> Unit) {
             ),
             modifier = Modifier.fillMaxWidth(),
         )
-        Text(stringResource(R.string.add_exercise_type_label), style = MaterialTheme.typography.labelLarge)
-        val types = ExerciseType.entries
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            types.forEachIndexed { index, option ->
-                SegmentedButton(
-                    selected = option == type,
-                    onClick = { type = option },
-                    shape = SegmentedButtonDefaults.itemShape(index, types.size),
-                ) { Text(option.label()) }
-            }
-        }
+        ExerciseTypeSelector(selected = type, onSelect = { type = it })
         Button(
             onClick = { onCreate(name, type) },
             enabled = name.isNotBlank(),
