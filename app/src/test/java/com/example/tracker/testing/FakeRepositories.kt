@@ -1,5 +1,6 @@
 package com.example.tracker.testing
 
+import com.example.tracker.domain.model.CatalogExercise
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseSession
@@ -15,6 +16,7 @@ import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.domain.reminder.ReminderTime
+import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
@@ -296,5 +298,20 @@ class FakeWeightRepository : WeightRepository {
 
     fun put(vararg logged: WeightEntry) {
         entries.value += logged.associateBy { it.date }
+    }
+}
+
+class FakeExerciseCatalogRepository : ExerciseCatalogRepository {
+    /** Returned for every query. */
+    var results: List<CatalogExercise> = emptyList()
+
+    /** When set, every search fails with it. */
+    var error: Exception? = null
+    val queries = mutableListOf<String>()
+
+    override suspend fun search(query: String): List<CatalogExercise> {
+        queries += query
+        error?.let { throw it }
+        return results
     }
 }
