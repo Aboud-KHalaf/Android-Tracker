@@ -100,8 +100,8 @@ fun TodayCard(
                     AmountProgress(
                         label = stringResource(R.string.nutrition_steps),
                         value = steps,
-                        target = null,
-                        withTarget = R.string.nutrition_steps_value,
+                        target = targets.steps,
+                        withTarget = R.string.nutrition_steps_of_target,
                         withoutTarget = R.string.nutrition_steps_value,
                     )
                 }

@@ -39,6 +39,7 @@ internal object NutritionReportBuilder {
             add(text(R.string.export_column_steps))
             if (targets.calories != null) add(text(R.string.export_column_calories_on_target))
             if (targets.proteinGrams != null) add(text(R.string.export_column_protein_on_target))
+            if (targets.steps != null) add(text(R.string.export_column_steps_on_target))
         }
         return listOf(
             ReportSection(
@@ -52,11 +53,15 @@ internal object NutritionReportBuilder {
                     }
                     targets.calories?.let { add(ReportEntry(text(R.string.export_calorie_target), numberCell(it))) }
                     targets.proteinGrams?.let { add(ReportEntry(text(R.string.export_protein_target), numberCell(it))) }
+                    targets.steps?.let { add(ReportEntry(text(R.string.export_steps_target), numberCell(it))) }
                     summary?.caloriesOnTargetDays?.let {
                         add(ReportEntry(text(R.string.export_calories_on_target_days), numberCell(it)))
                     }
                     summary?.proteinOnTargetDays?.let {
                         add(ReportEntry(text(R.string.export_protein_on_target_days), numberCell(it)))
+                    }
+                    summary?.stepsOnTargetDays?.let {
+                        add(ReportEntry(text(R.string.export_steps_on_target_days), numberCell(it)))
                     }
                 },
             ),
@@ -72,6 +77,9 @@ internal object NutritionReportBuilder {
                             add(numberCell(day.steps))
                             targets.calories?.let { add(yesIf(NutritionSummary.isCaloriesOnTarget(day.calories, it))) }
                             targets.proteinGrams?.let { add(yesIf(NutritionSummary.isProteinOnTarget(day.proteinGrams, it))) }
+                            targets.steps?.let { target ->
+                                add(yesIf(day.steps != null && NutritionSummary.isStepsOnTarget(day.steps, target)))
+                            }
                         }
                     },
                 ),

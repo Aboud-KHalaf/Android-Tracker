@@ -63,11 +63,13 @@ class NutritionFlowTest {
         compose.onNodeWithText("Targets").performClick()
         inDialog(hasSetTextAction() and hasText("Calories")).performTextInput("2400")
         inDialog(hasSetTextAction() and hasText("Protein")).performTextInput("160")
+        inDialog(hasSetTextAction() and hasText("Steps")).performTextInput("10000")
         inDialog(hasText("Save")).performClick()
 
         waitForNode(hasText("2,300 / 2,400 kcal"))
         compose.onNodeWithText("150 / 160 g").assertExists()
-        assertEquals(NutritionTargets(2400, 160), container.settingsRepository.nutritionTargets.value)
+        compose.onNodeWithText("8,500 / 10,000 steps").assertExists()
+        assertEquals(NutritionTargets(2400, 160, 10_000), container.settingsRepository.nutritionTargets.value)
 
         // Delete from the history row, then undo.
         compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("2,300 kcal · 150 g protein"))
