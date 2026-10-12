@@ -50,6 +50,7 @@ import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.ui.common.AnimatedFab
 import com.example.tracker.ui.common.EmptyState
 import com.example.tracker.ui.common.ErrorContent
+import com.example.tracker.ui.common.ExportButton
 import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ObserveAsEvents
@@ -79,6 +80,7 @@ fun NutritionRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val editor by viewModel.editor.collectAsStateWithLifecycle()
+    val isExporting by viewModel.isExporting.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -117,6 +119,9 @@ fun NutritionRoute(
         onSelectMetric = viewModel::onSelectMetric,
         onRetry = viewModel::onRetry,
         modifier = modifier,
+        exportButton = {
+            ExportButton(isExporting = isExporting, fileName = viewModel::exportFileName, onExport = viewModel::onExport)
+        },
     )
 
     val state = uiState
@@ -135,7 +140,10 @@ fun NutritionRoute(
     }
 }
 
-/** Stateless Nutrition screen. [onOpenDay] with null opens today. */
+/**
+ * Stateless Nutrition screen. [onOpenDay] with null opens today. [exportButton] sits beside the
+ * title once the log has loaded.
+ */
 @Composable
 fun NutritionScreen(
     uiState: NutritionUiState,
@@ -146,6 +154,7 @@ fun NutritionScreen(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    exportButton: @Composable () -> Unit = {},
 ) {
     var showTargetsDialog by rememberSaveable { mutableStateOf(false) }
     Scaffold(
@@ -176,6 +185,7 @@ fun NutritionScreen(
                     onEditTargets = { showTargetsDialog = true },
                     onSelectPeriod = onSelectPeriod,
                     onSelectMetric = onSelectMetric,
+                    exportButton = exportButton,
                     contentPadding = innerPadding,
                 )
             }
@@ -201,6 +211,7 @@ private fun NutritionContent(
     onEditTargets: () -> Unit,
     onSelectPeriod: (DatePeriod) -> Unit,
     onSelectMetric: (NutritionMetric) -> Unit,
+    exportButton: @Composable () -> Unit,
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
@@ -220,6 +231,7 @@ private fun NutritionContent(
             item(key = "title") {
                 TitleRow(
                     onEditTargets = onEditTargets,
+                    exportButton = exportButton,
                     modifier = Modifier.padding(start = spacing.lg, end = spacing.sm, bottom = spacing.md),
                 )
             }
@@ -273,9 +285,9 @@ private fun NutritionContent(
     }
 }
 
-/** "Daily log" with a "Targets" action on the right. */
+/** "Daily log" with "Targets" and export actions on the right. */
 @Composable
-private fun TitleRow(onEditTargets: () -> Unit, modifier: Modifier = Modifier) {
+private fun TitleRow(onEditTargets: () -> Unit, exportButton: @Composable () -> Unit, modifier: Modifier = Modifier) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         ScreenTitle(text = stringResource(R.string.nutrition_title), modifier = Modifier.weight(1f))
         TextButton(onClick = onEditTargets, modifier = Modifier.heightIn(min = Dimens.minTouchTarget)) {
@@ -283,5 +295,6 @@ private fun TitleRow(onEditTargets: () -> Unit, modifier: Modifier = Modifier) {
             Spacer(Modifier.width(ButtonDefaults.IconSpacing))
             Text(stringResource(R.string.nutrition_targets))
         }
+        exportButton()
     }
 }
