@@ -196,4 +196,14 @@ class OfflineFirstWorkoutRepositoryTest {
         assertEquals(listOf(pbWorkout), bests.map { it.workoutId })
         assertEquals(3, workouts.observeExerciseSessions(benchId).first().size)
     }
+
+    @Test
+    fun allSessions_listEveryFinishedSessionOldestFirst() = runTest {
+        val first = logWorkout(listOf(40.0 to 10))
+        val second = logWorkout(listOf(45.0 to 6))
+
+        val sessions = workouts.observeAllSessions().first()
+
+        assertEquals(listOf(first, second), sessions.map { it.workoutId })
+    }
 }

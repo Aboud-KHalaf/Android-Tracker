@@ -138,6 +138,9 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
 
     override fun observeExerciseSessions(exerciseId: String): Flow<List<ExerciseSession>> =
         sessions.map { it[exerciseId].orEmpty() }
+
+    override fun observeAllSessions(): Flow<List<ExerciseSession>> =
+        sessions.map { all -> all.values.flatten().sortedBy { it.finishedAt } }
     override fun observePersonalBests(): Flow<List<PersonalBest>> = personalBests
     override suspend fun lastTimeSets(exerciseId: String): List<WorkoutSet> = lastTimes[exerciseId].orEmpty()
 

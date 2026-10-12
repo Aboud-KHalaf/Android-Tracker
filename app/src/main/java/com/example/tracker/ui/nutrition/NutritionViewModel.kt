@@ -9,6 +9,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
+import com.example.tracker.domain.export.ExportFormat
+import com.example.tracker.domain.export.ReportExporter
+import com.example.tracker.domain.export.exportFileName
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.NutritionTargets
@@ -40,6 +43,7 @@ import kotlinx.coroutines.flow.update
 class NutritionViewModel(
     private val nutritionRepository: NutritionRepository,
     private val settingsRepository: SettingsRepository,
+    private val reportExporter: ReportExporter,
     private val time: TimeProvider,
 ) : ViewModel() {
 
@@ -91,6 +95,33 @@ class NutritionViewModel(
 
     fun onSelectMetric(selected: NutritionMetric) {
         metric.value = selected
+    }
+
+    private val _isExporting = MutableStateFlow(false)
+
+    /** Whether an export is being written; the screen disables exporting meanwhile. */
+    val isExporting: StateFlow<Boolean> = _isExporting.asStateFlow()
+
+    fun exportFileName(format: ExportFormat): String = exportFileName("daily-log", today(), format)
+
+    /** Saves the selected period's days and averages as [format] to [destination], a file URI. */
+    fun onExport(format: ExportFormat, destination: String) {
+        if (_isExporting.value) return
+        _isExporting.value = true
+        viewModelScope.launchCatching(onError = { showMessage(R.string.export_error) }) {
+            try {
+                val today = today()
+                val period = period.value
+                val from = period.start(today)
+                val to = period.end(today)
+                val days = nutritionRepository.observeDays(from, to).first()
+                val targets = settingsRepository.nutritionTargets.first()
+                reportExporter.export(NutritionReportBuilder.build(from, to, today, days, targets), format, destination)
+                showMessage(R.string.export_done)
+            } finally {
+                _isExporting.value = false
+            }
+        }
     }
 
     fun onRetry() {
@@ -210,7 +241,12 @@ class NutritionViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
-                NutritionViewModel(container.nutritionRepository, container.settingsRepository, container.time)
+                NutritionViewModel(
+                    container.nutritionRepository,
+                    container.settingsRepository,
+                    container.reportExporter,
+                    container.time,
+                )
             }
         }
     }

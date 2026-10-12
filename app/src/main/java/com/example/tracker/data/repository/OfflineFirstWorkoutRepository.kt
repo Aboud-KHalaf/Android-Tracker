@@ -66,9 +66,11 @@ class OfflineFirstWorkoutRepository(
     override fun observeExerciseSessions(exerciseId: String): Flow<List<ExerciseSession>> =
         workoutDao.observeLoggedSets(exerciseId).map { rows -> rows.map { it.toDomain() }.toSessions() }
 
+    override fun observeAllSessions(): Flow<List<ExerciseSession>> =
+        workoutDao.observeLoggedSets(exerciseId = null).map { rows -> rows.map { it.toDomain() }.toSessions() }
+
     override fun observePersonalBests(): Flow<List<PersonalBest>> =
-        workoutDao.observeLoggedSets(exerciseId = null)
-            .map { rows -> findPersonalBests(rows.map { it.toDomain() }.toSessions()) }
+        observeAllSessions().map { findPersonalBests(it) }
 
     override suspend fun lastTimeSets(exerciseId: String): List<WorkoutSet> =
         workoutDao.lastCompletedSets(exerciseId).map { it.toDomain() }

@@ -2,6 +2,7 @@ package com.example.tracker.ui.weight
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,6 +38,7 @@ import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.ui.common.AnimatedFab
 import com.example.tracker.ui.common.EmptyState
 import com.example.tracker.ui.common.ErrorContent
+import com.example.tracker.ui.common.ExportButton
 import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ObserveAsEvents
@@ -63,6 +65,7 @@ fun WeightRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val editor by viewModel.editor.collectAsStateWithLifecycle()
+    val isExporting by viewModel.isExporting.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -92,6 +95,9 @@ fun WeightRoute(
         onSelectPeriod = viewModel::onSelectPeriod,
         onRetry = viewModel::onRetry,
         modifier = modifier,
+        exportButton = {
+            ExportButton(isExporting = isExporting, fileName = viewModel::exportFileName, onExport = viewModel::onExport)
+        },
     )
 
     val state = uiState
@@ -108,7 +114,10 @@ fun WeightRoute(
     }
 }
 
-/** Stateless Weight screen. [onOpenEntry] with null opens today. */
+/**
+ * Stateless Weight screen. [onOpenEntry] with null opens today. [exportButton] sits beside the
+ * title once the log has loaded.
+ */
 @Composable
 fun WeightScreen(
     uiState: WeightUiState,
@@ -117,6 +126,7 @@ fun WeightScreen(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    exportButton: @Composable () -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
@@ -140,7 +150,7 @@ fun WeightScreen(
                     modifier = Modifier.padding(innerPadding),
                 )
 
-                is WeightUiState.Success -> WeightContent(state, onOpenEntry, onSelectPeriod, innerPadding)
+                is WeightUiState.Success -> WeightContent(state, onOpenEntry, onSelectPeriod, exportButton, innerPadding)
             }
         }
     }
@@ -151,6 +161,7 @@ private fun WeightContent(
     state: WeightUiState.Success,
     onOpenEntry: (LocalDate?) -> Unit,
     onSelectPeriod: (DatePeriod) -> Unit,
+    exportButton: @Composable () -> Unit,
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
@@ -168,10 +179,13 @@ private fun WeightContent(
             ),
         ) {
             item(key = "title") {
-                ScreenTitle(
-                    text = stringResource(R.string.weight_title),
-                    modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, bottom = spacing.md),
-                )
+                Row(
+                    modifier = Modifier.padding(start = spacing.lg, end = spacing.sm, bottom = spacing.md),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ScreenTitle(text = stringResource(R.string.weight_title), modifier = Modifier.weight(1f))
+                    exportButton()
+                }
             }
             item(key = "current") {
                 CurrentWeightCard(

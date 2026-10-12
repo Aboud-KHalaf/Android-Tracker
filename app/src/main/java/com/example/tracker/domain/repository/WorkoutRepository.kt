@@ -26,6 +26,9 @@ interface WorkoutRepository {
     /** Completed sessions of one exercise, oldest first. */
     fun observeExerciseSessions(exerciseId: String): Flow<List<ExerciseSession>>
 
+    /** Completed sessions of every exercise, oldest first. */
+    fun observeAllSessions(): Flow<List<ExerciseSession>>
+
     /** Every personal best ever set, oldest first. */
     fun observePersonalBests(): Flow<List<PersonalBest>>
 

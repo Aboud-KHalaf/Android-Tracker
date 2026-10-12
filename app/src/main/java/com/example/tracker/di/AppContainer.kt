@@ -5,6 +5,7 @@ import com.example.tracker.core.IdGenerator
 import com.example.tracker.core.SystemTimeProvider
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.core.UuidGenerator
+import com.example.tracker.data.export.AndroidReportExporter
 import com.example.tracker.data.local.TrackerDatabase
 import com.example.tracker.data.remote.UrlConnectionHttpClient
 import com.example.tracker.data.remote.wger.WgerApi
@@ -15,6 +16,7 @@ import com.example.tracker.data.repository.OfflineFirstPlanRepository
 import com.example.tracker.data.repository.OfflineFirstWeightRepository
 import com.example.tracker.data.repository.OfflineFirstWorkoutRepository
 import com.example.tracker.data.repository.WgerExerciseCatalogRepository
+import com.example.tracker.domain.export.ReportExporter
 import com.example.tracker.domain.reminder.NutritionReminder
 import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.ExerciseRepository
@@ -50,6 +52,8 @@ class AppContainer(context: Context) {
             .getSharedPreferences(LocalSettingsRepository.PREFERENCES_NAME, Context.MODE_PRIVATE)
         LocalSettingsRepository(preferences, database)
     }
+
+    val reportExporter: ReportExporter by lazy { AndroidReportExporter(context.applicationContext) }
 
     /** For work that outlives a screen, such as handling a broadcast. */
     val applicationScope = CoroutineScope(SupervisorJob())

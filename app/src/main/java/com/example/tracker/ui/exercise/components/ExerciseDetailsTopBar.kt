@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.tracker.R
 
-/** Back, the exercise's name and type, and an options menu with Rename. */
+/** Back, the exercise's name and type, [exportButton], and an options menu with Rename. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseDetailsTopBar(
@@ -31,6 +31,7 @@ fun ExerciseDetailsTopBar(
     subtitle: String?,
     onBack: () -> Unit,
     onRename: (() -> Unit)?,
+    exportButton: @Composable () -> Unit = {},
 ) {
     TopAppBar(
         title = {
@@ -51,6 +52,7 @@ fun ExerciseDetailsTopBar(
             }
         },
         actions = {
+            exportButton()
             if (onRename != null) OptionsMenu(onRename)
         },
     )

@@ -2,10 +2,13 @@ package com.example.tracker.ui.nutrition
 
 import com.example.tracker.R
 import com.example.tracker.data.repository.FakeTimeProvider
+import com.example.tracker.domain.export.ExportFormat
+import com.example.tracker.domain.export.ReportCell
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.testing.FakeNutritionRepository
+import com.example.tracker.testing.FakeReportExporter
 import com.example.tracker.testing.FakeSettingsRepository
 import com.example.tracker.testing.MainDispatcherRule
 import java.io.IOException
@@ -36,7 +39,9 @@ class NutritionViewModelTest {
     private val time = FakeTimeProvider(Instant.parse("2026-10-03T09:00:00Z"))
     private val today = LocalDate.of(2026, 10, 3)
 
-    private fun createViewModel() = NutritionViewModel(nutrition, settings, time)
+    private val exporter = FakeReportExporter()
+
+    private fun createViewModel() = NutritionViewModel(nutrition, settings, exporter, time)
 
     private fun TestScope.collectState(viewModel: NutritionViewModel): () -> NutritionUiState {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
@@ -305,5 +310,34 @@ class NutritionViewModelTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.shouldRequestNotificationPermission.collect {} }
 
         assertFalse(viewModel.shouldRequestNotificationPermission.value)
+    }
+
+    @Test
+    fun onExport_writesTheSelectedPeriodAndConfirms() = runTest {
+        nutrition.put(
+            DailyNutrition(today, calories = 2000, proteinGrams = 150),
+            DailyNutrition(LocalDate.of(2026, 9, 20), calories = 2200, proteinGrams = 140),
+        )
+        val viewModel = createViewModel()
+
+        viewModel.onExport(ExportFormat.PDF, "content://daily.pdf")
+
+        assertEquals(NutritionEvent.ShowMessage(R.string.export_done), viewModel.events.first())
+        val export = exporter.exports.single()
+        assertEquals(ExportFormat.PDF, export.format)
+        // This month by default, so September's day is left out.
+        assertEquals(listOf(ReportCell.Date(today)), export.report.sections.last().table!!.rows.map { it.first() })
+        assertFalse(viewModel.isExporting.value)
+    }
+
+    @Test
+    fun onExport_failure_showsMessage() = runTest {
+        exporter.error = IOException("disk full")
+        val viewModel = createViewModel()
+
+        viewModel.onExport(ExportFormat.XLSX, "content://daily.xlsx")
+
+        assertEquals(NutritionEvent.ShowMessage(R.string.export_error), viewModel.events.first())
+        assertFalse(viewModel.isExporting.value)
     }
 }

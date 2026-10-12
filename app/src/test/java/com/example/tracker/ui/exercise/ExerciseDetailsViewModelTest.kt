@@ -2,6 +2,9 @@ package com.example.tracker.ui.exercise
 
 import com.example.tracker.R
 import com.example.tracker.data.repository.FakeTimeProvider
+import com.example.tracker.domain.export.ExportFormat
+import com.example.tracker.domain.export.ReportText
+import com.example.tracker.domain.export.textCell
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.progress.ProgressMetric
@@ -10,9 +13,11 @@ import com.example.tracker.domain.progress.benchHistory
 import com.example.tracker.domain.progress.holdSet
 import com.example.tracker.domain.progress.toSessions
 import com.example.tracker.testing.FakeExerciseRepository
+import com.example.tracker.testing.FakeReportExporter
 import com.example.tracker.testing.FakeWorkoutRepository
 import com.example.tracker.testing.MainDispatcherRule
 import com.example.tracker.ui.common.SetValueUi
+import java.io.IOException
 import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,6 +43,7 @@ class ExerciseDetailsViewModelTest {
     private val exercises = FakeExerciseRepository()
     private val workouts = FakeWorkoutRepository()
     private val time = FakeTimeProvider(Instant.parse("2026-10-03T09:00:00Z"))
+    private val exporter = FakeReportExporter()
 
     @Before
     fun setUp() {
@@ -47,7 +53,7 @@ class ExerciseDetailsViewModelTest {
     }
 
     private fun createViewModel(exerciseId: String = "bench") =
-        ExerciseDetailsViewModel(exerciseId, exercises, workouts, time)
+        ExerciseDetailsViewModel(exerciseId, exercises, workouts, exporter, time)
 
     private fun TestScope.collectState(viewModel: ExerciseDetailsViewModel): () -> ExerciseDetailsUiState {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
@@ -166,5 +172,43 @@ class ExerciseDetailsViewModelTest {
 
         assertEquals(ExerciseDetailsEvent.ShowMessage(R.string.exercise_error_rename), viewModel.events.first())
         assertFalse(exercises.exercises.value.any { it.name == "Flat Bench" })
+    }
+
+    @Test
+    fun onExport_usesTheSelectedMetricAndRange() = runTest {
+        val viewModel = createViewModel()
+        collectState(viewModel)
+        viewModel.onSelectMetric(ProgressMetric.VOLUME)
+        viewModel.onSelectRange(TimeRange.ONE_MONTH)
+
+        viewModel.onExport(ExportFormat.PDF, "content://bench.pdf")
+
+        assertEquals(ExerciseDetailsEvent.ShowMessage(R.string.export_done), viewModel.events.first())
+        val report = exporter.exports.single().report
+        assertEquals(ReportText.Plain("Bench Press"), report.title)
+        val figures = report.sections.first().summary.associate { (it.label as ReportText.Res).id to it.value }
+        assertEquals(textCell(R.string.metric_volume), figures[R.string.export_metric])
+        assertEquals(textCell(R.string.range_one_month_description), figures[R.string.export_range])
+        // Only Sep 5 falls in the month before Oct 3.
+        assertEquals(1, report.sections[1].table!!.rows.size)
+        assertFalse(viewModel.isExporting.value)
+    }
+
+    @Test
+    fun onExport_failure_showsMessage() = runTest {
+        exporter.error = IOException("disk full")
+        val viewModel = createViewModel()
+
+        viewModel.onExport(ExportFormat.XLSX, "content://bench.xlsx")
+
+        assertEquals(ExerciseDetailsEvent.ShowMessage(R.string.export_error), viewModel.events.first())
+    }
+
+    @Test
+    fun exportFileName_usesTheExerciseName() = runTest {
+        val viewModel = createViewModel()
+        collectState(viewModel)
+
+        assertEquals("tracker-bench-press-2026-10-03.xlsx", viewModel.exportFileName(ExportFormat.XLSX))
     }
 }

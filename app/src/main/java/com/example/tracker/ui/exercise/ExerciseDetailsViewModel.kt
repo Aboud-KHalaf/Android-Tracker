@@ -10,6 +10,9 @@ import androidx.navigation.toRoute
 import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
+import com.example.tracker.domain.export.ExportFormat
+import com.example.tracker.domain.export.ReportExporter
+import com.example.tracker.domain.export.exportFileName
 import com.example.tracker.domain.progress.ProgressMetric
 import com.example.tracker.domain.progress.TimeRange
 import com.example.tracker.domain.repository.ExerciseRepository
@@ -21,8 +24,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -38,6 +43,7 @@ class ExerciseDetailsViewModel(
     private val exerciseId: String,
     private val exerciseRepository: ExerciseRepository,
     private val workoutRepository: WorkoutRepository,
+    private val reportExporter: ReportExporter,
     private val time: TimeProvider,
 ) : ViewModel() {
 
@@ -84,6 +90,33 @@ class ExerciseDetailsViewModel(
         }
     }
 
+    private val _isExporting = MutableStateFlow(false)
+
+    /** Whether an export is being written; the screen disables exporting meanwhile. */
+    val isExporting: StateFlow<Boolean> = _isExporting.asStateFlow()
+
+    fun exportFileName(format: ExportFormat): String {
+        val name = (uiState.value as? ExerciseDetailsUiState.Success)?.name ?: "exercise"
+        return exportFileName(name, time.now().atZone(time.zone()).toLocalDate(), format)
+    }
+
+    /** Saves the progress for the selected metric and range as [format] to [destination], a file URI. */
+    fun onExport(format: ExportFormat, destination: String) {
+        if (_isExporting.value) return
+        _isExporting.value = true
+        viewModelScope.launchCatching(onError = { _events.send(ExerciseDetailsEvent.ShowMessage(R.string.export_error)) }) {
+            try {
+                val exercise = checkNotNull(exerciseRepository.observeExercise(exerciseId).first()) { "Exercise $exerciseId is gone" }
+                val sessions = workoutRepository.observeExerciseSessions(exerciseId).first()
+                val report = ExerciseReportBuilder(time.zone()).build(exercise, sessions, metric.value, range.value, time.now())
+                reportExporter.export(report, format, destination)
+                _events.send(ExerciseDetailsEvent.ShowMessage(R.string.export_done))
+            } finally {
+                _isExporting.value = false
+            }
+        }
+    }
+
     fun onRetry() {
         loadAttempt.update { it + 1 }
     }
@@ -99,6 +132,7 @@ class ExerciseDetailsViewModel(
                     exerciseId = createSavedStateHandle().toRoute<ExerciseDetailsDestination>().exerciseId,
                     exerciseRepository = container.exerciseRepository,
                     workoutRepository = container.workoutRepository,
+                    reportExporter = container.reportExporter,
                     time = container.time,
                 )
             }

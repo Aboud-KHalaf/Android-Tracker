@@ -2,8 +2,11 @@ package com.example.tracker.ui.weight
 
 import com.example.tracker.R
 import com.example.tracker.data.repository.FakeTimeProvider
+import com.example.tracker.domain.export.ExportFormat
+import com.example.tracker.domain.export.ReportCell
 import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.WeightEntry
+import com.example.tracker.testing.FakeReportExporter
 import com.example.tracker.testing.FakeWeightRepository
 import com.example.tracker.testing.MainDispatcherRule
 import java.io.IOException
@@ -32,7 +35,9 @@ class WeightViewModelTest {
     private val time = FakeTimeProvider(Instant.parse("2026-10-03T09:00:00Z"))
     private val today = LocalDate.of(2026, 10, 3)
 
-    private fun createViewModel() = WeightViewModel(weights, time)
+    private val exporter = FakeReportExporter()
+
+    private fun createViewModel() = WeightViewModel(weights, exporter, time)
 
     private fun TestScope.collectState(viewModel: WeightViewModel): () -> WeightUiState.Success {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
@@ -159,5 +164,42 @@ class WeightViewModelTest {
         viewModel.onUndoDelete(entry)
 
         assertEquals(entry, weights.entries.value[today])
+    }
+
+    @Test
+    fun onExport_writesTheSelectedPeriodAndConfirms() = runTest {
+        weights.put(
+            WeightEntry(today, 78.4),
+            WeightEntry(LocalDate.of(2026, 9, 20), 80.0),
+            WeightEntry(LocalDate.of(2026, 8, 1), 85.0), // before the period
+        )
+        val viewModel = createViewModel()
+        viewModel.onSelectPeriod(DatePeriod.ThisMonth)
+
+        viewModel.onExport(ExportFormat.XLSX, "content://weight.xlsx")
+
+        assertEquals(WeightEvent.ShowMessage(R.string.export_done), viewModel.events.first())
+        val export = exporter.exports.single()
+        assertEquals(ExportFormat.XLSX, export.format)
+        assertEquals("content://weight.xlsx", export.destination)
+        val dates = export.report.sections.last().table!!.rows.map { it.first() }
+        assertEquals(listOf(ReportCell.Date(today)), dates)
+        assertFalse(viewModel.isExporting.value)
+    }
+
+    @Test
+    fun onExport_failure_showsMessage() = runTest {
+        exporter.error = IOException("disk full")
+        val viewModel = createViewModel()
+
+        viewModel.onExport(ExportFormat.PDF, "content://weight.pdf")
+
+        assertEquals(WeightEvent.ShowMessage(R.string.export_error), viewModel.events.first())
+        assertFalse(viewModel.isExporting.value)
+    }
+
+    @Test
+    fun exportFileName_namesTheSectionAndDay() {
+        assertEquals("tracker-weight-2026-10-03.pdf", createViewModel().exportFileName(ExportFormat.PDF))
     }
 }

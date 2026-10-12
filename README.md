@@ -19,19 +19,23 @@ All data stays on your device, and you don't need an account. The only feature t
 ### 📈 Progress
 - A details screen for each exercise, with a progress chart and full history
 - Switch between progress metrics and time ranges
+- Export an exercise's progress for the selected metric and range as a PDF or Excel file
 
 ### 🥗 Daily log
 - Log each day's calories, protein and steps, and edit any past day
 - Set your own daily targets and see today's progress at a glance
 - Charts and period averages with a period selector
+- Export the selected period as a PDF or Excel file
 - Optional daily reminder (9 PM by default, at a time you choose) if you haven't logged anything that day
 
 ### ⚖️ Body Weight
 - See your current weight, a weight chart and your full history
+- Export the selected period as a PDF or Excel file
 
 ### ⚙️ Settings
 - Light, dark or system theme
 - Turn the daily log reminder on or off and choose when it arrives
+- Export all data (exercises, every workout set, daily log and weight) as a PDF or Excel file
 - Delete all data from the device
 
 ### 🎨 Design
@@ -70,9 +74,10 @@ UI (Compose screens)  →  ViewModels (StateFlow UI state)  →  Repositories  �
 ```
 app/src/main/java/com/example/tracker/
 ├── data/        # Room entities, DAOs, database and repository implementations
+│   ├── export/  # PDF and Excel (.xlsx) writers for exported reports
 │   └── remote/  # HTTP client and the wger exercise catalog API
 ├── domain/      # Domain models, repository interfaces and business logic
-│                #   (progress, nutrition, weight, plans, catalog, reminders)
+│                #   (progress, nutrition, weight, plans, catalog, reminders, export)
 ├── di/          # AppContainer: manual dependency wiring
 └── ui/          # Compose screens and ViewModels, one package per feature
     ├── home/ plan/ catalog/ workout/ history/ exercise/ exercises/
