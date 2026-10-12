@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&icon_names=add,android,arrow_forward,check,check_circle,cloud_off,code,contrast,dark_mode,devices,directions_walk,download,emoji_events,fitness_center,history,home,info,insights,light_mode,lock,monitor_weight,no_accounts,notifications,palette,play_arrow,qr_code_2,remove,restaurant,search,timer,today,travel_explore,trending_down&display=block">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&icon_names=add,android,arrow_forward,check,check_circle,cloud_off,code,contrast,dark_mode,devices,directions_walk,download,emoji_events,fitness_center,history,home,info,insights,light_mode,lock,monitor_weight,no_accounts,notifications,palette,picture_as_pdf,play_arrow,qr_code_2,remove,restaurant,search,table_chart,timer,today,travel_explore,trending_down&display=block">
 <style>
 /* ---------- Design tokens: mirrors app/src/main/java/.../ui/theme ---------- */
 :root, .scheme-light {
@@ -366,9 +366,27 @@ section { position:relative; }
 
 /* Exercise catalog demo */
 .span-6 { grid-column:1 / -1; }
-.catalog-card { display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:center; }
-.catalog-card .demo { margin-top:0; }
-@media (max-width:860px){ .catalog-card { grid-template-columns:1fr; gap:0; } .catalog-card .demo { margin-top:24px; } }
+.catalog-card, .export-card { display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:center; }
+.catalog-card .demo, .export-card .demo { margin-top:0; }
+@media (max-width:860px){ .catalog-card, .export-card { grid-template-columns:1fr; gap:0; } .catalog-card .demo, .export-card .demo { margin-top:24px; } }
+/* Export: a format menu and the two files it produces */
+.export-demo { display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start; }
+.x-menu { grid-column:1 / -1; justify-self:end; background:var(--sc-highest); border-radius:var(--r-sm); padding:6px 0; min-width:180px; box-shadow:var(--shadow); font-size:13px; }
+.x-menu div { display:flex; align-items:center; gap:10px; padding:9px 14px; }
+.x-menu div:first-child { background:color-mix(in srgb, var(--primary) 12%, transparent); }
+.x-menu .icon { font-size:18px; color:var(--on-surface-variant); }
+.x-file { background:var(--surface); border-radius:var(--r-md); padding:12px; box-shadow:inset 0 0 0 1px var(--outline-variant); min-width:0; }
+.x-file .x-name { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:600; margin-bottom:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.x-file .x-name .icon { font-size:16px; color:var(--primary); flex:none; }
+.x-page i { display:block; height:6px; border-radius:3px; background:var(--sc-highest); margin-bottom:6px; }
+.x-page i.h { width:60%; height:9px; background:var(--primary); opacity:.8; }
+.x-page i.s { width:40%; }
+.x-page i.r:nth-of-type(odd) { background:var(--primary-container); }
+.x-sheet { display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:2px; font-size:10px; font-variant-numeric:tabular-nums; }
+.x-sheet span { background:var(--sc-low); padding:4px 5px; border-radius:2px; white-space:nowrap; overflow:hidden; }
+.x-sheet span.hd { background:var(--primary-container); color:var(--on-primary-container); font-weight:600; }
+.x-sheet span.n { text-align:end; }
+@media (max-width:420px){ .export-demo { grid-template-columns:1fr; } .x-menu { justify-self:stretch; } }
 .catalog-note { display:flex; gap:8px; align-items:flex-start; margin-top:16px; color:var(--on-surface-variant); }
 .catalog-note .icon { font-size:18px; }
 .search-field { display:flex; align-items:center; gap:10px; height:44px; padding:0 14px; border-radius:var(--r-full); background:var(--sc-high); box-shadow:inset 0 0 0 1px var(--outline-variant); margin-bottom:8px; font-size:14px; }
@@ -614,7 +632,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
   <div class="wrap hero-grid">
     <div>
       <a class="chip fade-up" style="--delay:0ms" href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest" target="_blank" rel="noopener">
-        <span class="icon fill">android</span><span data-version>v1.1</span> is out — free &amp; open source<span class="pulse"></span>
+        <span class="icon fill">android</span><span data-version>v1.2</span> is out — free &amp; open source<span class="pulse"></span>
       </a>
       <h1 class="display-l" aria-label="Train. Eat. Track. All on your phone.">
         <span class="word"><span style="--i:0">Train.</span></span>
@@ -741,7 +759,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     <div class="section-head reveal">
       <p class="overline">Features</p>
       <h2 class="display-s">Everything you need to make progress</h2>
-      <p class="body-l">Build a plan from hundreds of exercises, log a set in seconds, see your strength go up, hit your macros and watch your weight trend. All in one place.</p>
+      <p class="body-l">Build a plan from hundreds of exercises, log a set in seconds, see your strength go up, hit your macros and watch your weight trend. Then export any of it as a PDF or Excel file.</p>
     </div>
 
     <div class="bento">
@@ -870,6 +888,36 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
           <button class="btn tonal" type="button" data-set-theme="system"><span class="icon">contrast</span>System</button>
         </div>
       </article>
+
+      <!-- Export -->
+      <article class="card span-6 export-card reveal" data-demo="export">
+        <div>
+          <div class="feat-ic"><span class="icon">download</span></div>
+          <h3 class="title-l">Take your numbers anywhere</h3>
+          <p class="body-m">Export what you're looking at as a PDF or an Excel file: an exercise's progress, a period of your daily log, or your weight trend. Exports follow the metric, range or period you picked. Or save everything at once from Settings.</p>
+          <p class="body-m catalog-note"><span class="icon">info</span>Files are made on your phone and saved wherever you choose. Nothing is uploaded.</p>
+        </div>
+        <div class="demo export-demo" aria-hidden="true">
+          <div class="x-menu">
+            <div><span class="icon">picture_as_pdf</span>Export as PDF</div>
+            <div><span class="icon">table_chart</span>Export as Excel</div>
+          </div>
+          <div class="x-file">
+            <div class="x-name"><span class="icon">picture_as_pdf</span>bench-press.pdf</div>
+            <div class="x-page"><i class="h"></i><i class="s"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i></div>
+          </div>
+          <div class="x-file">
+            <div class="x-name"><span class="icon">table_chart</span>weight.xlsx</div>
+            <div class="x-sheet">
+              <span class="hd">Date</span><span class="hd">kg</span><span class="hd">Δ</span>
+              <span>Oct 1</span><span class="n">79.6</span><span class="n"></span>
+              <span>Oct 5</span><span class="n">79.1</span><span class="n">−0.5</span>
+              <span>Oct 9</span><span class="n">78.8</span><span class="n">−0.3</span>
+              <span>Oct 12</span><span class="n">78.4</span><span class="n">−0.4</span>
+            </div>
+          </div>
+        </div>
+      </article>
     </div>
   </div>
 </section>
@@ -910,7 +958,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     <div class="reveal">
       <p class="overline">Privacy</p>
       <h2 class="display-s">Your data never leaves your phone</h2>
-      <p class="body-l" style="margin:16px 0 32px">There are no accounts, no cloud sync, no ads and no analytics. Everything you log is stored in a local database on your device, and you can delete all of it from Settings with one tap. The app only goes online when you browse the exercise catalog, and then it sends just your search to wger.de.</p>
+      <p class="body-l" style="margin:16px 0 32px">There are no accounts, no cloud sync, no ads and no analytics. Everything you log is stored in a local database on your device, and from Settings you can export all of it as a PDF or Excel file, or delete it with one tap. The app only goes online when you browse the exercise catalog, and then it sends just your search to wger.de.</p>
       <div class="stats">
         <div class="stat"><span class="icon">no_accounts</span><b class="num"><span data-count="0">0</span></b><span>accounts needed</span></div>
         <div class="stat"><span class="icon">cloud_off</span><b class="num"><span data-count="0">0</span></b><span>servers storing your data</span></div>
@@ -959,7 +1007,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         <h2 class="display-s">Start tracking today</h2>
         <p class="body-l">It's free, open source and private by design. Download the latest release and log your first workout in under a minute.</p>
         <div class="cta-row">
-          <a class="btn lg" data-apk href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest/download/app-release.apk"><span class="icon">download</span>Download <span data-version>v1.1</span></a>
+          <a class="btn lg" data-apk href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest/download/app-release.apk"><span class="icon">download</span>Download <span data-version>v1.2</span></a>
           <a class="btn lg text" href="https://github.com/Aboud-KHalaf/Android-Tracker/releases" target="_blank" rel="noopener">All releases<span class="icon">arrow_forward</span></a>
         </div>
       </div>
