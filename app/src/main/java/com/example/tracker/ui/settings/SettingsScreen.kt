@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Schedule
@@ -58,9 +59,12 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
+import com.example.tracker.domain.export.ExportFormat
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.ui.common.ObserveAsEvents
+import com.example.tracker.ui.common.ExportFormatMenu
 import com.example.tracker.ui.common.SectionHeader
+import com.example.tracker.ui.common.rememberExportLauncher
 import com.example.tracker.reminder.canScheduleExactAlarms
 import com.example.tracker.ui.common.openAppNotificationSettings
 import com.example.tracker.ui.common.openExactAlarmSettings
@@ -123,6 +127,8 @@ fun SettingsRoute(
         showExactAlarmsItem = uiState.nutritionReminderEnabled && !exactAlarmsAllowed,
         onAllowExactAlarms = context::openExactAlarmSettings,
         onDeleteAllData = viewModel::onDeleteAllData,
+        exportFileName = viewModel::exportFileName,
+        onExportAllData = viewModel::onExportAllData,
         appVersion = BuildConfig.VERSION_NAME,
         snackbarHostState = snackbarHostState,
         modifier = modifier,
@@ -143,6 +149,8 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     showExactAlarmsItem: Boolean = false,
     onAllowExactAlarms: () -> Unit = {},
+    exportFileName: (ExportFormat) -> String = { "" },
+    onExportAllData: (ExportFormat, destination: String) -> Unit = { _, _ -> },
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
@@ -202,6 +210,11 @@ fun SettingsScreen(
                 SectionHeader(
                     title = stringResource(R.string.settings_data),
                     modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, top = spacing.lg),
+                )
+                ExportDataItem(
+                    isExporting = uiState.isExportingData,
+                    fileName = exportFileName,
+                    onExport = onExportAllData,
                 )
                 DeleteDataItem(
                     isDeleting = uiState.isDeletingData,
@@ -294,6 +307,31 @@ private fun ExactAlarmsItem(onClick: () -> Unit) {
         leadingContent = { Icon(Icons.Outlined.Alarm, contentDescription = null) },
         modifier = Modifier.clickable(onClick = onClick),
     )
+}
+
+/** "Export all data": tapping offers PDF or Excel, then asks where to save. */
+@Composable
+private fun ExportDataItem(
+    isExporting: Boolean,
+    fileName: (ExportFormat) -> String,
+    onExport: (ExportFormat, String) -> Unit,
+) {
+    var showFormats by remember { mutableStateOf(false) }
+    val launch = rememberExportLauncher(fileName, onExport)
+    Box {
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.settings_export_all)) },
+            supportingContent = { Text(stringResource(R.string.settings_export_all_description)) },
+            leadingContent = { Icon(Icons.Outlined.Download, contentDescription = null) },
+            trailingContent = if (isExporting) {
+                { CircularProgressIndicator(modifier = Modifier.size(MaterialTheme.spacing.xl)) }
+            } else {
+                null
+            },
+            modifier = Modifier.clickable(enabled = !isExporting) { showFormats = true },
+        )
+        ExportFormatMenu(expanded = showFormats, onDismiss = { showFormats = false }, onSelect = launch)
+    }
 }
 
 @Composable
