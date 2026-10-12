@@ -23,6 +23,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.example.tracker.R
 import com.example.tracker.domain.export.ExportFormat
@@ -43,8 +45,11 @@ fun ExportButton(
     Box(modifier) {
         IconButton(onClick = { expanded = true }, enabled = !isExporting) {
             if (isExporting) {
+                val description = stringResource(R.string.export_in_progress)
                 CircularProgressIndicator(
-                    modifier = Modifier.size(ProgressSize),
+                    modifier = Modifier
+                        .size(ProgressSize)
+                        .semantics { contentDescription = description },
                     strokeWidth = 2.dp,
                 )
             } else {
