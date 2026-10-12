@@ -23,7 +23,7 @@ import com.example.tracker.ui.nutrition.parseTarget
 import com.example.tracker.ui.nutrition.sanitizeAmount
 import com.example.tracker.ui.theme.spacing
 
-/** Edits the daily calorie and protein targets; a blank field removes that target. */
+/** Edits the daily calorie, protein and steps targets; a blank field removes that target. */
 @Composable
 fun TargetsDialog(
     targets: NutritionTargets,
@@ -34,6 +34,8 @@ fun TargetsDialog(
     var protein by rememberSaveable { mutableStateOf(targets.proteinGrams?.toString().orEmpty()) }
     var caloriesError by rememberSaveable { mutableStateOf(false) }
     var proteinError by rememberSaveable { mutableStateOf(false) }
+    var steps by rememberSaveable { mutableStateOf(targets.steps?.toString().orEmpty()) }
+    var stepsError by rememberSaveable { mutableStateOf(false) }
     val locale = currentLocale()
 
     AlertDialog(
@@ -67,6 +69,18 @@ fun TargetsDialog(
                     suffix = stringResource(R.string.nutrition_unit_grams),
                     isError = proteinError,
                     errorText = stringResource(R.string.nutrition_error_target, formatAmount(DailyNutrition.MAX_PROTEIN_GRAMS, locale)),
+                    imeAction = ImeAction.Next,
+                )
+                AmountField(
+                    value = steps,
+                    onValueChange = {
+                        steps = sanitizeAmount(it)
+                        stepsError = false
+                    },
+                    label = stringResource(R.string.nutrition_steps),
+                    suffix = stringResource(R.string.nutrition_unit_steps),
+                    isError = stepsError,
+                    errorText = stringResource(R.string.nutrition_error_target, formatAmount(DailyNutrition.MAX_STEPS, locale)),
                     imeAction = ImeAction.Done,
                 )
             }
@@ -76,10 +90,12 @@ fun TargetsDialog(
                 onClick = {
                     val calorieInput = parseTarget(calories, DailyNutrition.MAX_CALORIES)
                     val proteinInput = parseTarget(protein, DailyNutrition.MAX_PROTEIN_GRAMS)
+                    val stepsInput = parseTarget(steps, DailyNutrition.MAX_STEPS)
                     caloriesError = calorieInput is TargetInput.Invalid
                     proteinError = proteinInput is TargetInput.Invalid
-                    if (calorieInput is TargetInput.Valid && proteinInput is TargetInput.Valid) {
-                        onSave(NutritionTargets(calorieInput.value, proteinInput.value))
+                    stepsError = stepsInput is TargetInput.Invalid
+                    if (calorieInput is TargetInput.Valid && proteinInput is TargetInput.Valid && stepsInput is TargetInput.Valid) {
+                        onSave(NutritionTargets(calorieInput.value, proteinInput.value, stepsInput.value))
                     }
                 },
             ) { Text(stringResource(R.string.action_save)) }

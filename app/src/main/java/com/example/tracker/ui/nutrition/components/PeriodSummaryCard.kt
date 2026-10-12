@@ -69,6 +69,9 @@ fun PeriodSummaryCard(
             summary.proteinOnTargetDays?.let { hits ->
                 Detail(pluralStringResource(R.plurals.nutrition_protein_on_target, summary.loggedDays, hits, summary.loggedDays))
             }
+            summary.stepsOnTargetDays?.let { hits ->
+                Detail(pluralStringResource(R.plurals.nutrition_steps_on_target, summary.stepsLoggedDays, hits, summary.stepsLoggedDays))
+            }
         }
     }
 }

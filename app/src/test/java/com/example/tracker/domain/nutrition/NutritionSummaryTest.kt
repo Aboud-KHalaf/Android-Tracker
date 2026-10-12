@@ -61,6 +61,22 @@ class NutritionSummaryTest {
     }
 
     @Test
+    fun of_countsStepsTargetHitsOnlyOverDaysWithSteps() {
+        val days = listOf(
+            DailyNutrition(oct1, 2000, 100, steps = 10_000), // exactly on target
+            DailyNutrition(oct1.plusDays(1), 2000, 100, steps = 9_999),
+            DailyNutrition(oct1.plusDays(2), 2000, 100), // no steps: neither a hit nor a miss
+        )
+
+        val summary = NutritionSummary.of(days, NutritionTargets(steps = 10_000))!!
+
+        assertEquals(2, summary.stepsLoggedDays)
+        assertEquals(1, summary.stepsOnTargetDays)
+        assertNull(NutritionSummary.of(days, NutritionTargets())!!.stepsOnTargetDays)
+        assertNull(NutritionSummary.of(listOf(day(0, 2000, 100)), NutritionTargets(steps = 10_000))!!.stepsOnTargetDays)
+    }
+
+    @Test
     fun isCaloriesOnTarget_toleratesTenPercentEitherWay() {
         assertTrue(NutritionSummary.isCaloriesOnTarget(2640, 2400))
         assertFalse(NutritionSummary.isCaloriesOnTarget(2641, 2400))

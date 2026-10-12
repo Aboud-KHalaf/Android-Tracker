@@ -290,6 +290,7 @@
     <string name="nutrition_steps">Steps</string>
     <string name="nutrition_steps_optional">Steps (optional)</string>
     <string name="nutrition_steps_value">%1$s steps</string>
+    <string name="nutrition_steps_of_target">%1$s / %2$s steps</string>
     <string name="nutrition_unit_steps">steps</string>
     <string name="nutrition_weekday_steps">%1$s · %2$s steps</string>
     <string name="nutrition_error_steps">Enter a whole number from 0 to %1$s, or leave it empty</string>
@@ -306,6 +307,10 @@
     <plurals name="nutrition_protein_on_target">
         <item quantity="one">Protein target hit %1$d of %2$d logged day</item>
         <item quantity="other">Protein target hit %1$d of %2$d logged days</item>
+    </plurals>
+    <plurals name="nutrition_steps_on_target">
+        <item quantity="one">Steps target hit %1$d of %2$d day with steps</item>
+        <item quantity="other">Steps target hit %1$d of %2$d days with steps</item>
     </plurals>
     <plurals name="nutrition_day_count">
         <item quantity="one">%d day</item>
@@ -423,6 +428,7 @@
     <string name="export_column_steps">Steps</string>
     <string name="export_column_calories_on_target">Calories on target</string>
     <string name="export_column_protein_on_target">Protein on target</string>
+    <string name="export_column_steps_on_target">Steps on target</string>
     <string name="export_column_change_kg">Change (kg)</string>
     <string name="export_metric">Metric</string>
     <string name="export_range">Range</string>
@@ -443,8 +449,10 @@
     <string name="export_average_steps">Average steps</string>
     <string name="export_calorie_target">Calorie target (kcal)</string>
     <string name="export_protein_target">Protein target (g)</string>
+    <string name="export_steps_target">Steps target</string>
     <string name="export_calories_on_target_days">Days calories on target</string>
     <string name="export_protein_on_target_days">Days protein target hit</string>
+    <string name="export_steps_on_target_days">Days steps target hit</string>
     <string name="export_starting_weight">Starting weight (kg)</string>
     <string name="export_latest_weight">Latest weight (kg)</string>
     <string name="export_lowest_weight">Lowest (kg)</string>

@@ -42,6 +42,17 @@ class NutritionReportBuilderTest {
     }
 
     @Test
+    fun sections_withStepsTarget_marksOnlyDaysWithStepsAtOrAboveIt() {
+        val targets = NutritionTargets(steps = 9000)
+
+        val sections = NutritionReportBuilder.sections(days, targets)
+
+        assertEquals(listOf(ReportCell.Empty, textCell(R.string.export_yes)), sections.last().table!!.rows.map { it.last() })
+        assertEquals(numberCell(9000), figures(targets)[R.string.export_steps_target])
+        assertEquals(numberCell(1), figures(targets)[R.string.export_steps_on_target_days])
+    }
+
+    @Test
     fun sections_withoutTargets_leaveOutTargetColumnsAndFigures() {
         val table = NutritionReportBuilder.sections(days, NutritionTargets()).last().table!!
 
