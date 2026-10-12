@@ -42,10 +42,12 @@ class LocalSettingsRepository(
     override suspend fun setNutritionTargets(targets: NutritionTargets) {
         targets.calories?.let { require(it in 1..DailyNutrition.MAX_CALORIES) { "Calorie target out of range: $it" } }
         targets.proteinGrams?.let { require(it in 1..DailyNutrition.MAX_PROTEIN_GRAMS) { "Protein target out of range: $it" } }
+        targets.steps?.let { require(it in 1..DailyNutrition.MAX_STEPS) { "Steps target out of range: $it" } }
         withContext(ioDispatcher) {
             preferences.edit(commit = true) {
                 putOrRemove(KEY_CALORIE_TARGET, targets.calories)
                 putOrRemove(KEY_PROTEIN_TARGET, targets.proteinGrams)
+                putOrRemove(KEY_STEPS_TARGET, targets.steps)
             }
         }
         _nutritionTargets.value = targets
@@ -95,6 +97,7 @@ class LocalSettingsRepository(
     private fun readNutritionTargets() = NutritionTargets(
         calories = preferences.getIntOrNull(KEY_CALORIE_TARGET),
         proteinGrams = preferences.getIntOrNull(KEY_PROTEIN_TARGET),
+        steps = preferences.getIntOrNull(KEY_STEPS_TARGET),
     )
 
     /** Stored as minutes after midnight; anything unreadable falls back to the default. */
@@ -116,6 +119,7 @@ class LocalSettingsRepository(
         private const val KEY_THEME_MODE = "theme_mode"
         private const val KEY_CALORIE_TARGET = "calorie_target"
         private const val KEY_PROTEIN_TARGET = "protein_target"
+        private const val KEY_STEPS_TARGET = "steps_target"
         private const val KEY_NUTRITION_REMINDER = "nutrition_reminder"
         private const val KEY_NUTRITION_REMINDER_MINUTE = "nutrition_reminder_minute"
         private const val MINUTES_PER_HOUR = 60

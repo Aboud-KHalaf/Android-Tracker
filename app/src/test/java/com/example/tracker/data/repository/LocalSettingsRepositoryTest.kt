@@ -73,11 +73,11 @@ class LocalSettingsRepositoryTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val settings = LocalSettingsRepository(preferences, database, dispatcher)
 
-        settings.setNutritionTargets(NutritionTargets(calories = 2400, proteinGrams = 160))
-        settings.setNutritionTargets(NutritionTargets(calories = 2200, proteinGrams = null))
+        settings.setNutritionTargets(NutritionTargets(calories = 2400, proteinGrams = 160, steps = 8000))
+        settings.setNutritionTargets(NutritionTargets(calories = 2200, proteinGrams = null, steps = 10_000))
 
-        assertEquals(NutritionTargets(2200, null), settings.nutritionTargets.value)
-        assertEquals(NutritionTargets(2200, null), LocalSettingsRepository(preferences, database, dispatcher).nutritionTargets.value)
+        assertEquals(NutritionTargets(2200, null, 10_000), settings.nutritionTargets.value)
+        assertEquals(NutritionTargets(2200, null, 10_000), LocalSettingsRepository(preferences, database, dispatcher).nutritionTargets.value)
     }
 
     @Test(expected = IllegalArgumentException::class)

@@ -16,10 +16,9 @@ enum class NutritionMetric {
         STEPS -> day.steps
     }
 
-    /** Steps have no target. */
     fun targetOf(targets: NutritionTargets): Int? = when (this) {
         CALORIES -> targets.calories
         PROTEIN -> targets.proteinGrams
-        STEPS -> null
+        STEPS -> targets.steps
     }
 }

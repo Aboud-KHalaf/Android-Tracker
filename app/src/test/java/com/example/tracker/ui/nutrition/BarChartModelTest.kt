@@ -57,7 +57,7 @@ class BarChartModelTest {
     }
 
     @Test
-    fun build_steps_skipsDaysWithoutSteps_andHasNoTarget() {
+    fun build_steps_skipsDaysWithoutSteps_andUsesTheStepsTarget() {
         val days = listOf(
             DailyNutrition(start, 2000, 100, steps = 9_000),
             DailyNutrition(start.plusDays(1), 2000, 100),
@@ -67,6 +67,7 @@ class BarChartModelTest {
 
         assertEquals(listOf(0), chart.bars.map { it.slot })
         assertNull(chart.target)
+        assertEquals(10_000, BarChartModel.build(start, end, days, NutritionMetric.STEPS, NutritionTargets(steps = 10_000))!!.target)
     }
 
     @Test

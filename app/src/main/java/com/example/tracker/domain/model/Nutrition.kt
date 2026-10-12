@@ -22,4 +22,5 @@ data class DailyNutrition(
 data class NutritionTargets(
     val calories: Int? = null,
     val proteinGrams: Int? = null,
+    val steps: Int? = null,
 )
