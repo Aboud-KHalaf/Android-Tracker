@@ -2,7 +2,7 @@
 
 An offline-first Android app for tracking your **workouts**, a **daily log** of calories, protein and steps, and your **body weight** in one place. Built with Kotlin, Jetpack Compose and Material Design 3.
 
-All data stays on your device, and you don't need an account. The only feature that uses the internet is the optional exercise catalog, which sends just your search to [wger.de](https://wger.de).
+All data stays on your device, and you don't need an account. When you want your numbers elsewhere, export any screen's analytics, or everything at once, as a PDF or Excel file. The only feature that uses the internet is the optional exercise catalog, which sends just your search to [wger.de](https://wger.de).
 
 🌐 **Website:** [aboud-khalaf.github.io/Android-Tracker](https://aboud-khalaf.github.io/Android-Tracker/)
 
