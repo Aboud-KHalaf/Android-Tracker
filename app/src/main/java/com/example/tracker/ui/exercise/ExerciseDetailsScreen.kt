@@ -35,6 +35,7 @@ import com.example.tracker.R
 import com.example.tracker.domain.progress.ProgressMetric
 import com.example.tracker.domain.progress.TimeRange
 import com.example.tracker.ui.common.ErrorContent
+import com.example.tracker.ui.common.ExportButton
 import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MessageContent
 import com.example.tracker.ui.common.NameInputDialog
@@ -62,6 +63,7 @@ fun ExerciseDetailsRoute(
     viewModel: ExerciseDetailsViewModel = viewModel(factory = ExerciseDetailsViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isExporting by viewModel.isExporting.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -85,6 +87,9 @@ fun ExerciseDetailsRoute(
             onRetry = viewModel::onRetry,
         ),
         modifier = modifier,
+        exportButton = {
+            ExportButton(isExporting = isExporting, fileName = viewModel::exportFileName, onExport = viewModel::onExport)
+        },
     )
 }
 
@@ -100,7 +105,7 @@ data class ExerciseDetailsActions(
 /** The screen's two tabs. Which one is shown is UI-only state. */
 enum class ExerciseTab { PROGRESS, HISTORY }
 
-/** Stateless Exercise details screen. */
+/** Stateless Exercise details screen. [exportButton] shows in the top bar once the exercise has loaded. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseDetailsScreen(
@@ -109,6 +114,7 @@ fun ExerciseDetailsScreen(
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     initialTab: ExerciseTab = ExerciseTab.PROGRESS,
+    exportButton: @Composable () -> Unit = {},
 ) {
     var tab by rememberSaveable { mutableStateOf(initialTab) }
     var showRename by rememberSaveable { mutableStateOf(false) }
@@ -123,6 +129,7 @@ fun ExerciseDetailsScreen(
                     subtitle = success?.type?.label(),
                     onBack = actions.onBack,
                     onRename = if (success != null) ({ showRename = true }) else null,
+                    exportButton = { if (success != null) exportButton() },
                 )
                 if (success != null) {
                     PrimaryTabRow(selectedTabIndex = tab.ordinal) {

@@ -394,16 +394,17 @@
     <string name="export_done">Export saved</string>
     <string name="export_error">Couldn\'t export. Try again.</string>
     <string name="export_pdf_footer">Page %1$d</string>
-    <string name="export_period">%1$s – %2$s</string>
     <string name="export_exported_on">Exported %1$s</string>
     <string name="export_period_exported_on">%1$s – %2$s · Exported %3$s</string>
+    <string name="export_range_exported_on">%1$s · Exported %2$s</string>
+    <string name="export_hold_value">%1$d s</string>
     <string name="export_yes">Yes</string>
     <string name="export_section_summary">Summary</string>
     <string name="export_section_sessions">Sessions</string>
     <string name="export_section_days">Days</string>
     <string name="export_section_entries">Entries</string>
     <string name="export_section_sets">Workout sets</string>
-    <string name="export_section_personal_bests">Personal bests</string>
+    <string name="export_section_exercises">Exercises</string>
     <string name="export_column_date">Date</string>
     <string name="export_column_exercise">Exercise</string>
     <string name="export_column_set">Set</string>
@@ -427,6 +428,9 @@
     <string name="export_range">Range</string>
     <string name="export_sessions_in_range">Sessions in range</string>
     <string name="export_sessions_total">Sessions logged</string>
+    <string name="export_personal_best_date">Personal best set on</string>
+    <string name="export_column_first_session">First session</string>
+    <string name="export_column_last_session">Last session</string>
     <string name="export_first_value">First (%1$s)</string>
     <string name="export_latest_value">Latest (%1$s)</string>
     <string name="export_change_value">Change (%1$s)</string>
@@ -447,7 +451,6 @@
     <string name="export_highest_weight">Highest (kg)</string>
     <string name="export_entry_count">Entries</string>
     <string name="export_all_title">Tracker data</string>
-    <string name="export_workouts_count">Workout sets</string>
     <string name="settings_export_all">Export all data</string>
     <string name="settings_export_all_description">Save every workout, daily log and weight entry as a PDF or Excel file</string>
 </resources>

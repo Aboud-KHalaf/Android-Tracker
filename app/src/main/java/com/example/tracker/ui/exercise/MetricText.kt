@@ -1,5 +1,6 @@
 package com.example.tracker.ui.exercise
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.pluralStringResource
@@ -18,14 +19,16 @@ import kotlin.math.roundToInt
 /** "Weight", "Reps", "Volume" or "Longest hold". */
 @Composable
 @ReadOnlyComposable
-fun ProgressMetric.label(): String = stringResource(
-    when (this) {
+fun ProgressMetric.label(): String = stringResource(labelRes)
+
+@get:StringRes
+internal val ProgressMetric.labelRes: Int
+    get() = when (this) {
         ProgressMetric.WEIGHT -> R.string.metric_weight
         ProgressMetric.REPS -> R.string.metric_reps
         ProgressMetric.VOLUME -> R.string.metric_volume
         ProgressMetric.HOLD -> R.string.metric_hold
-    },
-)
+    }
 
 /** A value with its unit: "50 kg", "24 reps", "1,250 kg" or "0:50". */
 @Composable
@@ -89,11 +92,13 @@ fun TimeRange.label(): String = stringResource(
 /** Spoken form of [label]: "Last 3 months". */
 @Composable
 @ReadOnlyComposable
-fun TimeRange.description(): String = stringResource(
-    when (this) {
+fun TimeRange.description(): String = stringResource(descriptionRes)
+
+@get:StringRes
+internal val TimeRange.descriptionRes: Int
+    get() = when (this) {
         TimeRange.ONE_MONTH -> R.string.range_one_month_description
         TimeRange.THREE_MONTHS -> R.string.range_three_months_description
         TimeRange.ONE_YEAR -> R.string.range_one_year_description
         TimeRange.ALL -> R.string.range_all_description
-    },
-)
+    }
