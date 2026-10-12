@@ -9,6 +9,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
+import com.example.tracker.domain.export.ExportFormat
+import com.example.tracker.domain.export.ReportExporter
+import com.example.tracker.domain.export.exportFileName
 import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.WeightEntry
 import com.example.tracker.domain.repository.WeightRepository
@@ -38,6 +41,7 @@ import kotlinx.coroutines.flow.update
 @OptIn(ExperimentalCoroutinesApi::class)
 class WeightViewModel(
     private val weightRepository: WeightRepository,
+    private val reportExporter: ReportExporter,
     private val time: TimeProvider,
 ) : ViewModel() {
 
@@ -69,6 +73,32 @@ class WeightViewModel(
 
     fun onSelectPeriod(selected: DatePeriod) {
         period.value = selected
+    }
+
+    private val _isExporting = MutableStateFlow(false)
+
+    /** Whether an export is being written; the screen disables exporting meanwhile. */
+    val isExporting: StateFlow<Boolean> = _isExporting.asStateFlow()
+
+    fun exportFileName(format: ExportFormat): String = exportFileName("weight", today(), format)
+
+    /** Saves the selected period's entries as [format] to [destination], a file URI. */
+    fun onExport(format: ExportFormat, destination: String) {
+        if (_isExporting.value) return
+        _isExporting.value = true
+        viewModelScope.launchCatching(onError = { showMessage(R.string.export_error) }) {
+            try {
+                val today = today()
+                val period = period.value
+                val from = period.start(today)
+                val to = period.end(today)
+                val entries = weightRepository.observeEntries(from, to).first()
+                reportExporter.export(WeightReportBuilder.build(from, to, today, entries), format, destination)
+                showMessage(R.string.export_done)
+            } finally {
+                _isExporting.value = false
+            }
+        }
     }
 
     fun onRetry() {
@@ -161,7 +191,7 @@ class WeightViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
-                WeightViewModel(container.weightRepository, container.time)
+                WeightViewModel(container.weightRepository, container.reportExporter, container.time)
             }
         }
     }
