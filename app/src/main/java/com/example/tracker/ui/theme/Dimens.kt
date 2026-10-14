@@ -34,6 +34,9 @@ object Dimens {
     /** The −/+ stepper buttons in an active set. */
     val setControlSize: Dp = 56.dp
 
+    /** The shutter button on the progress photo camera. */
+    val shutterSize: Dp = 72.dp
+
     /** Content column width cap, so screens stay readable on tablets and in landscape. */
     val maxContentWidth: Dp = 640.dp
 }

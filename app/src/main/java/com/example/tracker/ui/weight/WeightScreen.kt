@@ -48,6 +48,7 @@ import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 import com.example.tracker.ui.weight.components.CurrentWeightCard
+import com.example.tracker.ui.weight.components.ProgressPhotosCard
 import com.example.tracker.ui.weight.components.WeightChartCard
 import com.example.tracker.ui.weight.components.WeightEditorDialog
 import com.example.tracker.ui.weight.components.WeightRow
@@ -60,12 +61,15 @@ private val FabClearance = 88.dp
 /** Weight destination: connects [WeightViewModel] to [WeightScreen]. */
 @Composable
 fun WeightRoute(
+    onOpenPhotos: () -> Unit,
+    onTakePhotos: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: WeightViewModel = viewModel(factory = WeightViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val editor by viewModel.editor.collectAsStateWithLifecycle()
     val isExporting by viewModel.isExporting.collectAsStateWithLifecycle()
+    val latestCheckIn by viewModel.latestCheckIn.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -95,6 +99,9 @@ fun WeightRoute(
         onSelectPeriod = viewModel::onSelectPeriod,
         onRetry = viewModel::onRetry,
         modifier = modifier,
+        photosCard = { cardModifier ->
+            ProgressPhotosCard(latest = latestCheckIn, onOpen = onOpenPhotos, onTakePhotos = onTakePhotos, modifier = cardModifier)
+        },
         exportButton = {
             ExportButton(isExporting = isExporting, fileName = viewModel::exportFileName, onExport = viewModel::onExport)
         },
@@ -116,7 +123,7 @@ fun WeightRoute(
 
 /**
  * Stateless Weight screen. [onOpenEntry] with null opens today. [exportButton] sits beside the
- * title once the log has loaded.
+ * title once the log has loaded; [photosCard] goes below the current weight.
  */
 @Composable
 fun WeightScreen(
@@ -126,6 +133,7 @@ fun WeightScreen(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    photosCard: @Composable (Modifier) -> Unit = {},
     exportButton: @Composable () -> Unit = {},
 ) {
     Scaffold(
@@ -150,7 +158,7 @@ fun WeightScreen(
                     modifier = Modifier.padding(innerPadding),
                 )
 
-                is WeightUiState.Success -> WeightContent(state, onOpenEntry, onSelectPeriod, exportButton, innerPadding)
+                is WeightUiState.Success -> WeightContent(state, onOpenEntry, onSelectPeriod, photosCard, exportButton, innerPadding)
             }
         }
     }
@@ -161,6 +169,7 @@ private fun WeightContent(
     state: WeightUiState.Success,
     onOpenEntry: (LocalDate?) -> Unit,
     onSelectPeriod: (DatePeriod) -> Unit,
+    photosCard: @Composable (Modifier) -> Unit,
     exportButton: @Composable () -> Unit,
     contentPadding: PaddingValues,
 ) {
@@ -195,6 +204,7 @@ private fun WeightContent(
                     modifier = cardModifier,
                 )
             }
+            item(key = "photos") { photosCard(cardModifier) }
             item(key = "period") {
                 PeriodSelector(
                     selected = state.period,

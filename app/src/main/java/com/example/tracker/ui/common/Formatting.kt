@@ -12,6 +12,7 @@ import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -70,6 +71,10 @@ fun formatNumber(value: Double, locale: Locale): String =
 /** "Mon, Sep 28". */
 fun LocalDate.mediumDate(locale: Locale): String =
     format(DateTimeFormatter.ofPattern("EEE, MMM d", locale))
+
+/** "Oct 1, 2026", in the locale's medium style; for dates that may be in another year. */
+fun LocalDate.dateWithYear(locale: Locale): String =
+    format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))
 
 /** Workout clock: "24:13", or "1:05:09" from an hour on. */
 fun formatElapsed(totalSeconds: Long): String {

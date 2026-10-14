@@ -7,7 +7,9 @@ import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.PersonalBest
+import com.example.tracker.domain.model.PhotoPose
 import com.example.tracker.domain.model.PlanDetails
+import com.example.tracker.domain.model.ProgressPhoto
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.model.WeightEntry
 import com.example.tracker.domain.model.WeekSummary
@@ -20,9 +22,11 @@ import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
+import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WeightRepository
 import com.example.tracker.domain.repository.WorkoutRepository
+import java.io.File
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -301,6 +305,52 @@ class FakeWeightRepository : WeightRepository {
 
     fun put(vararg logged: WeightEntry) {
         entries.value += logged.associateBy { it.date }
+    }
+}
+
+class FakeProgressPhotoRepository(private val capturesDirectory: File = createTempDir()) : ProgressPhotoRepository {
+    val photos = MutableStateFlow<List<ProgressPhoto>>(emptyList())
+
+    /** When set, [observePhotos] fails with it. */
+    var observeError: Exception? = null
+
+    /** When set, every write fails with it. */
+    var writeError: Exception? = null
+    val discarded = mutableListOf<File>()
+    private var nextId = 1
+
+    override fun observePhotos(): Flow<List<ProgressPhoto>> = flow {
+        observeError?.let { throw it }
+        emitAll(photos)
+    }
+
+    override suspend fun createCaptureFile(): File {
+        writeError?.let { throw it }
+        return File.createTempFile("capture-", ".jpg", capturesDirectory)
+    }
+
+    override suspend fun savePhoto(date: LocalDate, pose: PhotoPose, capture: File) {
+        writeError?.let { throw it }
+        val photo = ProgressPhoto("photo-${nextId++}", date, pose, capture.absolutePath)
+        photos.value = photos.value.filterNot { it.date == date && it.pose == pose } + photo
+    }
+
+    override suspend fun discardCapture(capture: File) {
+        discarded += capture
+        capture.delete()
+    }
+
+    override suspend fun deletePhoto(id: String) {
+        writeError?.let { throw it }
+        photos.value = photos.value.filterNot { it.id == id }
+    }
+
+    fun put(vararg taken: ProgressPhoto) {
+        photos.value += taken
+    }
+
+    private companion object {
+        fun createTempDir(): File = java.nio.file.Files.createTempDirectory("captures").toFile()
     }
 }
 

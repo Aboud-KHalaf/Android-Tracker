@@ -14,6 +14,9 @@ import com.example.tracker.domain.export.ReportExporter
 import com.example.tracker.domain.export.exportFileName
 import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.WeightEntry
+import com.example.tracker.domain.photos.PhotoCheckIn
+import com.example.tracker.domain.photos.checkInsOf
+import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.domain.repository.WeightRepository
 import com.example.tracker.ui.common.launchCatching
 import java.time.LocalDate
@@ -29,18 +32,21 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 /**
- * Weight: the latest weight, how it moved over a period, and the dialog that logs one day.
+ * Weight: the latest weight, how it moved over a period, the dialog that logs one day, and
+ * the latest progress photos.
  * Messages are sent once through [events].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class WeightViewModel(
     private val weightRepository: WeightRepository,
+    photoRepository: ProgressPhotoRepository,
     private val reportExporter: ReportExporter,
     private val time: TimeProvider,
 ) : ViewModel() {
@@ -62,6 +68,12 @@ class WeightViewModel(
                 .catch { emit(WeightUiState.Error) }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), WeightUiState.Loading)
+
+    /** The latest day with progress photos, or null before the first; photos failing to load just hide it. */
+    val latestCheckIn: StateFlow<PhotoCheckIn?> = photoRepository.observePhotos()
+        .map { checkInsOf(it).firstOrNull() }
+        .catch { emit(null) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 
     private val _editor = MutableStateFlow<WeightEditorState?>(null)
 
@@ -191,7 +203,12 @@ class WeightViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
-                WeightViewModel(container.weightRepository, container.reportExporter, container.time)
+                WeightViewModel(
+                    container.weightRepository,
+                    container.progressPhotoRepository,
+                    container.reportExporter,
+                    container.time,
+                )
             }
         }
     }

@@ -5,6 +5,10 @@
     <!-- Browsing the online exercise catalog when adding exercises to a plan. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Progress photos. Optional, so devices without a camera can still install the app. -->
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <!-- Daily log reminder. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
