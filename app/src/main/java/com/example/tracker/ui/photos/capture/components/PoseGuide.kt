@@ -81,10 +81,11 @@ private fun bodyOutline(pose: PhotoPose, size: Size, top: Float, bottom: Float):
             oval(halfWidth = 0.05f, topY = 0f, bottomY = 0.13f),
             capsule(-0.025f, 0.11f, 0.025f, 0.18f),
             capsule(-0.12f, 0.16f, 0.12f, 0.53f, radius = 0.05f),
-            capsule(-0.17f, 0.17f, -0.125f, 0.5f),
-            capsule(0.125f, 0.17f, 0.17f, 0.5f),
-            capsule(-0.105f, 0.47f, -0.01f, 1f),
-            capsule(0.01f, 0.47f, 0.105f, 1f),
+            // Arms and legs stand a little apart, so the outline shows where each one goes.
+            capsule(-0.185f, 0.17f, -0.14f, 0.5f),
+            capsule(0.14f, 0.17f, 0.185f, 0.5f),
+            capsule(-0.105f, 0.47f, -0.02f, 1f),
+            capsule(0.02f, 0.47f, 0.105f, 1f),
         )
 
         PhotoPose.SIDE -> listOf(
