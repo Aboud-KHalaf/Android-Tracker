@@ -1,6 +1,6 @@
 # Tracker
 
-An offline-first Android app for tracking your **workouts**, a **daily log** of calories, protein and steps, and your **body weight** in one place. Built with Kotlin, Jetpack Compose and Material Design 3.
+An offline-first Android app for tracking your **workouts**, a **daily log** of calories, protein and steps, your **body weight** and **progress photos** in one place. Built with Kotlin, Jetpack Compose and Material Design 3.
 
 All data stays on your device, and you don't need an account. When you want your numbers elsewhere, export any screen's analytics, or everything at once, as a PDF or Excel file. The only feature that uses the internet is the optional exercise catalog, which sends just your search to [wger.de](https://wger.de).
 
@@ -32,11 +32,19 @@ All data stays on your device, and you don't need an account. When you want your
 - See your current weight, a weight chart and your full history
 - Export the selected period as a PDF or Excel file
 
+### 📸 Progress photos
+- Take a front, side and back photo from the Weight screen, one pose after another
+- A body outline with head and feet lines shows where to stand, so every photo is framed the same way
+- Your last photo of each pose shows faintly over the camera, so you can line up in the same spot
+- A 3 or 10 second self-timer gives you time to step back from a propped-up phone; switch between the front and back camera
+- See every day's photos, and compare your first and latest photo of a pose side by side
+- Photos stay inside the app: they aren't added to your gallery or included in cloud backups
+
 ### ⚙️ Settings
 - Light, dark or system theme
 - Turn the daily log reminder on or off and choose when it arrives
 - Export all data (exercises, every workout set, daily log and weight) as a PDF or Excel file
-- Delete all data from the device
+- Delete all data, progress photos included, from the device
 
 ### 🎨 Design
 - Material Design 3 with a blue brand theme, plus light and dark modes
@@ -56,6 +64,7 @@ Get the latest APK from the [website](https://aboud-khalaf.github.io/Android-Tra
 | Architecture | MVVM, `StateFlow`, repositories |
 | Navigation | Navigation Compose with type-safe routes (kotlinx.serialization) |
 | Networking | `HttpURLConnection` + kotlinx.serialization for the [wger REST API](https://wger.de/api/v2/) (no API key) |
+| Camera | CameraX (`camera-view` with `LifecycleCameraController`) |
 | Images | Coil |
 | Storage | Room (with migrations and exported schemas) |
 | Background | AlarmManager for the daily nutrition reminder |
@@ -69,6 +78,7 @@ The app follows **MVVM** with unidirectional data flow:
 ```
 UI (Compose screens)  →  ViewModels (StateFlow UI state)  →  Repositories  →  Room database
                                                                             ↘  wger API (exercise catalog)
+                                                                            ↘  app files (progress photos)
 ```
 
 ```
@@ -77,11 +87,11 @@ app/src/main/java/com/example/tracker/
 │   ├── export/  # PDF and Excel (.xlsx) writers for exported reports
 │   └── remote/  # HTTP client and the wger exercise catalog API
 ├── domain/      # Domain models, repository interfaces and business logic
-│                #   (progress, nutrition, weight, plans, catalog, reminders, export)
+│                #   (progress, nutrition, weight, photos, plans, catalog, reminders, export)
 ├── di/          # AppContainer: manual dependency wiring
 └── ui/          # Compose screens and ViewModels, one package per feature
     ├── home/ plan/ catalog/ workout/ history/ exercise/ exercises/
-    ├── nutrition/ weight/ settings/ splash/
+    ├── nutrition/ weight/ photos/ settings/ splash/
     ├── navigation/ common/
     └── theme/   # Colors, typography, shapes and spacing tokens
 ```
@@ -102,7 +112,7 @@ Open the project in Android Studio and run the `app` configuration, or build fro
 
 ### Running tests
 
-Unit tests and Robolectric-based UI tests (workout, daily log, weight, settings and exercise catalog flows):
+Unit tests and Robolectric-based UI tests (workout, daily log, weight, settings and exercise catalog flows), plus tests for the progress photo storage and ViewModels:
 
 ```bash
 ./gradlew :app:testDebugUnitTest

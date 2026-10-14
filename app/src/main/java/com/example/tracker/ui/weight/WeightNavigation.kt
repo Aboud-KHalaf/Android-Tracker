@@ -7,6 +7,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object WeightDestination
 
-fun NavGraphBuilder.weightScreen() {
-    composable<WeightDestination> { WeightRoute() }
+fun NavGraphBuilder.weightScreen(onOpenPhotos: () -> Unit, onTakePhotos: () -> Unit) {
+    composable<WeightDestination> { WeightRoute(onOpenPhotos = onOpenPhotos, onTakePhotos = onTakePhotos) }
 }

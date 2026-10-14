@@ -2,6 +2,7 @@ package com.example.tracker.data.repository
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.example.tracker.data.local.ProgressPhotoStore
 import com.example.tracker.data.local.TrackerDatabase
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.NutritionTargets
@@ -17,12 +18,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 
 /**
- * Keeps preferences in [SharedPreferences] and deletes data from the local database.
+ * Keeps preferences in [SharedPreferences] and deletes data from the local database and
+ * the progress photo files.
  * Preferences are read once at startup, so the first frame already uses the saved theme.
  */
 class LocalSettingsRepository(
     private val preferences: SharedPreferences,
     private val database: TrackerDatabase,
+    private val photoStore: ProgressPhotoStore,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : SettingsRepository {
 
@@ -86,7 +89,10 @@ class LocalSettingsRepository(
     }
 
     override suspend fun deleteAllData() {
-        withContext(ioDispatcher) { database.clearAllTables() }
+        withContext(ioDispatcher) {
+            database.clearAllTables()
+            photoStore.deleteAll()
+        }
     }
 
     private fun readThemeMode(): ThemeMode {

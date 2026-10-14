@@ -6,9 +6,11 @@ import com.example.tracker.core.SystemTimeProvider
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.core.UuidGenerator
 import com.example.tracker.data.export.AndroidReportExporter
+import com.example.tracker.data.local.ProgressPhotoStore
 import com.example.tracker.data.local.TrackerDatabase
 import com.example.tracker.data.remote.UrlConnectionHttpClient
 import com.example.tracker.data.remote.wger.WgerApi
+import com.example.tracker.data.repository.LocalProgressPhotoRepository
 import com.example.tracker.data.repository.LocalSettingsRepository
 import com.example.tracker.data.repository.OfflineFirstExerciseRepository
 import com.example.tracker.data.repository.OfflineFirstNutritionRepository
@@ -22,11 +24,13 @@ import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
+import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WeightRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.reminder.AlarmReminderScheduler
 import com.example.tracker.reminder.NotificationReminderNotifier
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 
@@ -47,10 +51,20 @@ class AppContainer(context: Context) {
     val workoutRepository: WorkoutRepository by lazy { OfflineFirstWorkoutRepository(database, time, ids) }
     val nutritionRepository: NutritionRepository by lazy { OfflineFirstNutritionRepository(database, time) }
     val weightRepository: WeightRepository by lazy { OfflineFirstWeightRepository(database, time) }
+    private val photoStore: ProgressPhotoStore by lazy {
+        val appContext = context.applicationContext
+        ProgressPhotoStore(
+            photosDirectory = File(appContext.filesDir, ProgressPhotoStore.PHOTOS_FOLDER),
+            capturesDirectory = File(appContext.cacheDir, ProgressPhotoStore.CAPTURES_FOLDER),
+        )
+    }
+    val progressPhotoRepository: ProgressPhotoRepository by lazy {
+        LocalProgressPhotoRepository(database, photoStore, time, ids)
+    }
     val settingsRepository: SettingsRepository by lazy {
         val preferences = context.applicationContext
             .getSharedPreferences(LocalSettingsRepository.PREFERENCES_NAME, Context.MODE_PRIVATE)
-        LocalSettingsRepository(preferences, database)
+        LocalSettingsRepository(preferences, database, photoStore)
     }
 
     val reportExporter: ReportExporter by lazy { AndroidReportExporter(context.applicationContext) }

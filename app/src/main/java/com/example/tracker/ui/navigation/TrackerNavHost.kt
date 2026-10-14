@@ -13,6 +13,10 @@ import com.example.tracker.ui.history.historyScreen
 import com.example.tracker.ui.home.HomeDestination
 import com.example.tracker.ui.home.homeScreen
 import com.example.tracker.ui.nutrition.nutritionScreen
+import com.example.tracker.ui.photos.navigateToPhotoCapture
+import com.example.tracker.ui.photos.navigateToProgressPhotos
+import com.example.tracker.ui.photos.photoCaptureScreen
+import com.example.tracker.ui.photos.progressPhotosScreen
 import com.example.tracker.ui.plan.navigateToPlan
 import com.example.tracker.ui.plan.planScreen
 import com.example.tracker.ui.settings.navigateToSettings
@@ -49,7 +53,10 @@ fun TrackerNavHost(
         historyScreen()
         exerciseListScreen(onOpenExercise = navController::navigateToExerciseDetails)
         nutritionScreen()
-        weightScreen()
+        weightScreen(
+            onOpenPhotos = navController::navigateToProgressPhotos,
+            onTakePhotos = navController::navigateToPhotoCapture,
+        )
         planScreen(
             onBack = navController::popBackStack,
             onOpenWorkout = navController::navigateToActiveWorkout,
@@ -63,5 +70,7 @@ fun TrackerNavHost(
         exerciseCatalogScreen(onBack = navController::popBackStack)
         exerciseDetailsScreen(onBack = navController::popBackStack)
         settingsScreen(onBack = navController::popBackStack)
+        progressPhotosScreen(onBack = navController::popBackStack, onTakePhotos = navController::navigateToPhotoCapture)
+        photoCaptureScreen(onClose = navController::popBackStack)
     }
 }
