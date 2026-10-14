@@ -91,6 +91,31 @@ class TrackerDatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun migrate4To5_keepsWeightAndAddsProgressPhotoTable() {
+        helper.createDatabase(DB_NAME, 4).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO body_weight (epoch_day, weight_kg, created_at, updated_at, deleted_at, sync_state)
+                VALUES (20000, 79.4, 0, 0, NULL, 'PENDING')
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 5, true).use { db ->
+            db.query("SELECT weight_kg FROM body_weight").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals(79.4, cursor.getDouble(0), 0.0)
+            }
+            db.execSQL(
+                """
+                INSERT INTO progress_photo (id, epoch_day, pose, file_name, created_at)
+                VALUES ('p1', 20000, 'FRONT', 'p1.jpg', 0)
+                """
+            )
+        }
+    }
+
     private companion object {
         const val DB_NAME = "migration-test.db"
     }

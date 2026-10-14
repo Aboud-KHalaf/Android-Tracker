@@ -8,6 +8,7 @@ import androidx.room.RoomDatabase
 import com.example.tracker.data.local.dao.ExerciseDao
 import com.example.tracker.data.local.dao.NutritionDao
 import com.example.tracker.data.local.dao.PlanDao
+import com.example.tracker.data.local.dao.ProgressPhotoDao
 import com.example.tracker.data.local.dao.WeightDao
 import com.example.tracker.data.local.dao.WorkoutDao
 import com.example.tracker.data.local.entity.BodyWeightEntity
@@ -15,6 +16,7 @@ import com.example.tracker.data.local.entity.DailyNutritionEntity
 import com.example.tracker.data.local.entity.ExerciseEntity
 import com.example.tracker.data.local.entity.PlanEntity
 import com.example.tracker.data.local.entity.PlanExerciseEntity
+import com.example.tracker.data.local.entity.ProgressPhotoEntity
 import com.example.tracker.data.local.entity.WorkoutEntity
 import com.example.tracker.data.local.entity.WorkoutExerciseEntity
 import com.example.tracker.data.local.entity.WorkoutSetEntity
@@ -29,8 +31,9 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         WorkoutSetEntity::class,
         DailyNutritionEntity::class,
         BodyWeightEntity::class,
+        ProgressPhotoEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
     autoMigrations = [
         // Adds daily_nutrition.
@@ -39,6 +42,8 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         AutoMigration(from = 2, to = 3),
         // Adds daily_nutrition.steps.
         AutoMigration(from = 3, to = 4),
+        // Adds progress_photo.
+        AutoMigration(from = 4, to = 5),
     ],
 )
 abstract class TrackerDatabase : RoomDatabase() {
@@ -47,6 +52,7 @@ abstract class TrackerDatabase : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao
     abstract fun nutritionDao(): NutritionDao
     abstract fun weightDao(): WeightDao
+    abstract fun progressPhotoDao(): ProgressPhotoDao
 
     companion object {
         private const val NAME = "tracker.db"
