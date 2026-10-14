@@ -13,7 +13,9 @@ class ProgressPhotoStore(
 ) {
     fun file(fileName: String): File = File(photosDirectory, fileName)
 
+    /** Only one capture is pending at a time, so this also clears any a closed screen left behind. */
     fun newCaptureFile(): File {
+        capturesDirectory.deleteRecursively()
         capturesDirectory.mkdirs()
         return File.createTempFile("capture-", ".jpg", capturesDirectory)
     }
