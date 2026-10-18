@@ -8,13 +8,27 @@ All data stays on your device, and you don't need an account. When you want your
 
 ## ✨ Features
 
+### 🗓️ Programs and weekly schedule
+- Create workout programs from a template — **Full Body**, **Upper/Lower**, **Push/Pull/Legs** — or start from scratch
+- Pick your training days; each day gets its own exercise list, named after the split (e.g. Push, Pull, Legs, Push…)
+- Add or remove training days, move a day to another weekday, or add days without a fixed weekday
+- Keep several programs and choose which one is active; Home shows today's workout from it, or the next one on a rest day
+- Templates are plain data, so new splits need no code
+
 ### 🏋️ Workouts
-- Create workout plans and add exercises to them
-- Browse a free online exercise catalog ([wger](https://wger.de)) while building a plan: search by name, see each exercise's picture, muscles, equipment and instructions, and add it in one tap
-- The Home screen suggests which plan to train next
+- Add exercises to each training day, or browse a free online exercise catalog ([wger](https://wger.de)): search by name, see each exercise's picture, muscles, equipment and instructions, and add it in one tap
+- **Replace** an exercise (e.g. Bench Press → Dumbbell Press) without rebuilding the day: it keeps its place and targets
+- **Drag and drop** exercises into a new order with the handle or a long press; the order is saved and restored (Move up/down stay available in the menu and to TalkBack)
+- **Targets per exercise**: sets, reps and weight, or hold time, edited on their own without starting a workout. They prefill each new workout; what you actually lift is recorded separately and shown next to them as "Recorded last workout"
 - Log weight-and-reps sets during an active workout
 - Built-in hold timer for timed sets (planks, holds, etc.)
-- Workout history grouped by month, with a filter by plan
+- Workout history grouped by month, with a filter by training day
+
+### ⏱️ Workouts that survive leaving the app
+- While a workout is in progress, an ongoing notification shows it with a running clock; tap it to jump back in
+- The clock counts from the stored start time, so it stays right with the screen locked, in another app, or after Android closes the app
+- Every set is saved the moment you log it. Reopen the app after it was closed (or the phone restarted) and the workout comes back on the exercise you were on, with your typed weight and reps and a running hold timer intact
+- Only one workout can run at a time, so there are never duplicate timers
 
 ### 📈 Progress
 - A details screen for each exercise, with a progress chart and full history
@@ -67,7 +81,7 @@ Get the latest APK from the [website](https://aboud-khalaf.github.io/Android-Tra
 | Camera | CameraX (`camera-view` with `LifecycleCameraController`) |
 | Images | Coil |
 | Storage | Room (with migrations and exported schemas) |
-| Background | AlarmManager for the daily nutrition reminder |
+| Background | AlarmManager for the daily nutrition reminder; an ongoing notification for the workout in progress |
 | Dependency injection | Manual (`AppContainer`) |
 | Testing | JUnit, Robolectric, Compose UI tests |
 
@@ -87,14 +101,32 @@ app/src/main/java/com/example/tracker/
 │   ├── export/  # PDF and Excel (.xlsx) writers for exported reports
 │   └── remote/  # HTTP client and the wger exercise catalog API
 ├── domain/      # Domain models, repository interfaces and business logic
-│                #   (progress, nutrition, weight, photos, plans, catalog, reminders, export)
+│                #   (progress, nutrition, weight, photos, programs, plans, workout sessions,
+│                #    catalog, reminders, export)
 ├── di/          # AppContainer: manual dependency wiring
+├── reminder/    # Daily log reminder: alarms, notification, reboot receiver
+├── workout/     # Workout-in-progress notification and its reboot/update receiver
 └── ui/          # Compose screens and ViewModels, one package per feature
-    ├── home/ plan/ catalog/ workout/ history/ exercise/ exercises/
+    ├── home/ program/ plan/ catalog/ workout/ history/ exercise/ exercises/
     ├── nutrition/ weight/ photos/ settings/ splash/
     ├── navigation/ common/
     └── theme/   # Colors, typography, shapes and spacing tokens
 ```
+
+### Programs and training days
+
+A **program** has a weekly schedule of **training days**. Each training day is stored as a plan (`workout_plans`) with its own ordered exercise list and an optional weekday, so workouts, history and progress keep working exactly as before. Updating from an older version moves existing plans into one active program called "My program", unscheduled until you pick weekdays.
+
+Each plan exercise has a **default configuration** (target sets, reps, weight or hold time). Starting a workout copies it into the workout's sets; anything left blank repeats last time. Logged sets belong to the workout, so editing targets never changes history.
+
+### Workout sessions in the background
+
+A workout in progress needs no code running in the background: every set is written to Room when it is logged, and the clock is worked out from the stored `started_at` instead of a running timer. So the app uses an **ongoing notification with a system chronometer** rather than a foreground service, which would only keep the process alive for no benefit and need a special foreground service type and permission.
+
+- `ActiveWorkoutSession` mirrors the stored workout into the notification while the app runs, and once on every app start.
+- `ActiveWorkoutRestoreReceiver` puts the notification back after a reboot or app update, since Android clears notifications then.
+- On a fresh start, `TrackerAppViewModel` reopens the workout in progress. The exercise you had open is stored with the workout; typed input and a running hold timer live in `SavedStateHandle`, and typed values are also saved to the set when the app goes to the background.
+- Notifications need the Android 13+ permission, which is asked for when you start a workout. Without it, workouts work the same, just without the notification.
 
 ## 🚀 Getting Started
 
@@ -112,7 +144,7 @@ Open the project in Android Studio and run the `app` configuration, or build fro
 
 ### Running tests
 
-Unit tests and Robolectric-based UI tests (workout, daily log, weight, settings and exercise catalog flows), plus tests for the progress photo storage and ViewModels:
+Unit tests and Robolectric-based UI tests (workout, daily log, weight, settings, exercise catalog and drag-and-drop flows), plus tests for the database migrations, repositories, progress photo storage, workout notification and ViewModels:
 
 ```bash
 ./gradlew :app:testDebugUnitTest
