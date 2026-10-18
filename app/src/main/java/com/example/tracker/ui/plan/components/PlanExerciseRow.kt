@@ -2,12 +2,10 @@ package com.example.tracker.ui.plan.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material.icons.outlined.FindReplace
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Tune
@@ -34,7 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -48,7 +45,6 @@ import com.example.tracker.ui.common.formatWeight
 import com.example.tracker.ui.common.icon
 import com.example.tracker.ui.common.label
 import com.example.tracker.ui.plan.PlanExerciseUi
-import com.example.tracker.ui.theme.Dimens
 
 private val DraggedElevation = 6.dp
 
@@ -62,17 +58,17 @@ data class PlanExerciseRowActions(
 )
 
 /**
- * One exercise of the day with its targets. Tapping it edits the targets; it is reordered by
- * dragging the handle (or long-pressing the row, see the caller's [modifier]), or with the menu
- * and accessibility actions.
+ * One exercise of the day with its targets. Tapping it edits the targets; it is reordered with
+ * [dragHandle] (and long-pressing the row, see the caller's [modifier]), or with the menu and
+ * accessibility actions.
  */
 @Composable
 fun PlanExerciseRow(
     exercise: PlanExerciseUi,
     isDragging: Boolean,
-    dragHandleModifier: Modifier,
     actions: PlanExerciseRowActions,
     modifier: Modifier = Modifier,
+    dragHandle: @Composable () -> Unit = {},
 ) {
     val moveUpLabel = stringResource(R.string.plan_move_up)
     val moveDownLabel = stringResource(R.string.plan_move_down)
@@ -100,25 +96,11 @@ fun PlanExerciseRow(
             trailingContent = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     ExerciseOptionsMenu(exercise, actions)
-                    DragHandle(exercise.name, dragHandleModifier)
+                    dragHandle()
                 }
             },
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         )
-    }
-}
-
-@Composable
-private fun DragHandle(exerciseName: String, dragHandleModifier: Modifier) {
-    val description = stringResource(R.string.plan_drag_handle, exerciseName)
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(Dimens.minTouchTarget)
-            .then(dragHandleModifier)
-            .semantics { contentDescription = description },
-    ) {
-        Icon(Icons.Outlined.DragHandle, contentDescription = null)
     }
 }
 

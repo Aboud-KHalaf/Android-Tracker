@@ -53,10 +53,10 @@ import com.example.tracker.ui.common.MessageContent
 import com.example.tracker.ui.common.NameInputDialog
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.RenameDeleteTopBar
+import com.example.tracker.ui.common.ReorderHandle
 import com.example.tracker.ui.common.ReorderableItem
 import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.currentLocale
-import com.example.tracker.ui.common.dragHandle
 import com.example.tracker.ui.common.fullName
 import com.example.tracker.ui.common.longPressDraggable
 import com.example.tracker.ui.common.mediumDate
@@ -347,7 +347,13 @@ private fun PlanContent(
                     PlanExerciseRow(
                         exercise = exercise,
                         isDragging = isDragging,
-                        dragHandleModifier = Modifier.dragHandle(reorderState, exercise.id),
+                        dragHandle = {
+                            ReorderHandle(
+                                state = reorderState,
+                                key = exercise.id,
+                                contentDescription = stringResource(R.string.plan_drag_handle, exercise.name),
+                            )
+                        },
                         actions = PlanExerciseRowActions(
                             onEdit = { actions.onEditExercise(exercise.id) },
                             onReplace = { onReplaceClick(exercise.id) },

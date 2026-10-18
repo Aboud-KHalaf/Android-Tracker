@@ -570,7 +570,6 @@
     <string name="plan_replace">Replace</string>
     <string name="plan_edit_targets">Edit targets</string>
     <string name="plan_drag_handle">Reorder %1$s</string>
-    <string name="plan_exercise_replaced">%1$s replaced</string>
     <string name="plan_error_replace">Couldn\'t replace the exercise. Try again.</string>
     <string name="replace_exercise_title">Replace %1$s</string>
     <string name="replace_exercise_library_empty">There are no other exercises in your library yet.</string>

@@ -4,9 +4,13 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DragHandle
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -17,12 +21,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.zIndex
+import com.example.tracker.ui.theme.Dimens
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -157,6 +165,25 @@ fun LazyItemScope.ReorderableItem(
         Modifier.animateItem()
     }
     Box(modifier.then(placement)) { content(isDragging) }
+}
+
+/** A drag handle for [key], at least a full touch target in size. */
+@Composable
+fun ReorderHandle(
+    state: ReorderableListState,
+    key: Any,
+    contentDescription: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(Dimens.minTouchTarget)
+            .dragHandle(state, key)
+            .semantics { this.contentDescription = contentDescription },
+    ) {
+        Icon(Icons.Outlined.DragHandle, contentDescription = null)
+    }
 }
 
 /** Starts dragging [key] as soon as this element (a drag handle) is dragged. */
