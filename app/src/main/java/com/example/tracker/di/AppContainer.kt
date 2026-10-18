@@ -30,8 +30,10 @@ import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WeightRepository
 import com.example.tracker.domain.repository.WorkoutRepository
+import com.example.tracker.domain.workout.ActiveWorkoutSession
 import com.example.tracker.reminder.AlarmReminderScheduler
 import com.example.tracker.reminder.NotificationReminderNotifier
+import com.example.tracker.workout.AndroidActiveWorkoutNotifier
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -74,6 +76,10 @@ class AppContainer(context: Context) {
 
     /** For work that outlives a screen, such as handling a broadcast. */
     val applicationScope = CoroutineScope(SupervisorJob())
+
+    val activeWorkoutSession: ActiveWorkoutSession by lazy {
+        ActiveWorkoutSession(workoutRepository, AndroidActiveWorkoutNotifier(context.applicationContext))
+    }
 
     val nutritionReminder: NutritionReminder by lazy {
         NutritionReminder(

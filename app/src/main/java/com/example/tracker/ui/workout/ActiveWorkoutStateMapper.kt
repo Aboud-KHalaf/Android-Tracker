@@ -5,6 +5,7 @@ import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutExercise
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.progress.improvementOver
+import com.example.tracker.domain.workout.resumeExerciseIndex
 import com.example.tracker.ui.common.SetValueUi
 import com.example.tracker.ui.common.toSetValue
 import java.time.Instant
@@ -36,7 +37,7 @@ internal object ActiveWorkoutStateMapper {
         val exercises = workout.exercises.sortedBy { it.position }
         if (exercises.isEmpty()) return ActiveWorkoutUiState.NotFound
 
-        val index = (selection.exerciseIndex ?: defaultExerciseIndex(workout)).coerceIn(exercises.indices)
+        val index = (selection.exerciseIndex ?: workout.resumeExerciseIndex()).coerceIn(exercises.indices)
         val current = exercises[index]
         val sets = current.sets.sortedBy { it.position }
         val lastTime = lastTimes[current.exercise.id].orEmpty().sortedBy { it.position }
@@ -82,13 +83,6 @@ internal object ActiveWorkoutStateMapper {
             completedSetCount = allSets.count { it.isCompleted },
             openSetCount = allSets.count { !it.isCompleted },
         )
-    }
-
-    /** The first exercise with sets left to do, else the last one. */
-    fun defaultExerciseIndex(workout: Workout): Int {
-        val exercises = workout.exercises.sortedBy { it.position }
-        val open = exercises.indexOfFirst { exercise -> exercise.sets.any { !it.isCompleted } }
-        return if (open >= 0) open else exercises.lastIndex.coerceAtLeast(0)
     }
 
     private fun editorFor(

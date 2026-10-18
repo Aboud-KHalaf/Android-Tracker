@@ -1,6 +1,7 @@
 package com.example.tracker.ui.workout
 
 import androidx.annotation.StringRes
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.createSavedStateHandle
@@ -12,6 +13,7 @@ import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.repository.WorkoutRepository
+import com.example.tracker.domain.workout.resumeExerciseIndex
 import com.example.tracker.ui.common.SetValueUi
 import com.example.tracker.ui.common.launchCatching
 import java.time.Instant
@@ -27,7 +29,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -37,19 +41,22 @@ import kotlinx.coroutines.flow.update
  * Active workout: one exercise at a time, logging its sets.
  *
  * Saved sets come from the repository; what the user is choosing, typing or timing lives
- * here as [WorkoutSelection] and [SetDraft] until it is saved. State is exposed as [uiState];
- * navigation and messages are sent once through [events].
+ * here as [WorkoutSelection] and [SetDraft] until it is saved, backed by [savedState] so it
+ * survives Android ending the app in the background. The open exercise is also stored with
+ * the workout, so the session reopens on it even after a restart. State is exposed as
+ * [uiState]; navigation and messages are sent once through [events].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ActiveWorkoutViewModel(
     private val workoutId: String,
     private val workoutRepository: WorkoutRepository,
     private val time: TimeProvider,
+    private val savedState: SavedStateHandle = SavedStateHandle(),
 ) : ViewModel() {
 
     private val loadAttempt = MutableStateFlow(0)
-    private val selection = MutableStateFlow(WorkoutSelection())
-    private val draft = MutableStateFlow<SetDraft?>(null)
+    private val selection = MutableStateFlow(savedState.readSelection())
+    private val draft = MutableStateFlow(savedState.readDraft())
     private val isFinishing = MutableStateFlow(false)
 
     private val _events = Channel<ActiveWorkoutEvent>(Channel.BUFFERED)
@@ -73,10 +80,11 @@ class ActiveWorkoutViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), ActiveWorkoutUiState.Loading)
 
     init {
+        selection.onEach(savedState::writeSelection).launchIn(viewModelScope)
+        draft.onEach(savedState::writeDraft).launchIn(viewModelScope)
         // Pin the starting exercise, so completing its last set doesn't jump to the next one.
         viewModelScope.launchCatching(onError = {}) {
-            val workout = workoutRepository.observeWorkout(workoutId).filterNotNull().first()
-            val start = ActiveWorkoutStateMapper.defaultExerciseIndex(workout)
+            val start = workoutRepository.observeWorkout(workoutId).filterNotNull().first().resumeExerciseIndex()
             selection.update { if (it.exerciseIndex == null) it.copy(exerciseIndex = start) else it }
         }
     }
@@ -168,6 +176,19 @@ class ActiveWorkoutViewModel(
         workoutRepository.discardWorkout(workoutId)
     }
 
+    /**
+     * The app went to the background. Typed weight and reps are stored with their set, so
+     * they are kept even if the saved state is lost too, e.g. when the app is swiped away.
+     * The draft stays, so nothing changes on screen.
+     */
+    fun onAppBackgrounded() {
+        val pending = draft.value as? SetDraft.WeightReps ?: return
+        val values = completedValues(SetEditorUi.WeightReps(pending.weightText, pending.repsText)) ?: return
+        viewModelScope.launchCatching(onError = {}) {
+            workoutRepository.updateSet(pending.setId, values.weightKg, values.reps, values.durationSeconds)
+        }
+    }
+
     private fun goToExercise(offset: Int) {
         val state = uiState.value as? ActiveWorkoutUiState.Success ?: return
         val target = state.exerciseIndex + offset
@@ -175,6 +196,7 @@ class ActiveWorkoutViewModel(
         viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
             saveDraft()
             selection.value = WorkoutSelection(exerciseIndex = target)
+            workoutRepository.setCurrentExercise(workoutId, target)
         }
     }
 
@@ -258,10 +280,12 @@ class ActiveWorkoutViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
+                val savedState = createSavedStateHandle()
                 ActiveWorkoutViewModel(
-                    workoutId = createSavedStateHandle().toRoute<ActiveWorkoutDestination>().workoutId,
+                    workoutId = savedState.toRoute<ActiveWorkoutDestination>().workoutId,
                     workoutRepository = container.workoutRepository,
                     time = container.time,
+                    savedState = savedState,
                 )
             }
         }

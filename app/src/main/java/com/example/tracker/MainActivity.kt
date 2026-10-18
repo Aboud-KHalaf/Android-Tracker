@@ -1,24 +1,37 @@
 package com.example.tracker
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tracker.ui.TrackerApp
+import com.example.tracker.ui.TrackerAppViewModel
 import com.example.tracker.ui.splash.installAnimatedSplashScreen
 import com.example.tracker.ui.theme.TrackerTheme
+import com.example.tracker.workout.AndroidActiveWorkoutNotifier
 
 class MainActivity : ComponentActivity() {
+    private val appViewModel: TrackerAppViewModel by viewModels { TrackerAppViewModel.Factory }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installAnimatedSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // With saved state, Android restores the screens the user was on, workout included.
+        if (savedInstanceState == null) {
+            appViewModel.onFreshStart(
+                requestedWorkoutId = intent.workoutToOpen(),
+                restoreActiveWorkout = intent.action == Intent.ACTION_MAIN,
+            )
+        }
         val settings = (application as TrackerApplication).container.settingsRepository
         setContent {
             val themeMode by settings.themeMode.collectAsStateWithLifecycle()
@@ -34,10 +47,22 @@ class MainActivity : ComponentActivity() {
             }
 
             TrackerTheme(darkTheme = darkTheme) {
-                TrackerApp()
+                val workoutToOpen by appViewModel.workoutToOpen.collectAsStateWithLifecycle()
+                TrackerApp(workoutToOpen = workoutToOpen, onWorkoutOpened = appViewModel::onWorkoutOpened)
             }
         }
     }
+
+    /** The workout notification was tapped while the app was already open. */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        intent.workoutToOpen()?.let(appViewModel::onOpenWorkout)
+    }
+
+    private fun Intent.workoutToOpen(): String? =
+        takeIf { it.action == AndroidActiveWorkoutNotifier.ACTION_OPEN_WORKOUT }
+            ?.getStringExtra(AndroidActiveWorkoutNotifier.EXTRA_WORKOUT_ID)
 }
 
 // The default scrims `enableEdgeToEdge()` uses for three-button navigation.

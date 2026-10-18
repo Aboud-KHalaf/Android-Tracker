@@ -596,4 +596,13 @@
     <string name="config_save">Save</string>
     <string name="plan_error_load_targets">Couldn\'t open the targets. Try again.</string>
     <string name="plan_error_save_config">Couldn\'t save the targets. Try again.</string>
+
+    <!-- Workout in progress notification -->
+    <string name="workout_channel_name">Workout in progress</string>
+    <string name="workout_channel_description">Shows the workout you\'re doing and its timer while you\'re away from the app</string>
+    <string name="workout_notification_text">%1$s · %2$s</string>
+    <plurals name="workout_notification_sets">
+        <item quantity="one">%1$d of %2$d set done</item>
+        <item quantity="other">%1$d of %2$d sets done</item>
+    </plurals>
 </resources>
