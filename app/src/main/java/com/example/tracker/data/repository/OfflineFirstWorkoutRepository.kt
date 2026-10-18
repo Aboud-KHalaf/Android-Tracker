@@ -94,15 +94,16 @@ class OfflineFirstWorkoutRepository(
             )
             val lastTime = workoutDao.lastCompletedSets(planExercise.exerciseId)
             repeat(planExercise.targetSets) { position ->
-                // Prefill from the same set last time, or the last set if there were fewer.
+                // Prefill from the configured targets; a target left open repeats the same set
+                // last time, or the last set if there were fewer.
                 val template = lastTime.getOrNull(position) ?: lastTime.lastOrNull()
                 sets += WorkoutSetEntity(
                     id = ids.newId(),
                     workoutExerciseId = workoutExerciseId,
                     position = position,
-                    weightKg = template?.weightKg,
-                    reps = template?.reps,
-                    durationSeconds = template?.durationSeconds,
+                    weightKg = planExercise.targetWeightKg ?: template?.weightKg,
+                    reps = planExercise.targetReps ?: template?.reps,
+                    durationSeconds = planExercise.targetDurationSeconds ?: template?.durationSeconds,
                     completedAt = null,
                     sync = SyncMetadata.created(now),
                 )
@@ -128,6 +129,15 @@ class OfflineFirstWorkoutRepository(
         check(workout.finishedAt == null) { "Workout $workoutId is already finished" }
         val now = now()
         workoutDao.upsertWorkouts(listOf(workout.copy(finishedAt = now, sync = workout.sync.touched(now))))
+    }
+
+    override suspend fun setCurrentExercise(workoutId: String, exerciseIndex: Int) {
+        require(exerciseIndex >= 0) { "Exercise index must not be negative" }
+        val workout = requireWorkout(workoutId)
+        if (workout.currentExercisePosition == exerciseIndex) return
+        workoutDao.upsertWorkouts(
+            listOf(workout.copy(currentExercisePosition = exerciseIndex, sync = workout.sync.touched(now()))),
+        )
     }
 
     override suspend fun discardWorkout(workoutId: String) {

@@ -10,6 +10,7 @@ import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.PlanRepository
+import com.example.tracker.domain.repository.ProgramRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,6 +35,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModel(
     private val planRepository: PlanRepository,
+    private val programRepository: ProgramRepository,
     private val workoutRepository: WorkoutRepository,
     private val exerciseRepository: ExerciseRepository,
     private val time: TimeProvider,
@@ -82,7 +84,8 @@ class HomeViewModel(
         if (trimmed.isEmpty()) return
         viewModelScope.launch {
             try {
-                val planId = planRepository.createPlan(trimmed)
+                val programId = programRepository.createProgram(trimmed, emptyMap())
+                val planId = programRepository.addDay(programId, dayOfWeek = null, name = trimmed)
                 _events.send(HomeEvent.OpenPlan(planId))
             } catch (e: CancellationException) {
                 throw e
@@ -119,6 +122,7 @@ class HomeViewModel(
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
                 HomeViewModel(
                     planRepository = container.planRepository,
+                    programRepository = container.programRepository,
                     workoutRepository = container.workoutRepository,
                     exerciseRepository = container.exerciseRepository,
                     time = container.time,

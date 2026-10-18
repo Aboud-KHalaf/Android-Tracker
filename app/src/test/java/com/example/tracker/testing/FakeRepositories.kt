@@ -3,12 +3,14 @@ package com.example.tracker.testing
 import com.example.tracker.domain.model.CatalogExercise
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.Exercise
+import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.PersonalBest
 import com.example.tracker.domain.model.PhotoPose
 import com.example.tracker.domain.model.PlanDetails
+import com.example.tracker.domain.model.Program
 import com.example.tracker.domain.model.ProgressPhoto
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.model.WeightEntry
@@ -22,11 +24,13 @@ import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
+import com.example.tracker.domain.repository.ProgramRepository
 import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WeightRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import java.io.File
+import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -48,33 +52,74 @@ class FakePlanRepository : PlanRepository {
 
     /** When set, every write fails with it. */
     var writeError: Exception? = null
-    var createPlanError: Exception? = null
-    val createdPlanNames = mutableListOf<String>()
 
     /** Writes in the order they happened, e.g. "remove pe1", "move push 0->1". */
     val writes = mutableListOf<String>()
 
+    /** Saved configurations by plan exercise id. */
+    val savedConfigs = mutableMapOf<String, ExerciseConfig>()
+
     override fun observePlans(): Flow<List<WorkoutPlan>> = plans
     override fun observePlan(id: String): Flow<PlanDetails?> = planDetails.map { it[id] }
-
-    override suspend fun createPlan(name: String): String {
-        createPlanError?.let { throw it }
-        createdPlanNames += name
-        return "plan-${createdPlanNames.size}"
-    }
 
     override suspend fun renamePlan(id: String, name: String) = write("rename $id $name")
     override suspend fun deletePlan(id: String) = write("delete $id")
 
-    override suspend fun addExercise(planId: String, exerciseId: String, targetSets: Int): String {
+    override suspend fun addExercise(planId: String, exerciseId: String, config: ExerciseConfig): String {
         write("add $planId $exerciseId")
         return "pe-$exerciseId"
+    }
+
+    override suspend fun replaceExercise(planExerciseId: String, exerciseId: String) =
+        write("replace $planExerciseId $exerciseId")
+
+    override suspend fun updateExerciseConfig(planExerciseId: String, config: ExerciseConfig) {
+        write("config $planExerciseId")
+        savedConfigs[planExerciseId] = config
     }
 
     override suspend fun removeExercise(planExerciseId: String) = write("remove $planExerciseId")
     override suspend fun restoreExercise(planExerciseId: String) = write("restore $planExerciseId")
     override suspend fun moveExercise(planId: String, fromIndex: Int, toIndex: Int) =
         write("move $planId $fromIndex->$toIndex")
+
+    private fun write(description: String) {
+        writeError?.let { throw it }
+        writes += description
+    }
+}
+
+class FakeProgramRepository : ProgramRepository {
+    val programs = MutableStateFlow<List<Program>>(emptyList())
+
+    /** When set, every write fails with it. */
+    var writeError: Exception? = null
+
+    /** Writes in the order they happened, e.g. "active p1", "schedule d1 MONDAY". */
+    val writes = mutableListOf<String>()
+
+    /** Programs created so far, with their schedules. */
+    val created = mutableListOf<Pair<String, Map<DayOfWeek, String>>>()
+
+    override fun observePrograms(): Flow<List<Program>> = programs
+    override fun observeProgram(id: String): Flow<Program?> = programs.map { all -> all.firstOrNull { it.id == id } }
+
+    override suspend fun createProgram(name: String, schedule: Map<DayOfWeek, String>): String {
+        writeError?.let { throw it }
+        created += name to schedule
+        return "program-${created.size}"
+    }
+
+    override suspend fun renameProgram(id: String, name: String) = write("rename $id $name")
+    override suspend fun deleteProgram(id: String) = write("delete $id")
+    override suspend fun setActiveProgram(id: String) = write("active $id")
+
+    override suspend fun addDay(programId: String, dayOfWeek: DayOfWeek?, name: String): String {
+        write("add $programId $dayOfWeek $name")
+        return "day-${writes.size}"
+    }
+
+    override suspend fun scheduleDay(planId: String, dayOfWeek: DayOfWeek?) = write("schedule $planId $dayOfWeek")
 
     private fun write(description: String) {
         writeError?.let { throw it }
@@ -155,6 +200,9 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
     }
 
     override suspend fun finishWorkout(workoutId: String) = writeWorkout { it.copy(finishedAt = now()) }
+
+    override suspend fun setCurrentExercise(workoutId: String, exerciseIndex: Int) =
+        writeWorkout { it.copy(currentExerciseIndex = exerciseIndex) }
 
     override suspend fun discardWorkout(workoutId: String) {
         writeError?.let { throw it }

@@ -4,6 +4,7 @@ import com.example.tracker.R
 import com.example.tracker.domain.catalog.AddCatalogExerciseToPlan
 import com.example.tracker.domain.model.CatalogExercise
 import com.example.tracker.domain.model.Exercise
+import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.PlanExercise
@@ -46,7 +47,7 @@ class ExerciseCatalogViewModelTest {
         catalog.results = listOf(bench, plank)
         val inPlan = Exercise("bench", "bench press", ExerciseType.WEIGHT_REPS)
         plans.planDetails.value = mapOf(
-            "push" to PlanDetails("push", "Push Day", listOf(PlanExercise("pe-bench", inPlan, 0, targetSets = 3))),
+            "push" to PlanDetails("push", "Push Day", listOf(PlanExercise("pe-bench", inPlan, 0, ExerciseConfig(targetSets = 3)))),
         )
     }
 

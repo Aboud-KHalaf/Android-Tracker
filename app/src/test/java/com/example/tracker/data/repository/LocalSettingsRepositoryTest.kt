@@ -149,7 +149,7 @@ class LocalSettingsRepositoryTest {
         val exercises = OfflineFirstExerciseRepository(database, time, ids)
         val plans = OfflineFirstPlanRepository(database, time, ids)
         val workouts = OfflineFirstWorkoutRepository(database, time, ids)
-        val planId = plans.createPlan("Push Day")
+        val planId = OfflineFirstProgramRepository(database, time, ids).newDay("Push Day")
         plans.addExercise(planId, exercises.createExercise("Bench Press", ExerciseType.WEIGHT_REPS))
         workouts.startWorkout(planId)
 

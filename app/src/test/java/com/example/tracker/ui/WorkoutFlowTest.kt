@@ -1,5 +1,7 @@
 package com.example.tracker.ui
 
+import com.example.tracker.data.repository.newDay
+import com.example.tracker.domain.model.ExerciseConfig
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsEnabled
@@ -44,9 +46,9 @@ class WorkoutFlowTest {
     @Before
     fun seedPlan(): Unit = runBlocking {
         val container = ApplicationProvider.getApplicationContext<TrackerApplication>().container
-        val planId = container.planRepository.createPlan("Push Day")
+        val planId = container.programRepository.newDay("Push Day")
         val benchId = container.exerciseRepository.createExercise("Bench Press", ExerciseType.WEIGHT_REPS)
-        container.planRepository.addExercise(planId, benchId, targetSets = 2)
+        container.planRepository.addExercise(planId, benchId, ExerciseConfig(targetSets = 2))
         // Wait until the plan is readable, so Home's first load includes it.
         container.planRepository.observePlans().first { plans -> plans.any { it.exerciseCount == 1 } }
         Unit

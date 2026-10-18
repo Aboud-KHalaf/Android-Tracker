@@ -116,6 +116,56 @@ class TrackerDatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun migrate5To6_movesExistingPlansIntoOneActiveProgram() {
+        helper.createDatabase(DB_NAME, 5).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO workout_plans (id, name, created_at, updated_at, deleted_at, sync_state)
+                VALUES ('p1', 'Push Day', 0, 0, NULL, 'SYNCED'), ('p2', 'Old', 0, 0, 5, 'SYNCED')
+                """
+            )
+            db.execSQL(
+                """
+                INSERT INTO workouts (id, plan_id, name, started_at, finished_at, created_at, updated_at, deleted_at, sync_state)
+                VALUES ('w1', 'p1', 'Push Day', 0, 10, 0, 0, NULL, 'SYNCED')
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 6, true).use { db ->
+            db.query("SELECT id, name, is_active FROM programs").use { cursor ->
+                assertEquals(1, cursor.count)
+                cursor.moveToFirst()
+                assertEquals(ProgramsMigration.LEGACY_PROGRAM_NAME, cursor.getString(1))
+                assertEquals(1, cursor.getInt(2))
+            }
+            db.query("SELECT id, program_id IS NOT NULL, day_of_week FROM workout_plans ORDER BY id").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals(1, cursor.getInt(1)) // the live plan joined the program
+                assertTrue(cursor.isNull(2)) // unscheduled until the user picks a weekday
+                cursor.moveToNext()
+                assertEquals(0, cursor.getInt(1)) // the deleted plan stays out of it
+            }
+            db.query("SELECT current_exercise_position FROM workouts").use { cursor ->
+                cursor.moveToFirst()
+                assertTrue(cursor.isNull(0))
+            }
+        }
+    }
+
+    @Test
+    fun migrate5To6_withoutPlans_createsNoProgram() {
+        helper.createDatabase(DB_NAME, 5).close()
+
+        helper.runMigrationsAndValidate(DB_NAME, 6, true).use { db ->
+            db.query("SELECT COUNT(*) FROM programs").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals(0, cursor.getInt(0))
+            }
+        }
+    }
+
     private companion object {
         const val DB_NAME = "migration-test.db"
     }

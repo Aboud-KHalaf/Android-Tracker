@@ -12,6 +12,7 @@ import com.example.tracker.data.local.entity.WorkoutEntity
 import com.example.tracker.data.local.entity.WorkoutSetEntity
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.Exercise
+import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.LoggedSet
 import com.example.tracker.domain.model.PlanExercise
 import com.example.tracker.domain.model.WeightEntry
@@ -20,10 +21,14 @@ import com.example.tracker.domain.model.WorkoutExercise
 import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.model.WorkoutSummary
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 
 internal fun Long.toInstant(): Instant = Instant.ofEpochMilli(this)
+
+/** Weekdays are stored as ISO numbers, 1 = Monday. */
+internal fun Int.toDayOfWeek(): DayOfWeek = DayOfWeek.of(this)
 
 internal fun ExerciseEntity.toDomain() = Exercise(id = id, name = name, type = type)
 
@@ -32,13 +37,20 @@ internal fun PlanSummaryRow.toDomain() = WorkoutPlan(
     name = name,
     exerciseCount = exerciseCount,
     lastDoneAt = lastDoneAt?.toInstant(),
+    programId = programId,
+    dayOfWeek = dayOfWeek?.toDayOfWeek(),
 )
 
 internal fun PlanExerciseRow.toDomain() = PlanExercise(
     id = id,
     exercise = Exercise(exerciseId, exerciseName, exerciseType),
     position = position,
-    targetSets = targetSets,
+    config = ExerciseConfig(
+        targetSets = targetSets,
+        targetReps = targetReps,
+        targetWeightKg = targetWeightKg,
+        targetDurationSeconds = targetDurationSeconds,
+    ),
 )
 
 internal fun WorkoutSetEntity.toDomain() = WorkoutSet(
@@ -61,6 +73,7 @@ internal fun WorkoutEntity.toDomain(
         name = name,
         startedAt = startedAt.toInstant(),
         finishedAt = finishedAt?.toInstant(),
+        currentExerciseIndex = currentExercisePosition,
         exercises = exercises.map { row ->
             WorkoutExercise(
                 id = row.id,

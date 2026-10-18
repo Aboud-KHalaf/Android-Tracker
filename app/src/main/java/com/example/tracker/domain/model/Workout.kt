@@ -3,7 +3,10 @@ package com.example.tracker.domain.model
 import java.time.Duration
 import java.time.Instant
 
-/** A performed workout with its exercises and sets. [finishedAt] is null while in progress. */
+/**
+ * A performed workout with its exercises and sets. [finishedAt] is null while in progress.
+ * [currentExerciseIndex] is the exercise the user last had open, if they picked one.
+ */
 data class Workout(
     val id: String,
     val planId: String?,
@@ -11,6 +14,7 @@ data class Workout(
     val startedAt: Instant,
     val finishedAt: Instant?,
     val exercises: List<WorkoutExercise>,
+    val currentExerciseIndex: Int? = null,
 ) {
     val isInProgress: Boolean get() = finishedAt == null
 }

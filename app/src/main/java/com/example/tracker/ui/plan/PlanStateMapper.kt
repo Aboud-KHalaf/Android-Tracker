@@ -26,7 +26,7 @@ internal class PlanStateMapper(private val zone: ZoneId) {
                     id = planExercise.id,
                     name = planExercise.exercise.name,
                     type = planExercise.exercise.type,
-                    targetSets = planExercise.targetSets,
+                    targetSets = planExercise.config.targetSets,
                     canMoveUp = index > 0,
                     canMoveDown = index < lastIndex,
                 )

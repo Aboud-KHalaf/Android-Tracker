@@ -7,6 +7,8 @@ import com.example.tracker.domain.model.ExerciseType
 data class PlanSummaryRow(
     @ColumnInfo(name = "id") val id: String,
     @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "program_id") val programId: String?,
+    @ColumnInfo(name = "day_of_week") val dayOfWeek: Int?,
     @ColumnInfo(name = "exercise_count") val exerciseCount: Int,
     @ColumnInfo(name = "last_done_at") val lastDoneAt: Long?,
 )
@@ -17,6 +19,9 @@ data class PlanExerciseRow(
     @ColumnInfo(name = "plan_id") val planId: String,
     @ColumnInfo(name = "position") val position: Int,
     @ColumnInfo(name = "target_sets") val targetSets: Int,
+    @ColumnInfo(name = "target_reps") val targetReps: Int?,
+    @ColumnInfo(name = "target_weight_kg") val targetWeightKg: Double?,
+    @ColumnInfo(name = "target_duration_seconds") val targetDurationSeconds: Int?,
     @ColumnInfo(name = "exercise_id") val exerciseId: String,
     @ColumnInfo(name = "exercise_name") val exerciseName: String,
     @ColumnInfo(name = "exercise_type") val exerciseType: ExerciseType,

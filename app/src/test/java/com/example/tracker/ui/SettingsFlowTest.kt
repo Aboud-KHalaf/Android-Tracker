@@ -1,5 +1,6 @@
 package com.example.tracker.ui
 
+import com.example.tracker.data.repository.newDay
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasAnyAncestor
@@ -37,7 +38,7 @@ class SettingsFlowTest {
 
     @Before
     fun seedPlan(): Unit = runBlocking {
-        container.planRepository.createPlan("Push Day")
+        container.programRepository.newDay("Push Day")
         container.planRepository.observePlans().first { it.isNotEmpty() }
         Unit
     }

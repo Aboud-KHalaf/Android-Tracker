@@ -3,6 +3,7 @@ package com.example.tracker.ui.plan
 import com.example.tracker.R
 import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.model.Exercise
+import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.PlanExercise
@@ -53,7 +54,7 @@ class PlanViewModelTest {
             "push" to PlanDetails(
                 id = "push",
                 name = "Push Day",
-                exercises = list.mapIndexed { i, e -> PlanExercise("pe-${e.id}", e, i, targetSets = 3) },
+                exercises = list.mapIndexed { i, e -> PlanExercise("pe-${e.id}", e, i, ExerciseConfig(targetSets = 3)) },
             ),
         )
     }

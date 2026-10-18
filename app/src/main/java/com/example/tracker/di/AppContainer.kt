@@ -15,6 +15,7 @@ import com.example.tracker.data.repository.LocalSettingsRepository
 import com.example.tracker.data.repository.OfflineFirstExerciseRepository
 import com.example.tracker.data.repository.OfflineFirstNutritionRepository
 import com.example.tracker.data.repository.OfflineFirstPlanRepository
+import com.example.tracker.data.repository.OfflineFirstProgramRepository
 import com.example.tracker.data.repository.OfflineFirstWeightRepository
 import com.example.tracker.data.repository.OfflineFirstWorkoutRepository
 import com.example.tracker.data.repository.WgerExerciseCatalogRepository
@@ -24,6 +25,7 @@ import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
+import com.example.tracker.domain.repository.ProgramRepository
 import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WeightRepository
@@ -47,6 +49,7 @@ class AppContainer(context: Context) {
     val exerciseCatalogRepository: ExerciseCatalogRepository by lazy {
         WgerExerciseCatalogRepository(WgerApi(UrlConnectionHttpClient()))
     }
+    val programRepository: ProgramRepository by lazy { OfflineFirstProgramRepository(database, time, ids) }
     val planRepository: PlanRepository by lazy { OfflineFirstPlanRepository(database, time, ids) }
     val workoutRepository: WorkoutRepository by lazy { OfflineFirstWorkoutRepository(database, time, ids) }
     val nutritionRepository: NutritionRepository by lazy { OfflineFirstNutritionRepository(database, time) }

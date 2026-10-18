@@ -11,6 +11,7 @@ import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.testing.FakeExerciseRepository
 import com.example.tracker.testing.FakePlanRepository
+import com.example.tracker.testing.FakeProgramRepository
 import com.example.tracker.testing.FakeWorkoutRepository
 import com.example.tracker.testing.MainDispatcherRule
 import com.example.tracker.ui.common.SetValueUi
@@ -38,13 +39,14 @@ class HomeViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val plans = FakePlanRepository()
+    private val programs = FakeProgramRepository()
     private val workouts = FakeWorkoutRepository()
     private val exercises = FakeExerciseRepository()
 
     // Saturday, October 3, 2026.
     private val time = FakeTimeProvider(Instant.parse("2026-10-03T09:00:00Z"))
 
-    private fun createViewModel() = HomeViewModel(plans, workouts, exercises, time)
+    private fun createViewModel() = HomeViewModel(plans, programs, workouts, exercises, time)
 
     /** Keeps [HomeViewModel.uiState] subscribed for the test and returns its current value. */
     private fun TestScope.collectState(viewModel: HomeViewModel): () -> HomeUiState {
@@ -185,20 +187,20 @@ class HomeViewModelTest {
 
         viewModel.onCreatePlan("  Push Day ")
 
-        assertEquals(listOf("Push Day"), plans.createdPlanNames)
-        assertEquals(HomeEvent.OpenPlan("plan-1"), viewModel.events.first())
+        assertEquals(listOf("Push Day"), programs.created.map { it.first })
+        assertEquals(HomeEvent.OpenPlan("day-1"), viewModel.events.first())
     }
 
     @Test
     fun onCreatePlan_blankName_isIgnored() = runTest {
         createViewModel().onCreatePlan("   ")
 
-        assertTrue(plans.createdPlanNames.isEmpty())
+        assertTrue(programs.created.isEmpty())
     }
 
     @Test
     fun onCreatePlan_failure_showsMessage() = runTest {
-        plans.createPlanError = IllegalStateException("disk")
+        programs.writeError = IllegalStateException("disk")
         val viewModel = createViewModel()
 
         viewModel.onCreatePlan("Push Day")

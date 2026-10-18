@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.example.tracker.core.IdGenerator
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.data.local.TrackerDatabase
+import com.example.tracker.domain.repository.ProgramRepository
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -28,3 +29,7 @@ internal class SequentialIds : IdGenerator {
     private var next = 1
     override fun newId(): String = "id-${next++}"
 }
+
+/** Creates a program with one unscheduled training day named [name]; returns the day's id. */
+internal suspend fun ProgramRepository.newDay(name: String): String =
+    addDay(createProgram("$name program", emptyMap()), dayOfWeek = null, name = name)
