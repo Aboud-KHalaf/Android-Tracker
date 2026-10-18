@@ -11,6 +11,7 @@ import androidx.navigation.toRoute
 import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
+import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.PlanRepository
@@ -32,8 +33,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 /**
- * Workout plan screen: the plan's exercises in order, editing them, and starting a workout.
- * State is exposed as [uiState]; navigation and messages are sent once through [events].
+ * Training day screen: the day's exercises in order, editing, replacing and reordering them,
+ * their targets, and starting a workout. State is exposed as [uiState]; navigation and
+ * messages are sent once through [events].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlanViewModel(
@@ -47,6 +49,7 @@ class PlanViewModel(
     private val mapper = PlanStateMapper(time.zone())
     private val loadAttempt = MutableStateFlow(0)
     private val isStartingWorkout = MutableStateFlow(false)
+    private val editing = MutableStateFlow<EditTarget?>(null)
 
     private val _events = Channel<PlanEvent>(Channel.BUFFERED)
     val events: Flow<PlanEvent> = _events.receiveAsFlow()
@@ -78,9 +81,64 @@ class PlanViewModel(
         }
     }
 
-    fun onMoveUp(index: Int) = move(index, index - 1)
+    fun onMoveUp(index: Int) = onMoveExercise(index, index - 1)
 
-    fun onMoveDown(index: Int) = move(index, index + 1)
+    fun onMoveDown(index: Int) = onMoveExercise(index, index + 1)
+
+    /** Saves a new position for an exercise, e.g. after dragging it. */
+    fun onMoveExercise(fromIndex: Int, toIndex: Int) {
+        val count = (uiState.value as? PlanUiState.Success)?.exercises?.size ?: return
+        if (fromIndex == toIndex || fromIndex !in 0 until count || toIndex !in 0 until count) return
+        viewModelScope.launchCatching(onError = { showMessage(R.string.plan_error_update) }) {
+            planRepository.moveExercise(planId, fromIndex, toIndex)
+        }
+    }
+
+    /** Swaps the library exercise behind [planExerciseId], keeping its place and targets. */
+    fun onReplaceExercise(planExerciseId: String, exerciseId: String) {
+        viewModelScope.launchCatching(onError = { showMessage(R.string.plan_error_replace) }) {
+            planRepository.replaceExercise(planExerciseId, exerciseId)
+        }
+    }
+
+    /** Creates a new library exercise and puts it in place of [planExerciseId]. */
+    fun onCreateReplacement(planExerciseId: String, name: String, type: ExerciseType) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
+        viewModelScope.launchCatching(onError = { showMessage(R.string.plan_error_replace) }) {
+            val exerciseId = exerciseRepository.createExercise(trimmed, type)
+            planRepository.replaceExercise(planExerciseId, exerciseId)
+        }
+    }
+
+    /** Opens the targets of one exercise, alongside what was recorded for it last time. */
+    fun onEditExercise(planExerciseId: String) {
+        val exerciseId = (uiState.value as? PlanUiState.Success)
+            ?.exercises?.firstOrNull { it.id == planExerciseId }?.exerciseId
+            ?: return
+        viewModelScope.launchCatching(onError = { showMessage(R.string.plan_error_load_targets) }) {
+            editing.value = EditTarget(planExerciseId, workoutRepository.lastTimeSets(exerciseId))
+        }
+    }
+
+    fun onDismissEditor() {
+        editing.value = null
+    }
+
+    /** Saves one exercise's targets; the day's other exercises are untouched. */
+    fun onSaveExerciseConfig(planExerciseId: String, config: ExerciseConfig) {
+        val target = editing.value?.takeIf { it.planExerciseId == planExerciseId && !it.isSaving } ?: return
+        editing.value = target.copy(isSaving = true)
+        viewModelScope.launchCatching(
+            onError = {
+                editing.update { it?.copy(isSaving = false) }
+                showMessage(R.string.plan_error_save_config)
+            },
+        ) {
+            planRepository.updateExerciseConfig(planExerciseId, config)
+            editing.value = null
+        }
+    }
 
     fun onRemoveExercise(planExerciseId: String) {
         val name = (uiState.value as? PlanUiState.Success)
@@ -129,14 +187,6 @@ class PlanViewModel(
         }
     }
 
-    private fun move(fromIndex: Int, toIndex: Int) {
-        val count = (uiState.value as? PlanUiState.Success)?.exercises?.size ?: return
-        if (fromIndex !in 0 until count || toIndex !in 0 until count) return
-        viewModelScope.launchCatching(onError = { showMessage(R.string.plan_error_update) }) {
-            planRepository.moveExercise(planId, fromIndex, toIndex)
-        }
-    }
-
     private suspend fun showMessage(@StringRes messageRes: Int) {
         _events.send(PlanEvent.ShowMessage(messageRes))
     }
@@ -146,8 +196,9 @@ class PlanViewModel(
         planRepository.observePlans().map { plans -> plans.firstOrNull { it.id == planId } },
         workoutRepository.observeActiveWorkout(),
         exerciseRepository.observeExercises(),
-    ) { details, summary, active, library ->
-        mapper.map(details, summary, active, library)
+        editing,
+    ) { details, summary, active, library, edit ->
+        mapper.map(details, summary, active, library, edit)
     }
 
     companion object {

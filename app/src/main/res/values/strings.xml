@@ -594,5 +594,6 @@
     <string name="config_recorded">Recorded last workout</string>
     <string name="config_recorded_none">Not done yet. What you log in a workout is kept separately from these targets.</string>
     <string name="config_save">Save</string>
+    <string name="plan_error_load_targets">Couldn\'t open the targets. Try again.</string>
     <string name="plan_error_save_config">Couldn\'t save the targets. Try again.</string>
 </resources>

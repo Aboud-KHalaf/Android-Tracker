@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.TravelExplore
@@ -27,6 +28,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
+import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.ui.common.AnimatedFab
 import com.example.tracker.ui.common.ErrorContent
@@ -50,14 +53,22 @@ import com.example.tracker.ui.common.MessageContent
 import com.example.tracker.ui.common.NameInputDialog
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.RenameDeleteTopBar
+import com.example.tracker.ui.common.ReorderableItem
 import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.currentLocale
+import com.example.tracker.ui.common.dragHandle
+import com.example.tracker.ui.common.fullName
+import com.example.tracker.ui.common.longPressDraggable
 import com.example.tracker.ui.common.mediumDate
+import com.example.tracker.ui.common.moveByKey
 import com.example.tracker.ui.common.rememberAfterNotificationPermission
+import com.example.tracker.ui.common.rememberReorderableListState
 import com.example.tracker.ui.plan.components.AddExerciseSheet
 import com.example.tracker.ui.plan.components.DeletePlanDialog
+import com.example.tracker.ui.plan.components.ExerciseConfigSheet
 import com.example.tracker.ui.plan.components.PlanEmptyState
 import com.example.tracker.ui.plan.components.PlanExerciseRow
+import com.example.tracker.ui.plan.components.PlanExerciseRowActions
 import com.example.tracker.ui.plan.components.WorkoutFab
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
@@ -115,7 +126,13 @@ fun PlanRoute(
             onResumeWorkout = onOpenWorkout,
             onMoveUp = viewModel::onMoveUp,
             onMoveDown = viewModel::onMoveDown,
+            onMoveExercise = viewModel::onMoveExercise,
             onRemoveExercise = viewModel::onRemoveExercise,
+            onReplaceExercise = viewModel::onReplaceExercise,
+            onCreateReplacement = viewModel::onCreateReplacement,
+            onEditExercise = viewModel::onEditExercise,
+            onSaveExerciseConfig = viewModel::onSaveExerciseConfig,
+            onDismissEditor = viewModel::onDismissEditor,
             onAddExercise = viewModel::onAddExercise,
             onCreateExercise = viewModel::onCreateExercise,
             onBrowseCatalog = onBrowseCatalog,
@@ -127,14 +144,20 @@ fun PlanRoute(
     )
 }
 
-/** User actions on the Workout plan screen. */
+/** User actions on the training day screen. */
 data class PlanActions(
     val onBack: () -> Unit = {},
     val onStartWorkout: () -> Unit = {},
     val onResumeWorkout: (workoutId: String) -> Unit = {},
     val onMoveUp: (index: Int) -> Unit = {},
     val onMoveDown: (index: Int) -> Unit = {},
+    val onMoveExercise: (fromIndex: Int, toIndex: Int) -> Unit = { _, _ -> },
     val onRemoveExercise: (planExerciseId: String) -> Unit = {},
+    val onReplaceExercise: (planExerciseId: String, exerciseId: String) -> Unit = { _, _ -> },
+    val onCreateReplacement: (planExerciseId: String, name: String, type: ExerciseType) -> Unit = { _, _, _ -> },
+    val onEditExercise: (planExerciseId: String) -> Unit = {},
+    val onSaveExerciseConfig: (planExerciseId: String, config: ExerciseConfig) -> Unit = { _, _ -> },
+    val onDismissEditor: () -> Unit = {},
     val onAddExercise: (exerciseId: String) -> Unit = {},
     val onCreateExercise: (name: String, type: ExerciseType) -> Unit = { _, _ -> },
     val onBrowseCatalog: () -> Unit = {},
@@ -143,10 +166,13 @@ data class PlanActions(
     val onRetry: () -> Unit = {},
 )
 
-/** Which dialog or sheet is open; only one at a time. */
-private enum class PlanOverlay { NONE, RENAME, DELETE, ADD_EXERCISE }
+/**
+ * Which dialog or sheet is open; only one at a time. REPLACE acts on the exercise in
+ * `replacingId`. The targets sheet is opened by the ViewModel, since it loads data first.
+ */
+private enum class PlanOverlay { NONE, RENAME, DELETE, ADD_EXERCISE, REPLACE }
 
-/** Stateless Workout plan screen. */
+/** Stateless training day screen. */
 @Composable
 fun PlanScreen(
     uiState: PlanUiState,
@@ -155,6 +181,7 @@ fun PlanScreen(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var overlay by rememberSaveable { mutableStateOf(PlanOverlay.NONE) }
+    var replacingId by rememberSaveable { mutableStateOf<String?>(null) }
     val success = uiState as? PlanUiState.Success
 
     Scaffold(
@@ -199,6 +226,10 @@ fun PlanScreen(
                     state = state,
                     actions = actions,
                     onAddExerciseClick = { overlay = PlanOverlay.ADD_EXERCISE },
+                    onReplaceClick = { planExerciseId ->
+                        replacingId = planExerciseId
+                        overlay = PlanOverlay.REPLACE
+                    },
                     contentPadding = innerPadding,
                 )
             }
@@ -206,7 +237,15 @@ fun PlanScreen(
     }
 
     if (success != null) {
-        PlanOverlays(overlay, success, actions, onDismiss = { overlay = PlanOverlay.NONE })
+        val replacing = success.exercises.firstOrNull { it.id == replacingId }
+        PlanOverlays(overlay, success, replacing, actions, onDismiss = { overlay = PlanOverlay.NONE })
+        success.editor?.let { editor ->
+            ExerciseConfigSheet(
+                editor = editor,
+                onSave = { config -> actions.onSaveExerciseConfig(editor.planExerciseId, config) },
+                onDismiss = actions.onDismissEditor,
+            )
+        }
     }
 }
 
@@ -214,6 +253,7 @@ fun PlanScreen(
 private fun PlanOverlays(
     overlay: PlanOverlay,
     state: PlanUiState.Success,
+    replacing: PlanExerciseUi?,
     actions: PlanActions,
     onDismiss: () -> Unit,
 ) {
@@ -247,6 +287,22 @@ private fun PlanOverlays(
             onBrowseCatalog = actions.onBrowseCatalog,
             onDismiss = onDismiss,
         )
+
+        // The exercise may be removed while the sheet is open; then just close it.
+        PlanOverlay.REPLACE -> if (replacing == null) {
+            LaunchedEffect(Unit) { onDismiss() }
+        } else {
+            AddExerciseSheet(
+                options = state.availableExercises,
+                onAdd = { exerciseId -> actions.onReplaceExercise(replacing.id, exerciseId) },
+                onCreate = { name, type -> actions.onCreateReplacement(replacing.id, name, type) },
+                onBrowseCatalog = null,
+                onDismiss = onDismiss,
+                title = stringResource(R.string.replace_exercise_title, replacing.name),
+                emptyText = stringResource(R.string.replace_exercise_library_empty),
+                createLabel = stringResource(R.string.replace_exercise_confirm),
+            )
+        }
     }
 }
 
@@ -255,11 +311,26 @@ private fun PlanContent(
     state: PlanUiState.Success,
     actions: PlanActions,
     onAddExerciseClick: () -> Unit,
+    onReplaceClick: (planExerciseId: String) -> Unit,
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
+    // The order shown while dragging; saved on drop, then replaced by the stored order.
+    var order by remember(state.exercises) { mutableStateOf(state.exercises) }
+    val listState = rememberLazyListState()
+    val reorderState = rememberReorderableListState(
+        listState = listState,
+        canMove = { key -> order.any { it.id == key } },
+        onMove = { from, to -> order = order.moveByKey(from, to) { it.id } },
+        onDrop = { key ->
+            val from = state.exercises.indexOfFirst { it.id == key }
+            val to = order.indexOfFirst { it.id == key }
+            if (from != to) actions.onMoveExercise(from, to)
+        },
+    )
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .widthIn(max = Dimens.maxContentWidth)
                 .fillMaxSize(),
@@ -271,14 +342,22 @@ private fun PlanContent(
             item(key = "summary") {
                 PlanSummary(state, Modifier.padding(start = spacing.lg, end = spacing.lg, bottom = spacing.sm))
             }
-            itemsIndexed(state.exercises, key = { _, exercise -> exercise.id }) { index, exercise ->
-                PlanExerciseRow(
-                    exercise = exercise,
-                    onMoveUp = { actions.onMoveUp(index) },
-                    onMoveDown = { actions.onMoveDown(index) },
-                    onRemove = { actions.onRemoveExercise(exercise.id) },
-                    modifier = Modifier.animateItem(),
-                )
+            itemsIndexed(order, key = { _, exercise -> exercise.id }) { index, exercise ->
+                ReorderableItem(reorderState, key = exercise.id) { isDragging ->
+                    PlanExerciseRow(
+                        exercise = exercise,
+                        isDragging = isDragging,
+                        dragHandleModifier = Modifier.dragHandle(reorderState, exercise.id),
+                        actions = PlanExerciseRowActions(
+                            onEdit = { actions.onEditExercise(exercise.id) },
+                            onReplace = { onReplaceClick(exercise.id) },
+                            onMoveUp = { actions.onMoveUp(index) },
+                            onMoveDown = { actions.onMoveDown(index) },
+                            onRemove = { actions.onRemoveExercise(exercise.id) },
+                        ),
+                        modifier = Modifier.longPressDraggable(reorderState, exercise.id),
+                    )
+                }
             }
             if (state.exercises.isEmpty()) {
                 item(key = "empty") { PlanEmptyState() }
@@ -302,12 +381,15 @@ private fun PlanContent(
 @Composable
 private fun PlanSummary(state: PlanUiState.Success, modifier: Modifier = Modifier) {
     val count = state.exercises.size
+    val locale = currentLocale()
+    val separator = stringResource(R.string.separator_dot)
+    val weekday = state.dayOfWeek?.fullName(locale) ?: stringResource(R.string.program_any_day)
     val lastDone = state.lastDoneOn
-        ?.let { stringResource(R.string.home_last_done, it.mediumDate(currentLocale())) }
+        ?.let { stringResource(R.string.home_last_done, it.mediumDate(locale)) }
         ?: stringResource(R.string.home_never_done)
     Text(
-        text = pluralStringResource(R.plurals.exercise_count, count, count) +
-            stringResource(R.string.separator_dot) + lastDone,
+        text = weekday + separator + pluralStringResource(R.plurals.exercise_count, count, count) +
+            separator + lastDone,
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier,

@@ -9,10 +9,12 @@ import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.PlanExercise
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutPlan
+import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.testing.FakeExerciseRepository
 import com.example.tracker.testing.FakePlanRepository
 import com.example.tracker.testing.FakeWorkoutRepository
 import com.example.tracker.testing.MainDispatcherRule
+import com.example.tracker.ui.common.SetValueUi
 import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,6 +24,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -76,8 +79,14 @@ class PlanViewModelTest {
         assertEquals(LocalDate.of(2026, 9, 28), state.lastDoneOn)
         assertEquals(
             listOf(
-                PlanExerciseUi("pe-bench", "Bench Press", ExerciseType.WEIGHT_REPS, 3, canMoveUp = false, canMoveDown = true),
-                PlanExerciseUi("pe-plank", "Plank", ExerciseType.DURATION, 3, canMoveUp = true, canMoveDown = false),
+                PlanExerciseUi(
+                    "pe-bench", "bench", "Bench Press", ExerciseType.WEIGHT_REPS, ExerciseConfig(targetSets = 3),
+                    canMoveUp = false, canMoveDown = true,
+                ),
+                PlanExerciseUi(
+                    "pe-plank", "plank", "Plank", ExerciseType.DURATION, ExerciseConfig(targetSets = 3),
+                    canMoveUp = true, canMoveDown = false,
+                ),
             ),
             state.exercises,
         )
@@ -213,5 +222,107 @@ class PlanViewModelTest {
 
         assertEquals(PlanEvent.ShowMessage(R.string.plan_error_start_workout), viewModel.events.first())
         assertEquals(false, viewModel.uiState.value.success().isStartingWorkout)
+    }
+
+    @Test
+    fun onMoveExercise_savesDraggedOrder_andIgnoresNoOpsAndOutOfRange() = runTest {
+        setPlanExercises(bench, press, plank)
+        val viewModel = createViewModel()
+        collectState(viewModel)
+
+        viewModel.onMoveExercise(2, 0)
+        viewModel.onMoveExercise(1, 1)
+        viewModel.onMoveExercise(0, 5)
+
+        assertEquals(listOf("move push 2->0"), plans.writes)
+    }
+
+    @Test
+    fun onReplaceExercise_replacesInPlace() = runTest {
+        val viewModel = createViewModel()
+        collectState(viewModel)
+
+        viewModel.onReplaceExercise("pe-bench", "press")
+
+        assertEquals(listOf("replace pe-bench press"), plans.writes)
+    }
+
+    @Test
+    fun onCreateReplacement_createsExerciseThenReplaces() = runTest {
+        val viewModel = createViewModel()
+        collectState(viewModel)
+
+        viewModel.onCreateReplacement("pe-bench", "  Dips ", ExerciseType.WEIGHT_REPS)
+
+        assertEquals(listOf("Dips" to ExerciseType.WEIGHT_REPS), exercises.createdExercises)
+        assertEquals(listOf("replace pe-bench exercise-1"), plans.writes)
+    }
+
+    @Test
+    fun onReplaceExercise_failure_showsMessage() = runTest {
+        plans.writeError = IllegalArgumentException("gone")
+        val viewModel = createViewModel()
+        collectState(viewModel)
+
+        viewModel.onReplaceExercise("pe-bench", "press")
+
+        assertEquals(PlanEvent.ShowMessage(R.string.plan_error_replace), viewModel.events.first())
+    }
+
+    @Test
+    fun onEditExercise_showsTargetsApartFromWhatWasRecorded() = runTest {
+        workouts.lastTimes["bench"] = listOf(WorkoutSet("s1", 0, 57.5, 8, null, Instant.parse("2026-09-28T10:00:00Z")))
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onEditExercise("pe-bench")
+
+        assertEquals(
+            ExerciseEditorUi(
+                planExerciseId = "pe-bench",
+                name = "Bench Press",
+                type = ExerciseType.WEIGHT_REPS,
+                config = ExerciseConfig(targetSets = 3),
+                lastRecorded = listOf(SetValueUi.WeightReps(57.5, 8)),
+            ),
+            state().success().editor,
+        )
+    }
+
+    @Test
+    fun onSaveExerciseConfig_savesOnlyThatExerciseAndClosesTheSheet() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onEditExercise("pe-bench")
+
+        viewModel.onSaveExerciseConfig("pe-bench", ExerciseConfig(targetSets = 5, targetReps = 5, targetWeightKg = 80.0))
+
+        assertEquals(listOf("config pe-bench"), plans.writes)
+        assertEquals(ExerciseConfig(targetSets = 5, targetReps = 5, targetWeightKg = 80.0), plans.savedConfigs["pe-bench"])
+        assertNull(state().success().editor)
+    }
+
+    @Test
+    fun onSaveExerciseConfig_failure_keepsTheSheetOpen() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onEditExercise("pe-bench")
+        plans.writeError = IllegalArgumentException("invalid")
+
+        viewModel.onSaveExerciseConfig("pe-bench", ExerciseConfig(targetSets = 4))
+
+        assertEquals(PlanEvent.ShowMessage(R.string.plan_error_save_config), viewModel.events.first())
+        assertEquals(false, state().success().editor?.isSaving)
+    }
+
+    @Test
+    fun onDismissEditor_closesTheSheet() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onEditExercise("pe-bench")
+
+        viewModel.onDismissEditor()
+
+        assertNull(state().success().editor)
     }
 }

@@ -6,6 +6,7 @@ import com.example.tracker.domain.model.WorkoutExercise
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.progress.improvementOver
 import com.example.tracker.ui.common.SetValueUi
+import com.example.tracker.ui.common.toSetValue
 import java.time.Instant
 
 /** What the user has picked; null means "the default". */
@@ -54,7 +55,7 @@ internal object ActiveWorkoutStateMapper {
                 exerciseId = current.exercise.id,
                 name = current.exercise.name,
                 type = current.exercise.type,
-                lastTime = lastTime.mapNotNull { it.toValue() },
+                lastTime = lastTime.mapNotNull { it.toSetValue() },
             ),
             sets = sets.mapIndexed { i, set ->
                 val previous = lastTime.getOrNull(i)
@@ -62,18 +63,18 @@ internal object ActiveWorkoutStateMapper {
                     set.id == activeId -> SetRowUi.Active(
                         id = set.id,
                         number = i + 1,
-                        lastTime = previous?.toValue(),
+                        lastTime = previous?.toSetValue(),
                         editor = editorFor(current, set, previous, draft),
                     )
 
                     set.isCompleted -> SetRowUi.Done(
                         id = set.id,
                         number = i + 1,
-                        value = set.toValue(),
+                        value = set.toSetValue(),
                         improvement = improvementOver(current.exercise.type, set, previous),
                     )
 
-                    else -> SetRowUi.Upcoming(id = set.id, number = i + 1, planned = set.toValue())
+                    else -> SetRowUi.Upcoming(id = set.id, number = i + 1, planned = set.toSetValue())
                 }
             },
             previousExerciseName = exercises.getOrNull(index - 1)?.exercise?.name,
@@ -104,19 +105,14 @@ internal object ActiveWorkoutStateMapper {
                 SetEditorUi.WeightReps(SetInput.formatWeight(set.weightKg), SetInput.formatReps(set.reps))
             }
 
-            // An open set's stored duration is last time's prefill, i.e. the target, so the
-            // timer starts from zero unless a draft (e.g. a reopened set) says otherwise.
+            // An open set's stored duration is its prefill (the configured target, else last
+            // time), so the timer starts from zero unless a draft (e.g. a reopened set) says
+            // otherwise. The hold to beat is last time's, or the target the first time.
             ExerciseType.DURATION -> SetEditorUi.Duration(
                 bankedSeconds = (ownDraft as? SetDraft.Hold)?.bankedSeconds ?: 0,
                 runningSince = (ownDraft as? SetDraft.Hold)?.runningSince,
-                targetSeconds = previous?.durationSeconds,
+                targetSeconds = previous?.durationSeconds ?: set.durationSeconds,
             )
         }
-    }
-
-    private fun WorkoutSet.toValue(): SetValueUi? = when {
-        weightKg != null && reps != null -> SetValueUi.WeightReps(weightKg, reps)
-        durationSeconds != null -> SetValueUi.Hold(durationSeconds)
-        else -> null
     }
 }
