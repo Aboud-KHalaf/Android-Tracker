@@ -6,6 +6,7 @@ import java.time.Instant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
@@ -67,8 +68,11 @@ class ActiveWorkoutSession(
     private val statuses: Flow<ActiveWorkoutStatus?> =
         workouts.observeActiveWorkout().map { it?.toStatus() }.distinctUntilChanged()
 
-    /** Updates the notification on every change for as long as [scope] lives. */
-    fun keepInSync(scope: CoroutineScope): Job = statuses.onEach(::render).launchIn(scope)
+    /**
+     * Updates the notification on every change for as long as [scope] lives. A failure only
+     * stops the updates: the notification is a convenience, the workout itself is stored.
+     */
+    fun keepInSync(scope: CoroutineScope): Job = statuses.onEach(::render).catch { }.launchIn(scope)
 
     /** Shows the notification once if a workout is in progress, or removes a stale one. */
     suspend fun syncNow() = render(statuses.first())

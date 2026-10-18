@@ -5,13 +5,16 @@ import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutExercise
 import com.example.tracker.domain.model.WorkoutSet
+import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.testing.FakeWorkoutRepository
 import java.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -101,5 +104,17 @@ class ActiveWorkoutSessionTest {
 
         assertEquals(1, notifier.cancelCount)
         assertEquals(listOf("w1"), notifier.shown.map { it.workoutId })
+    }
+
+    @Test
+    fun keepInSync_survivesAFailingDatabase() = runTest {
+        val workouts = object : WorkoutRepository by FakeWorkoutRepository() {
+            override fun observeActiveWorkout() = flow<Workout?> { throw IllegalStateException("disk") }
+        }
+
+        val job = ActiveWorkoutSession(workouts, RecordingNotifier()).keepInSync(backgroundScope)
+        runCurrent()
+
+        assertTrue(job.isCompleted)
     }
 }
