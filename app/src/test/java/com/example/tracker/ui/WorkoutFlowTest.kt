@@ -1,7 +1,7 @@
 package com.example.tracker.ui
 
-import com.example.tracker.data.repository.newDay
-import com.example.tracker.domain.model.ExerciseConfig
+import android.Manifest
+import android.app.Application
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsEnabled
@@ -20,6 +20,8 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ApplicationProvider
 import com.example.tracker.MainActivity
 import com.example.tracker.TrackerApplication
+import com.example.tracker.data.repository.newDay
+import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -28,6 +30,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 /**
@@ -45,6 +48,9 @@ class WorkoutFlowTest {
 
     @Before
     fun seedPlan(): Unit = runBlocking {
+        // Starting a workout asks for this; Robolectric can't answer the system prompt.
+        shadowOf(ApplicationProvider.getApplicationContext<Application>())
+            .grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
         val container = ApplicationProvider.getApplicationContext<TrackerApplication>().container
         val planId = container.programRepository.newDay("Push Day")
         val benchId = container.exerciseRepository.createExercise("Bench Press", ExerciseType.WEIGHT_REPS)

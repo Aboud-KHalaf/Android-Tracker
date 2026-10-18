@@ -1,6 +1,7 @@
 package com.example.tracker.ui.history
 
 import com.example.tracker.ui.common.WorkoutSummaryUi
+import java.time.DayOfWeek
 import java.time.YearMonth
 
 /** Everything the History screen renders. */
@@ -19,7 +20,7 @@ sealed interface HistoryUiState {
 
 }
 
-/** A filter chip. [planId] null is "All". */
-data class PlanFilterUi(val planId: String?, val name: String?)
+/** A filter chip. [planId] null is "All"; [dayOfWeek] tells days with the same name apart. */
+data class PlanFilterUi(val planId: String?, val name: String?, val dayOfWeek: DayOfWeek? = null)
 
 data class MonthGroupUi(val month: YearMonth, val workouts: List<WorkoutSummaryUi>)

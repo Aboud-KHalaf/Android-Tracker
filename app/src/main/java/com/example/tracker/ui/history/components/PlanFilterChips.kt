@@ -18,10 +18,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.example.tracker.R
+import com.example.tracker.ui.common.currentLocale
+import com.example.tracker.ui.common.shortName
 import com.example.tracker.ui.history.PlanFilterUi
 import com.example.tracker.ui.theme.spacing
 
-/** "All" plus one chip per plan, scrolling sideways when there are many plans. */
+/** "All", "Push", or "Push · Mon" for a day scheduled on a weekday. */
+@Composable
+private fun PlanFilterUi.label(): String {
+    val name = name ?: return stringResource(R.string.history_filter_all)
+    val weekday = dayOfWeek ?: return name
+    return stringResource(R.string.program_day_on_weekday, name, weekday.shortName(currentLocale()))
+}
+
+/** "All" plus one chip per training day, scrolling sideways when there are many. */
 @Composable
 fun PlanFilterChips(
     filters: List<PlanFilterUi>,
@@ -40,7 +50,7 @@ fun PlanFilterChips(
             FilterChip(
                 selected = selected,
                 onClick = { onSelect(filter.planId) },
-                label = { Text(filter.name ?: stringResource(R.string.history_filter_all)) },
+                label = { Text(filter.label()) },
                 leadingIcon = if (selected) {
                     { Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize)) }
                 } else {

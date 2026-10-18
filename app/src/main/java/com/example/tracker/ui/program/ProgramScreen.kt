@@ -1,0 +1,393 @@
+package com.example.tracker.ui.program
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tracker.R
+import com.example.tracker.ui.common.DestructiveConfirmDialog
+import com.example.tracker.ui.common.ErrorContent
+import com.example.tracker.ui.common.GroupedListGap
+import com.example.tracker.ui.common.LoadingContent
+import com.example.tracker.ui.common.MessageContent
+import com.example.tracker.ui.common.NameInputDialog
+import com.example.tracker.ui.common.ObserveAsEvents
+import com.example.tracker.ui.common.RenameDeleteTopBar
+import com.example.tracker.ui.common.SectionHeader
+import com.example.tracker.ui.common.StateCrossfade
+import com.example.tracker.ui.common.currentLocale
+import com.example.tracker.ui.common.fullName
+import com.example.tracker.ui.common.groupedListItemShape
+import com.example.tracker.ui.program.components.ProgramDayRow
+import com.example.tracker.ui.program.components.ScheduleDayDialog
+import com.example.tracker.ui.program.components.WeekdaySelector
+import com.example.tracker.ui.theme.Dimens
+import com.example.tracker.ui.theme.spacing
+import java.time.DayOfWeek
+
+/**
+ * Program destination: connects [ProgramViewModel] to [ProgramScreen] and turns its events
+ * into navigation and snackbars.
+ */
+@Composable
+fun ProgramRoute(
+    onBack: () -> Unit,
+    onOpenDay: (planId: String) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ProgramViewModel = viewModel(factory = ProgramViewModel.Factory),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            ProgramEvent.ProgramDeleted -> onBack()
+            is ProgramEvent.ShowMessage -> snackbarHostState.showSnackbar(context.getString(event.messageRes))
+        }
+    }
+
+    ProgramScreen(
+        uiState = uiState,
+        snackbarHostState = snackbarHostState,
+        actions = ProgramActions(
+            onBack = onBack,
+            onOpenDay = onOpenDay,
+            onAddDay = viewModel::onAddDay,
+            onRemoveDay = viewModel::onRemoveDay,
+            onScheduleDay = viewModel::onScheduleDay,
+            onMakeActive = viewModel::onMakeActive,
+            onRenameProgram = viewModel::onRenameProgram,
+            onDeleteProgram = viewModel::onDeleteProgram,
+            onRetry = viewModel::onRetry,
+        ),
+        modifier = modifier,
+    )
+}
+
+/** User actions on the Program screen. */
+data class ProgramActions(
+    val onBack: () -> Unit = {},
+    val onOpenDay: (planId: String) -> Unit = {},
+    val onAddDay: (dayOfWeek: DayOfWeek?, name: String) -> Unit = { _, _ -> },
+    val onRemoveDay: (planId: String) -> Unit = {},
+    val onScheduleDay: (planId: String, dayOfWeek: DayOfWeek?) -> Unit = { _, _ -> },
+    val onMakeActive: () -> Unit = {},
+    val onRenameProgram: (name: String) -> Unit = {},
+    val onDeleteProgram: () -> Unit = {},
+    val onRetry: () -> Unit = {},
+)
+
+/** Which dialog is open; only one at a time. Day dialogs act on the day in `selectedDayId`. */
+private enum class ProgramOverlay { NONE, RENAME, DELETE, ADD_DAY, REMOVE_DAY, SCHEDULE_DAY }
+
+/** Stateless Program screen. */
+@Composable
+fun ProgramScreen(
+    uiState: ProgramUiState,
+    actions: ProgramActions,
+    modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+) {
+    var overlay by rememberSaveable { mutableStateOf(ProgramOverlay.NONE) }
+    var selectedDayId by rememberSaveable { mutableStateOf<String?>(null) }
+    val success = uiState as? ProgramUiState.Success
+    val locale = currentLocale()
+
+    fun openDayOverlay(dayId: String, kind: ProgramOverlay) {
+        selectedDayId = dayId
+        overlay = kind
+    }
+
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RenameDeleteTopBar(
+                title = success?.name.orEmpty(),
+                showActions = success != null,
+                optionsDescription = stringResource(R.string.program_options),
+                renameLabel = stringResource(R.string.program_rename),
+                deleteLabel = stringResource(R.string.program_delete),
+                onBack = actions.onBack,
+                onRename = { overlay = ProgramOverlay.RENAME },
+                onDelete = { overlay = ProgramOverlay.DELETE },
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { innerPadding ->
+        StateCrossfade(uiState) { state ->
+            when (state) {
+                ProgramUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
+                ProgramUiState.Error -> ErrorContent(
+                    message = stringResource(R.string.program_error_load),
+                    onRetry = actions.onRetry,
+                    modifier = Modifier.padding(innerPadding),
+                )
+
+                ProgramUiState.NotFound -> MessageContent(
+                    stringResource(R.string.program_not_found),
+                    Modifier.padding(innerPadding),
+                )
+
+                is ProgramUiState.Success -> ProgramContent(
+                    state = state,
+                    actions = actions,
+                    onToggleWeekday = { weekday ->
+                        val existing = state.days.firstOrNull { it.dayOfWeek == weekday }
+                        when {
+                            existing == null -> actions.onAddDay(weekday, weekday.fullName(locale))
+                            // Removing a day throws away its exercise list, so ask first.
+                            existing.exerciseCount > 0 -> openDayOverlay(existing.id, ProgramOverlay.REMOVE_DAY)
+                            else -> actions.onRemoveDay(existing.id)
+                        }
+                    },
+                    onChangeWeekday = { openDayOverlay(it, ProgramOverlay.SCHEDULE_DAY) },
+                    onRemoveDay = { openDayOverlay(it, ProgramOverlay.REMOVE_DAY) },
+                    onAddFlexibleDay = { overlay = ProgramOverlay.ADD_DAY },
+                    contentPadding = innerPadding,
+                )
+            }
+        }
+    }
+
+    if (success != null) {
+        val selectedDay = success.days.firstOrNull { it.id == selectedDayId }
+        ProgramOverlays(overlay, success, selectedDay, actions, onDismiss = { overlay = ProgramOverlay.NONE })
+    }
+}
+
+@Composable
+private fun ProgramOverlays(
+    overlay: ProgramOverlay,
+    state: ProgramUiState.Success,
+    selectedDay: ProgramDayUi?,
+    actions: ProgramActions,
+    onDismiss: () -> Unit,
+) {
+    when (overlay) {
+        ProgramOverlay.NONE -> Unit
+        ProgramOverlay.RENAME -> NameInputDialog(
+            title = stringResource(R.string.program_rename),
+            label = stringResource(R.string.program_name_label),
+            confirmLabel = stringResource(R.string.plan_rename_confirm),
+            initialName = state.name,
+            onConfirm = { name ->
+                onDismiss()
+                actions.onRenameProgram(name)
+            },
+            onDismiss = onDismiss,
+        )
+
+        ProgramOverlay.DELETE -> DestructiveConfirmDialog(
+            title = stringResource(R.string.plan_delete_title, state.name),
+            body = stringResource(R.string.program_delete_body),
+            confirmLabel = stringResource(R.string.plan_delete_confirm),
+            onConfirm = {
+                onDismiss()
+                actions.onDeleteProgram()
+            },
+            onDismiss = onDismiss,
+        )
+
+        ProgramOverlay.ADD_DAY -> NameInputDialog(
+            title = stringResource(R.string.program_new_day_title),
+            label = stringResource(R.string.plan_name_label),
+            confirmLabel = stringResource(R.string.program_new_day_confirm),
+            onConfirm = { name ->
+                onDismiss()
+                actions.onAddDay(null, name)
+            },
+            onDismiss = onDismiss,
+        )
+
+        // The day may disappear while its dialog is open (e.g. deleted elsewhere); then close it.
+        ProgramOverlay.REMOVE_DAY -> if (selectedDay == null) {
+            LaunchedEffect(Unit) { onDismiss() }
+        } else {
+            DestructiveConfirmDialog(
+                title = stringResource(R.string.program_remove_day_title, selectedDay.name),
+                body = stringResource(R.string.program_remove_day_body),
+                confirmLabel = stringResource(R.string.program_remove_day_confirm),
+                onConfirm = {
+                    onDismiss()
+                    actions.onRemoveDay(selectedDay.id)
+                },
+                onDismiss = onDismiss,
+            )
+        }
+
+        ProgramOverlay.SCHEDULE_DAY -> if (selectedDay == null) {
+            LaunchedEffect(Unit) { onDismiss() }
+        } else {
+            ScheduleDayDialog(
+                day = selectedDay,
+                allDays = state.days,
+                onSchedule = { weekday ->
+                    onDismiss()
+                    actions.onScheduleDay(selectedDay.id, weekday)
+                },
+                onDismiss = onDismiss,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProgramContent(
+    state: ProgramUiState.Success,
+    actions: ProgramActions,
+    onToggleWeekday: (DayOfWeek) -> Unit,
+    onChangeWeekday: (dayId: String) -> Unit,
+    onRemoveDay: (dayId: String) -> Unit,
+    onAddFlexibleDay: () -> Unit,
+    contentPadding: PaddingValues,
+) {
+    val spacing = MaterialTheme.spacing
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        LazyColumn(
+            modifier = Modifier
+                .widthIn(max = Dimens.maxContentWidth)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = spacing.lg,
+                end = spacing.lg,
+                top = contentPadding.calculateTopPadding(),
+                bottom = contentPadding.calculateBottomPadding() + spacing.xl,
+            ),
+        ) {
+            item(key = "status") {
+                ActiveStatusCard(isActive = state.isActive, onMakeActive = actions.onMakeActive)
+            }
+            item(key = "schedule") {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                    SectionHeader(
+                        title = stringResource(R.string.program_training_days),
+                        modifier = Modifier.padding(top = spacing.lg),
+                    )
+                    WeekdaySelector(selected = state.trainingDays, onToggle = onToggleWeekday)
+                    Text(
+                        text = stringResource(R.string.program_training_days_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            item(key = "days-header") {
+                SectionHeader(
+                    title = stringResource(R.string.program_days),
+                    modifier = Modifier.padding(top = spacing.lg, bottom = spacing.sm),
+                )
+            }
+            if (state.days.isEmpty()) {
+                item(key = "days-empty") {
+                    Text(
+                        text = stringResource(R.string.program_no_days),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.animateItem(),
+                    )
+                }
+            }
+            itemsIndexed(state.days, key = { _, day -> day.id }) { index, day ->
+                ProgramDayRow(
+                    day = day,
+                    shape = groupedListItemShape(index, state.days.size),
+                    onClick = { actions.onOpenDay(day.id) },
+                    onChangeWeekday = { onChangeWeekday(day.id) },
+                    onRemove = { onRemoveDay(day.id) },
+                    modifier = Modifier
+                        .animateItem()
+                        .padding(top = if (index == 0) 0.dp else GroupedListGap),
+                )
+            }
+            item(key = "add-day") {
+                OutlinedButton(
+                    onClick = onAddFlexibleDay,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = spacing.lg)
+                        .heightIn(min = Dimens.minTouchTarget),
+                ) {
+                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                    Text(stringResource(R.string.program_add_flexible_day))
+                }
+            }
+        }
+    }
+}
+
+/** Says whether Home follows this program, and offers to switch to it when it doesn't. */
+@Composable
+private fun ActiveStatusCard(isActive: Boolean, onMakeActive: () -> Unit) {
+    val spacing = MaterialTheme.spacing
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = if (isActive) {
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        } else {
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+        },
+    ) {
+        Column(modifier = Modifier.padding(spacing.lg), verticalArrangement = Arrangement.spacedBy(spacing.md)) {
+            if (isActive) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.CheckCircle, contentDescription = null)
+                    Spacer(Modifier.width(spacing.sm))
+                    Text(stringResource(R.string.home_active_program), style = MaterialTheme.typography.titleMedium)
+                }
+                Text(stringResource(R.string.program_active_body), style = MaterialTheme.typography.bodyMedium)
+            } else {
+                Text(stringResource(R.string.program_inactive_body), style = MaterialTheme.typography.bodyMedium)
+                FilledTonalButton(
+                    onClick = onMakeActive,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = Dimens.minTouchTarget),
+                ) { Text(stringResource(R.string.program_make_active)) }
+            }
+        }
+    }
+}

@@ -13,8 +13,8 @@ import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.Program
 import com.example.tracker.domain.model.ProgressPhoto
 import com.example.tracker.domain.model.ThemeMode
-import com.example.tracker.domain.model.WeightEntry
 import com.example.tracker.domain.model.WeekSummary
+import com.example.tracker.domain.model.WeightEntry
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSet

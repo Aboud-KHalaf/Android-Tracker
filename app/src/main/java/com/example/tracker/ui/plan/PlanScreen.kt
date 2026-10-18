@@ -49,14 +49,15 @@ import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MessageContent
 import com.example.tracker.ui.common.NameInputDialog
 import com.example.tracker.ui.common.ObserveAsEvents
+import com.example.tracker.ui.common.RenameDeleteTopBar
 import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.common.mediumDate
+import com.example.tracker.ui.common.rememberAfterNotificationPermission
 import com.example.tracker.ui.plan.components.AddExerciseSheet
 import com.example.tracker.ui.plan.components.DeletePlanDialog
 import com.example.tracker.ui.plan.components.PlanEmptyState
 import com.example.tracker.ui.plan.components.PlanExerciseRow
-import com.example.tracker.ui.plan.components.PlanTopBar
 import com.example.tracker.ui.plan.components.WorkoutFab
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
@@ -81,6 +82,7 @@ fun PlanRoute(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val afterNotificationPermission = rememberAfterNotificationPermission()
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
@@ -109,7 +111,7 @@ fun PlanRoute(
         snackbarHostState = snackbarHostState,
         actions = PlanActions(
             onBack = onBack,
-            onStartWorkout = viewModel::onStartWorkout,
+            onStartWorkout = { afterNotificationPermission(viewModel::onStartWorkout) },
             onResumeWorkout = onOpenWorkout,
             onMoveUp = viewModel::onMoveUp,
             onMoveDown = viewModel::onMoveDown,
@@ -158,9 +160,12 @@ fun PlanScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            PlanTopBar(
+            RenameDeleteTopBar(
                 title = success?.name.orEmpty(),
-                showPlanActions = success != null,
+                showActions = success != null,
+                optionsDescription = stringResource(R.string.plan_options),
+                renameLabel = stringResource(R.string.plan_rename),
+                deleteLabel = stringResource(R.string.plan_delete),
                 onBack = actions.onBack,
                 onRename = { overlay = PlanOverlay.RENAME },
                 onDelete = { overlay = PlanOverlay.DELETE },

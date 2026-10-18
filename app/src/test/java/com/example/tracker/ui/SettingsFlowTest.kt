@@ -1,6 +1,5 @@
 package com.example.tracker.ui
 
-import com.example.tracker.data.repository.newDay
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasAnyAncestor
@@ -14,6 +13,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import com.example.tracker.MainActivity
 import com.example.tracker.TrackerApplication
+import com.example.tracker.data.repository.newDay
 import com.example.tracker.domain.model.ThemeMode
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -45,7 +45,7 @@ class SettingsFlowTest {
 
     @Test
     fun changeThemeAndDeleteAllData_returnsHomeToEmpty() {
-        waitForNode(hasText("Push Day"))
+        waitForNode(hasText("Push Day program"))
         compose.onNodeWithContentDescription("Settings").performClick()
 
         compose.onNodeWithText("Dark").performClick()
@@ -58,8 +58,8 @@ class SettingsFlowTest {
         waitForNode(hasText("All data deleted"))
 
         compose.onNodeWithContentDescription("Back").performClick()
-        waitForNode(hasText("No plans yet. Create one to get started."))
-        compose.onNodeWithText("Push Day").assertDoesNotExist()
+        waitForNode(hasText("No programs yet. Create one to plan your week."))
+        compose.onNodeWithText("Push Day program").assertDoesNotExist()
     }
 
     /** Waits for a node matching [matcher]; Room loads data on background threads. */

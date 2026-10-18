@@ -8,10 +8,13 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
+import com.example.tracker.domain.program.nameTrainingDays
 import com.example.tracker.domain.repository.ExerciseRepository
-import com.example.tracker.domain.repository.PlanRepository
 import com.example.tracker.domain.repository.ProgramRepository
 import com.example.tracker.domain.repository.WorkoutRepository
+import com.example.tracker.ui.program.ProgramSetup
+import java.time.format.TextStyle
+import java.util.Locale
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -29,16 +32,17 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * Home screen: the suggested workout, this week's training, plans and recent workouts.
- * State is exposed as [uiState]; navigation and messages are sent once through [events].
+ * Home screen: the next workout from the active program, this week's training, programs and
+ * recent workouts. State is exposed as [uiState]; navigation and messages are sent once
+ * through [events].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModel(
-    private val planRepository: PlanRepository,
     private val programRepository: ProgramRepository,
     private val workoutRepository: WorkoutRepository,
     private val exerciseRepository: ExerciseRepository,
     private val time: TimeProvider,
+    private val locale: () -> Locale = Locale::getDefault,
 ) : ViewModel() {
 
     private val mapper = HomeStateMapper(time.zone())
@@ -79,18 +83,19 @@ class HomeViewModel(
         }
     }
 
-    fun onCreatePlan(name: String) {
-        val trimmed = name.trim()
-        if (trimmed.isEmpty()) return
+    /** Creates a program with one empty day per chosen weekday, named after the split's days. */
+    fun onCreateProgram(setup: ProgramSetup) {
+        val name = setup.name.trim()
+        if (name.isEmpty()) return
+        val schedule = nameTrainingDays(setup.dayLabels, setup.days) { it.getDisplayName(TextStyle.FULL, locale()) }
         viewModelScope.launch {
             try {
-                val programId = programRepository.createProgram(trimmed, emptyMap())
-                val planId = programRepository.addDay(programId, dayOfWeek = null, name = trimmed)
-                _events.send(HomeEvent.OpenPlan(planId))
+                val programId = programRepository.createProgram(name, schedule)
+                _events.send(HomeEvent.OpenProgram(programId))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _events.send(HomeEvent.ShowMessage(R.string.home_error_create_plan))
+                _events.send(HomeEvent.ShowMessage(R.string.home_error_create_program))
             }
         }
     }
@@ -105,12 +110,12 @@ class HomeViewModel(
 
         return combine(
             workoutRepository.observeActiveWorkout(),
-            planRepository.observePlans(),
+            programRepository.observePrograms(),
             workoutRepository.observeWeekSummary(weekStart),
             personalBestsWithNames,
             workoutRepository.observeHistory(),
-        ) { active, plans, week, (bests, exercises), history ->
-            mapper.map(today, active, plans, week, bests, exercises, history)
+        ) { active, programs, week, (bests, exercises), history ->
+            mapper.map(today, active, programs, week, bests, exercises, history)
         }
     }
 
@@ -121,7 +126,6 @@ class HomeViewModel(
             initializer {
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
                 HomeViewModel(
-                    planRepository = container.planRepository,
                     programRepository = container.programRepository,
                     workoutRepository = container.workoutRepository,
                     exerciseRepository = container.exerciseRepository,

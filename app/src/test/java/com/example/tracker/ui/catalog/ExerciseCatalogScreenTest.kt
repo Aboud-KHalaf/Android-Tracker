@@ -69,7 +69,7 @@ class ExerciseCatalogScreenTest {
         }
 
         compose.onNodeWithText("Hold your body straight.").assertExists()
-        compose.onNodeWithText("Add to plan").performScrollTo().performClick()
+        compose.onNodeWithText("Add to day").performScrollTo().performClick()
 
         assertEquals(ExerciseType.DURATION, added)
     }
@@ -86,9 +86,9 @@ class ExerciseCatalogScreenTest {
             }
         }
 
-        compose.onNodeWithContentDescription("In plan").assertExists()
-        compose.onNodeWithText("Already in this plan").assertExists()
-        compose.onNodeWithText("Add to plan").assertDoesNotExist()
+        compose.onNodeWithContentDescription("Already added").assertExists()
+        compose.onNodeWithText("Already in this day").assertExists()
+        compose.onNodeWithText("Add to day").assertDoesNotExist()
     }
 
     @Test

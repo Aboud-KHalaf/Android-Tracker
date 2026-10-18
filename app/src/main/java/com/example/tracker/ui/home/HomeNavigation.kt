@@ -9,7 +9,7 @@ data object HomeDestination
 
 fun NavGraphBuilder.homeScreen(
     onOpenWorkout: (workoutId: String) -> Unit,
-    onOpenPlan: (planId: String) -> Unit,
+    onOpenProgram: (programId: String) -> Unit,
     onOpenHistory: () -> Unit,
     onOpenExerciseProgress: (exerciseId: String) -> Unit,
     onOpenSettings: () -> Unit,
@@ -17,7 +17,7 @@ fun NavGraphBuilder.homeScreen(
     composable<HomeDestination> {
         HomeRoute(
             onOpenWorkout = onOpenWorkout,
-            onOpenPlan = onOpenPlan,
+            onOpenProgram = onOpenProgram,
             onOpenHistory = onOpenHistory,
             onOpenExerciseProgress = onOpenExerciseProgress,
             onOpenSettings = onOpenSettings,
