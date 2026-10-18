@@ -14,7 +14,7 @@ private val today = LocalDate.of(2026, 10, 3)
 
 private val previewState = HomeUiState.Success(
     today = today,
-    upNext = UpNextUi.Start("push", "Push Day", 5, LocalDate.of(2026, 9, 28)),
+    upNext = UpNextUi.Start("push", "Push", 5, LocalDate.of(2026, 9, 28), scheduledOn = today),
     week = WeekUi(
         days = DayOfWeek.entries.map { day ->
             val status = when (day) {
@@ -28,10 +28,15 @@ private val previewState = HomeUiState.Success(
         totalDuration = Duration.ofMinutes(155),
         personalBest = PersonalBestUi("bench", "Bench Press", SetValueUi.WeightReps(50.0, 8), DayOfWeek.MONDAY),
     ),
-    plans = listOf(
-        PlanItemUi("push", "Push Day", 5),
-        PlanItemUi("pull", "Pull Day", 5),
-        PlanItemUi("legs", "Legs & Core", 6),
+    programs = listOf(
+        ProgramItemUi(
+            "ppl",
+            "Push/Pull/Legs",
+            isActive = true,
+            trainingDays = listOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
+            dayCount = 4,
+        ),
+        ProgramItemUi("full", "Full Body", isActive = false, trainingDays = emptyList(), dayCount = 0),
     ),
     recentWorkouts = listOf(
         WorkoutSummaryUi("w3", "Legs & Core", LocalDate.of(2026, 10, 2), 6, Duration.ofMinutes(55), 0),
@@ -41,14 +46,14 @@ private val previewState = HomeUiState.Success(
 
 private val emptyState = HomeUiState.Success(
     today = today,
-    upNext = UpNextUi.NoPlans,
+    upNext = UpNextUi.NoPrograms,
     week = WeekUi(
         days = DayOfWeek.entries.map { WeekDayUi(it, if (it == DayOfWeek.SATURDAY) DayStatus.TODAY else DayStatus.IDLE) },
         workoutCount = 0,
         totalDuration = Duration.ZERO,
         personalBest = null,
     ),
-    plans = emptyList(),
+    programs = emptyList(),
     recentWorkouts = emptyList(),
 )
 

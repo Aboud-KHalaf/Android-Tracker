@@ -45,8 +45,9 @@ import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 
 /**
- * Picks an exercise from the library to add to the plan, creates a new one, or opens the
- * online catalog. Calls [onDismiss] after any of these.
+ * Picks an exercise from the library, creates a new one, or opens the online catalog. Used to
+ * add an exercise to the day and, with its own [title] and no catalog, to replace one.
+ * Calls [onDismiss] after any of these.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,14 +55,18 @@ fun AddExerciseSheet(
     options: List<ExerciseOptionUi>,
     onAdd: (exerciseId: String) -> Unit,
     onCreate: (name: String, type: ExerciseType) -> Unit,
-    onBrowseCatalog: () -> Unit,
+    onBrowseCatalog: (() -> Unit)?,
     onDismiss: () -> Unit,
+    title: String = stringResource(R.string.add_exercise_title),
+    emptyText: String = stringResource(R.string.add_exercise_library_empty),
+    createLabel: String = stringResource(R.string.add_exercise_confirm),
 ) {
     var isCreating by rememberSaveable { mutableStateOf(false) }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         if (isCreating) {
             NewExerciseForm(
+                confirmLabel = createLabel,
                 onCreate = { name, type ->
                     onCreate(name, type)
                     onDismiss()
@@ -69,15 +74,19 @@ fun AddExerciseSheet(
             )
         } else {
             ExercisePicker(
+                title = title,
+                emptyText = emptyText,
                 options = options,
                 onPick = { id ->
                     onAdd(id)
                     onDismiss()
                 },
                 onCreateNew = { isCreating = true },
-                onBrowseCatalog = {
-                    onDismiss()
-                    onBrowseCatalog()
+                onBrowseCatalog = onBrowseCatalog?.let { browse ->
+                    {
+                        onDismiss()
+                        browse()
+                    }
                 },
             )
         }
@@ -86,19 +95,21 @@ fun AddExerciseSheet(
 
 @Composable
 private fun ExercisePicker(
+    title: String,
+    emptyText: String,
     options: List<ExerciseOptionUi>,
     onPick: (String) -> Unit,
     onCreateNew: () -> Unit,
-    onBrowseCatalog: () -> Unit,
+    onBrowseCatalog: (() -> Unit)?,
 ) {
     LazyColumn(modifier = Modifier.padding(bottom = MaterialTheme.spacing.xl)) {
         item(key = "title") {
             SheetTitle(
-                text = stringResource(R.string.add_exercise_title),
+                text = title,
                 modifier = Modifier.padding(horizontal = MaterialTheme.spacing.lg, vertical = MaterialTheme.spacing.sm),
             )
         }
-        item(key = "browse") {
+        if (onBrowseCatalog != null) item(key = "browse") {
             ListItem(
                 headlineContent = { Text(stringResource(R.string.add_exercise_browse)) },
                 supportingContent = { Text(stringResource(R.string.add_exercise_browse_body)) },
@@ -131,7 +142,7 @@ private fun ExercisePicker(
         if (options.isEmpty()) {
             item(key = "empty") {
                 Text(
-                    text = stringResource(R.string.add_exercise_library_empty),
+                    text = emptyText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(MaterialTheme.spacing.lg),
@@ -157,7 +168,7 @@ private fun ExercisePicker(
 }
 
 @Composable
-private fun NewExerciseForm(onCreate: (String, ExerciseType) -> Unit) {
+private fun NewExerciseForm(confirmLabel: String, onCreate: (String, ExerciseType) -> Unit) {
     var name by rememberSaveable { mutableStateOf("") }
     var type by rememberSaveable { mutableStateOf(ExerciseType.WEIGHT_REPS) }
     val spacing = MaterialTheme.spacing
@@ -185,7 +196,7 @@ private fun NewExerciseForm(onCreate: (String, ExerciseType) -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = Dimens.minTouchTarget),
-        ) { Text(stringResource(R.string.add_exercise_confirm)) }
+        ) { Text(confirmLabel) }
     }
 }
 

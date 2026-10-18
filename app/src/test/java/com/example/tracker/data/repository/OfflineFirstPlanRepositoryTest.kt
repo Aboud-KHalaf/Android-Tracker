@@ -1,6 +1,7 @@
 package com.example.tracker.data.repository
 
 import com.example.tracker.data.local.TrackerDatabase
+import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
 import java.time.Duration
 import kotlinx.coroutines.flow.first
@@ -35,7 +36,7 @@ class OfflineFirstPlanRepositoryTest {
     fun tearDown() = database.close()
 
     private suspend fun pushDayWith(vararg names: String): String {
-        val planId = plans.createPlan("Push Day")
+        val planId = OfflineFirstProgramRepository(database, time, ids).newDay("Push Day")
         names.forEach { plans.addExercise(planId, exercises.createExercise(it, ExerciseType.WEIGHT_REPS)) }
         return planId
     }
@@ -111,7 +112,54 @@ class OfflineFirstPlanRepositoryTest {
 
     @Test(expected = IllegalArgumentException::class)
     fun addExercise_unknownExercise_isRejected() = runTest {
-        val planId = plans.createPlan("Push Day")
+        val planId = OfflineFirstProgramRepository(database, time, ids).newDay("Push Day")
         plans.addExercise(planId, "missing")
+    }
+
+    @Test
+    fun replaceExercise_keepsPlaceAndConfig_andIsRestoredOnReload() = runTest {
+        val planId = pushDayWith("Bench Press", "Overhead Press")
+        val bench = plans.observePlan(planId).first()!!.exercises.first()
+        plans.updateExerciseConfig(bench.id, ExerciseConfig(targetSets = 5, targetReps = 5, targetWeightKg = 100.0))
+        val dumbbell = exercises.createExercise("Dumbbell Press", ExerciseType.WEIGHT_REPS)
+
+        plans.replaceExercise(bench.id, dumbbell)
+
+        // A fresh repository reads only what was persisted.
+        val reloaded = OfflineFirstPlanRepository(database, time, ids).observePlan(planId).first()!!.exercises
+        assertEquals(listOf("Dumbbell Press", "Overhead Press"), reloaded.map { it.exercise.name })
+        assertEquals(bench.id, reloaded.first().id)
+        assertEquals(ExerciseConfig(targetSets = 5, targetReps = 5, targetWeightKg = 100.0), reloaded.first().config)
+    }
+
+    @Test
+    fun replaceExercise_withOtherType_dropsTargetsThatNoLongerApply() = runTest {
+        val planId = pushDayWith("Bench Press")
+        val bench = plans.observePlan(planId).first()!!.exercises.single()
+        plans.updateExerciseConfig(bench.id, ExerciseConfig(targetSets = 4, targetReps = 8, targetWeightKg = 60.0))
+        val plank = exercises.createExercise("Plank", ExerciseType.DURATION)
+
+        plans.replaceExercise(bench.id, plank)
+
+        assertEquals(ExerciseConfig(targetSets = 4), plans.observePlan(planId).first()!!.exercises.single().config)
+    }
+
+    @Test
+    fun updateExerciseConfig_changesOnlyThatExercise() = runTest {
+        val planId = pushDayWith("A", "B")
+        val (a, b) = plans.observePlan(planId).first()!!.exercises
+
+        plans.updateExerciseConfig(a.id, ExerciseConfig(targetSets = 4, targetReps = 10, targetWeightKg = 42.5))
+
+        val after = plans.observePlan(planId).first()!!.exercises
+        assertEquals(ExerciseConfig(targetSets = 4, targetReps = 10, targetWeightKg = 42.5), after[0].config)
+        assertEquals(b.config, after[1].config)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun updateExerciseConfig_zeroSets_isRejected() = runTest {
+        val planId = pushDayWith("A")
+        val a = plans.observePlan(planId).first()!!.exercises.single()
+        plans.updateExerciseConfig(a.id, ExerciseConfig(targetSets = 0))
     }
 }

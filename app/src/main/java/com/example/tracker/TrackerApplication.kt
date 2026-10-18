@@ -21,5 +21,8 @@ class TrackerApplication : Application() {
             .drop(1)
             .onEach { container.nutritionReminder.sync() }
             .launchIn(container.applicationScope)
+        // Mirror the workout in progress, if any, in its notification; this also restores it
+        // when the app starts again after the process was ended.
+        container.activeWorkoutSession.keepInSync(container.applicationScope)
     }
 }

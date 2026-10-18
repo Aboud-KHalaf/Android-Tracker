@@ -5,20 +5,23 @@ import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.PersonalBest
+import com.example.tracker.domain.model.Program
 import com.example.tracker.domain.model.WeekSummary
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.testing.FakeExerciseRepository
-import com.example.tracker.testing.FakePlanRepository
+import com.example.tracker.testing.FakeProgramRepository
 import com.example.tracker.testing.FakeWorkoutRepository
 import com.example.tracker.testing.MainDispatcherRule
 import com.example.tracker.ui.common.SetValueUi
+import com.example.tracker.ui.program.ProgramSetup
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.Locale
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -37,14 +40,14 @@ class HomeViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val plans = FakePlanRepository()
+    private val programs = FakeProgramRepository()
     private val workouts = FakeWorkoutRepository()
     private val exercises = FakeExerciseRepository()
 
     // Saturday, October 3, 2026.
     private val time = FakeTimeProvider(Instant.parse("2026-10-03T09:00:00Z"))
 
-    private fun createViewModel() = HomeViewModel(plans, workouts, exercises, time)
+    private fun createViewModel() = HomeViewModel(programs, workouts, exercises, time, locale = { Locale.US })
 
     /** Keeps [HomeViewModel.uiState] subscribed for the test and returns its current value. */
     private fun TestScope.collectState(viewModel: HomeViewModel): () -> HomeUiState {
@@ -54,23 +57,49 @@ class HomeViewModelTest {
 
     private fun HomeUiState.success() = this as HomeUiState.Success
 
+    private fun day(id: String, weekday: DayOfWeek?, exercises: Int = 5, lastDoneAt: Instant? = null) =
+        WorkoutPlan(id, id.replaceFirstChar { it.uppercase() }, exercises, lastDoneAt, programId = "ppl", dayOfWeek = weekday)
+
+    private fun program(id: String, isActive: Boolean, vararg days: WorkoutPlan) =
+        Program(id, id.uppercase(), isActive, days.toList())
+
     @Test
-    fun uiState_suggestsPlanDoneLongestAgo() = runTest {
-        plans.plans.value = listOf(
-            WorkoutPlan("push", "Push Day", 5, Instant.parse("2026-09-28T10:00:00Z")),
-            WorkoutPlan("pull", "Pull Day", 5, Instant.parse("2026-09-30T10:00:00Z")),
+    fun uiState_upNextIsTodaysDayOfTheActiveProgram() = runTest {
+        programs.programs.value = listOf(
+            program("ppl", isActive = true, day("push", DayOfWeek.MONDAY), day("legs", DayOfWeek.SATURDAY)),
+            program("other", isActive = false, day("arms", DayOfWeek.SATURDAY)),
         )
         val state = collectState(createViewModel())
 
         val success = state().success()
         assertEquals(LocalDate.of(2026, 10, 3), success.today)
-        assertEquals(UpNextUi.Start("push", "Push Day", 5, LocalDate.of(2026, 9, 28)), success.upNext)
-        assertEquals(listOf("Push Day", "Pull Day"), success.plans.map { it.name })
+        assertEquals(UpNextUi.Start("legs", "Legs", 5, null, scheduledOn = LocalDate.of(2026, 10, 3)), success.upNext)
+        assertEquals(listOf("PPL", "OTHER"), success.programs.map { it.name })
+        assertEquals(listOf(true, false), success.programs.map { it.isActive })
+        assertEquals(listOf(DayOfWeek.MONDAY, DayOfWeek.SATURDAY), success.programs.first().trainingDays)
+    }
+
+    @Test
+    fun uiState_onARestDay_upNextIsTheNextScheduledDay() = runTest {
+        programs.programs.value = listOf(program("ppl", isActive = true, day("push", DayOfWeek.MONDAY)))
+        val state = collectState(createViewModel())
+
+        val upNext = state().success().upNext as UpNextUi.Start
+        assertEquals("push", upNext.planId)
+        assertEquals(LocalDate.of(2026, 10, 5), upNext.scheduledOn)
+    }
+
+    @Test
+    fun uiState_activeProgramWithoutExercises_offersToOpenIt() = runTest {
+        programs.programs.value = listOf(program("ppl", isActive = true, day("push", DayOfWeek.MONDAY, exercises = 0)))
+        val state = collectState(createViewModel())
+
+        assertEquals(UpNextUi.EmptyProgram("ppl", "PPL"), state().success().upNext)
     }
 
     @Test
     fun uiState_workoutInProgress_offersResume() = runTest {
-        plans.plans.value = listOf(WorkoutPlan("push", "Push Day", 5, null))
+        programs.programs.value = listOf(program("ppl", isActive = true, day("push", DayOfWeek.MONDAY)))
         workouts.activeWorkout.value = Workout(
             id = "w1", planId = "push", name = "Push Day",
             startedAt = Instant.parse("2026-10-03T08:30:00Z"), finishedAt = null, exercises = emptyList(),
@@ -81,12 +110,12 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun uiState_noPlans_isEmptyState() = runTest {
+    fun uiState_noPrograms_isEmptyState() = runTest {
         val state = collectState(createViewModel())
 
         val success = state().success()
-        assertEquals(UpNextUi.NoPlans, success.upNext)
-        assertTrue(success.plans.isEmpty())
+        assertEquals(UpNextUi.NoPrograms, success.upNext)
+        assertTrue(success.programs.isEmpty())
         assertTrue(success.recentWorkouts.isEmpty())
     }
 
@@ -180,29 +209,52 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun onCreatePlan_trimsNameAndOpensPlan() = runTest {
+    fun onCreateProgram_namesDaysAfterTheSplitAndOpensTheProgram() = runTest {
         val viewModel = createViewModel()
 
-        viewModel.onCreatePlan("  Push Day ")
+        viewModel.onCreateProgram(
+            ProgramSetup(
+                name = "  PPL ",
+                dayLabels = listOf("Push", "Pull", "Legs"),
+                days = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
+            ),
+        )
 
-        assertEquals(listOf("Push Day"), plans.createdPlanNames)
-        assertEquals(HomeEvent.OpenPlan("plan-1"), viewModel.events.first())
+        val (name, schedule) = programs.created.single()
+        assertEquals("PPL", name)
+        assertEquals(
+            mapOf(
+                DayOfWeek.MONDAY to "Push",
+                DayOfWeek.WEDNESDAY to "Pull",
+                DayOfWeek.FRIDAY to "Legs",
+                DayOfWeek.SATURDAY to "Push",
+            ),
+            schedule,
+        )
+        assertEquals(HomeEvent.OpenProgram("program-1"), viewModel.events.first())
     }
 
     @Test
-    fun onCreatePlan_blankName_isIgnored() = runTest {
-        createViewModel().onCreatePlan("   ")
+    fun onCreateProgram_customSplit_namesDaysAfterTheirWeekday() = runTest {
+        createViewModel().onCreateProgram(ProgramSetup("Mine", emptyList(), setOf(DayOfWeek.TUESDAY)))
 
-        assertTrue(plans.createdPlanNames.isEmpty())
+        assertEquals(mapOf(DayOfWeek.TUESDAY to "Tuesday"), programs.created.single().second)
     }
 
     @Test
-    fun onCreatePlan_failure_showsMessage() = runTest {
-        plans.createPlanError = IllegalStateException("disk")
+    fun onCreateProgram_blankName_isIgnored() = runTest {
+        createViewModel().onCreateProgram(ProgramSetup("   ", emptyList(), emptySet()))
+
+        assertTrue(programs.created.isEmpty())
+    }
+
+    @Test
+    fun onCreateProgram_failure_showsMessage() = runTest {
+        programs.writeError = IllegalStateException("disk")
         val viewModel = createViewModel()
 
-        viewModel.onCreatePlan("Push Day")
+        viewModel.onCreateProgram(ProgramSetup("PPL", emptyList(), emptySet()))
 
-        assertEquals(HomeEvent.ShowMessage(R.string.home_error_create_plan), viewModel.events.first())
+        assertEquals(HomeEvent.ShowMessage(R.string.home_error_create_program), viewModel.events.first())
     }
 }

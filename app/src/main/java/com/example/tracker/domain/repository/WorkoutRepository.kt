@@ -37,10 +37,13 @@ interface WorkoutRepository {
 
     /**
      * Starts a workout from a plan and returns its id. Each exercise gets the plan's target
-     * number of sets, prefilled from last time.
+     * number of sets, prefilled from its targets and, where none is set, from last time.
      */
     suspend fun startWorkout(planId: String): String
     suspend fun finishWorkout(workoutId: String)
+
+    /** Remembers which exercise is open, so an interrupted session reopens on it. */
+    suspend fun setCurrentExercise(workoutId: String, exerciseIndex: Int)
 
     /** Deletes an in-progress or finished workout with all its sets. */
     suspend fun discardWorkout(workoutId: String)

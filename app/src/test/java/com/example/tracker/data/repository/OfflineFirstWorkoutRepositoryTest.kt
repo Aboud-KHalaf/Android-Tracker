@@ -1,6 +1,7 @@
 package com.example.tracker.data.repository
 
 import com.example.tracker.data.local.TrackerDatabase
+import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
 import java.time.DayOfWeek
 import java.time.Duration
@@ -39,11 +40,11 @@ class OfflineFirstWorkoutRepositoryTest {
         plans = OfflineFirstPlanRepository(database, time, ids)
         workouts = OfflineFirstWorkoutRepository(database, time, ids)
 
-        planId = plans.createPlan("Push Day")
+        planId = OfflineFirstProgramRepository(database, time, ids).newDay("Push Day")
         benchId = exercises.createExercise("Bench Press", ExerciseType.WEIGHT_REPS)
         plankId = exercises.createExercise("Plank", ExerciseType.DURATION)
-        plans.addExercise(planId, benchId, targetSets = 3)
-        plans.addExercise(planId, plankId, targetSets = 2)
+        plans.addExercise(planId, benchId, ExerciseConfig(targetSets = 3))
+        plans.addExercise(planId, plankId, ExerciseConfig(targetSets = 2))
     }
 
     @After
@@ -205,5 +206,29 @@ class OfflineFirstWorkoutRepositoryTest {
         val sessions = workouts.observeAllSessions().first()
 
         assertEquals(listOf(first, second), sessions.map { it.workoutId })
+    }
+
+    @Test
+    fun startWorkout_prefillsFromConfiguredTargetsBeforeLastTime() = runTest {
+        logWorkout(benchSets = listOf(50.0 to 10))
+        val bench = plans.observePlan(planId).first()!!.exercises.first()
+        plans.updateExerciseConfig(bench.id, ExerciseConfig(targetSets = 2, targetWeightKg = 60.0))
+
+        val id = workouts.startWorkout(planId)
+
+        // Weight comes from the target; reps have no target, so they repeat last time.
+        val sets = workouts.observeWorkout(id).first()!!.exercises.first().sets
+        assertEquals(listOf(60.0, 60.0), sets.map { it.weightKg })
+        assertEquals(listOf(10, 10), sets.map { it.reps })
+    }
+
+    @Test
+    fun setCurrentExercise_isRestoredWithTheWorkout() = runTest {
+        val id = workouts.startWorkout(planId)
+
+        workouts.setCurrentExercise(id, 1)
+
+        val reloaded = OfflineFirstWorkoutRepository(database, time, ids).observeActiveWorkout().first()!!
+        assertEquals(1, reloaded.currentExerciseIndex)
     }
 }

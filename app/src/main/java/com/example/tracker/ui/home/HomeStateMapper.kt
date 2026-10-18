@@ -2,11 +2,11 @@ package com.example.tracker.ui.home
 
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.PersonalBest
+import com.example.tracker.domain.model.Program
 import com.example.tracker.domain.model.WeekSummary
 import com.example.tracker.domain.model.Workout
-import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSummary
-import com.example.tracker.domain.plan.suggestNextPlan
+import com.example.tracker.domain.program.nextWorkout
 import com.example.tracker.ui.common.SetValueUi
 import com.example.tracker.ui.common.toWorkoutSummaryUi
 import java.time.DayOfWeek
@@ -19,25 +19,33 @@ internal class HomeStateMapper(private val zone: ZoneId) {
     fun map(
         today: LocalDate,
         activeWorkout: Workout?,
-        plans: List<WorkoutPlan>,
+        programs: List<Program>,
         week: WeekSummary,
         personalBests: List<PersonalBest>,
         exercises: List<Exercise>,
         history: List<WorkoutSummary>,
     ): HomeUiState.Success = HomeUiState.Success(
         today = today,
-        upNext = upNext(activeWorkout, plans),
+        upNext = upNext(today, activeWorkout, programs),
         week = WeekUi(
             days = weekDays(today, week),
             workoutCount = week.workoutCount,
             totalDuration = week.totalDuration,
             personalBest = latestPersonalBestThisWeek(today, personalBests, exercises),
         ),
-        plans = plans.map { PlanItemUi(it.id, it.name, it.exerciseCount) },
+        programs = programs.map { program ->
+            ProgramItemUi(
+                id = program.id,
+                name = program.name,
+                isActive = program.isActive,
+                trainingDays = program.trainingDays.sorted(),
+                dayCount = program.days.size,
+            )
+        },
         recentWorkouts = history.take(RECENT_WORKOUT_LIMIT).map { it.toWorkoutSummaryUi(zone) },
     )
 
-    private fun upNext(activeWorkout: Workout?, plans: List<WorkoutPlan>): UpNextUi {
+    private fun upNext(today: LocalDate, activeWorkout: Workout?, programs: List<Program>): UpNextUi {
         if (activeWorkout != null) {
             return UpNextUi.Resume(
                 workoutId = activeWorkout.id,
@@ -45,12 +53,14 @@ internal class HomeStateMapper(private val zone: ZoneId) {
                 startedAt = activeWorkout.startedAt.atZone(zone).toLocalTime(),
             )
         }
-        val plan = suggestNextPlan(plans) ?: return UpNextUi.NoPlans
+        val program = programs.firstOrNull { it.isActive } ?: programs.firstOrNull() ?: return UpNextUi.NoPrograms
+        val next = nextWorkout(program, today, zone) ?: return UpNextUi.EmptyProgram(program.id, program.name)
         return UpNextUi.Start(
-            planId = plan.id,
-            name = plan.name,
-            exerciseCount = plan.exerciseCount,
-            lastDoneOn = plan.lastDoneAt?.atZone(zone)?.toLocalDate(),
+            planId = next.day.id,
+            name = next.day.name,
+            exerciseCount = next.day.exerciseCount,
+            lastDoneOn = next.day.lastDoneAt?.atZone(zone)?.toLocalDate(),
+            scheduledOn = next.date,
         )
     }
 

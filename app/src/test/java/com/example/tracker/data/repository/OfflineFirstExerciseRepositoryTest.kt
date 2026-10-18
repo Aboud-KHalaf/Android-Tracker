@@ -90,7 +90,7 @@ class OfflineFirstExerciseRepositoryTest {
     fun delete_removesExerciseFromPlans() = runTest {
         val plans = OfflineFirstPlanRepository(database, time, SequentialIds())
         val exerciseId = repository.createExercise("Plank", ExerciseType.DURATION)
-        val planId = plans.createPlan("Core")
+        val planId = OfflineFirstProgramRepository(database, time, SequentialIds()).newDay("Core")
         plans.addExercise(planId, exerciseId)
 
         repository.deleteExercise(exerciseId)

@@ -1,5 +1,6 @@
 package com.example.tracker.ui.workout
 
+import androidx.lifecycle.SavedStateHandle
 import com.example.tracker.R
 import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.model.Exercise
@@ -354,5 +355,69 @@ class ActiveWorkoutViewModelTest {
 
         assertEquals(25, workouts.set("h2").durationSeconds)
         assertTrue(!workouts.set("h2").isCompleted)
+    }
+
+    @Test
+    fun reopensOnTheExerciseStoredWithTheWorkout() = runTest {
+        workouts.activeWorkout.value = workouts.activeWorkout.value!!.copy(currentExerciseIndex = 1)
+
+        val state = collectState(createViewModel())()
+
+        assertEquals("Incline Dumbbell Press", state.exercise.name)
+    }
+
+    @Test
+    fun movingToAnotherExercise_storesItWithTheWorkout() = runTest {
+        val viewModel = createViewModel()
+        collectState(viewModel)
+
+        viewModel.onNextExercise()
+
+        assertEquals(1, workouts.activeWorkout.value!!.currentExerciseIndex)
+    }
+
+    @Test
+    fun recreatedFromSavedState_keepsTheRunningHoldAndItsClock() = runTest {
+        usePlankWorkout()
+        val savedState = SavedStateHandle()
+        val before = ActiveWorkoutViewModel("w1", workouts, time, savedState)
+        collectState(before)
+        before.onToggleTimer()
+        time.advance(Duration.ofSeconds(20))
+
+        // Android ends the app in the background; its saved state comes back as plain values.
+        val restored = SavedStateHandle(savedState.keys().associateWith { savedState.get<Any?>(it) })
+        time.advance(Duration.ofSeconds(10))
+        val after = collectState(ActiveWorkoutViewModel("w1", workouts, time, restored))
+
+        assertTrue(after().hold().isRunning)
+        assertEquals(30, after().hold().secondsAt(time.now()))
+    }
+
+    @Test
+    fun recreatedFromSavedState_keepsTypedInput() = runTest {
+        val savedState = SavedStateHandle()
+        val before = ActiveWorkoutViewModel("w1", workouts, time, savedState)
+        collectState(before)
+        before.onWeightTextChange("52.5")
+
+        val after = collectState(ActiveWorkoutViewModel("w1", workouts, time, savedState))
+
+        assertEquals(SetEditorUi.WeightReps("52.5", "8"), after().editor())
+    }
+
+    @Test
+    fun onAppBackgrounded_storesTypedValuesWithoutCompletingTheSet() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onWeightTextChange("52.5")
+        viewModel.onRepsTextChange("6")
+
+        viewModel.onAppBackgrounded()
+
+        assertEquals(52.5, workouts.set("s2").weightKg)
+        assertEquals(6, workouts.set("s2").reps)
+        assertNull(workouts.set("s2").completedAt)
+        assertEquals(SetEditorUi.WeightReps("52.5", "6"), state().editor())
     }
 }

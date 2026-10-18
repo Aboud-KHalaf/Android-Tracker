@@ -11,6 +11,8 @@ import com.example.tracker.data.local.SyncMetadata
 /**
  * A performed workout. [finishedAt] is null while the workout is in progress.
  * [name] is a snapshot of the plan name, so history survives plan renames and deletes.
+ * [currentExercisePosition] is the exercise the user is on, so an interrupted session
+ * reopens where it was left.
  */
 @Entity(
     tableName = "workouts",
@@ -30,6 +32,7 @@ data class WorkoutEntity(
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "started_at") val startedAt: Long,
     @ColumnInfo(name = "finished_at") val finishedAt: Long?,
+    @ColumnInfo(name = "current_exercise_position") val currentExercisePosition: Int? = null,
     @Embedded val sync: SyncMetadata,
 )
 

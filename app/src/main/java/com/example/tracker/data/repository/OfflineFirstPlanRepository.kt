@@ -7,6 +7,7 @@ import com.example.tracker.data.local.SyncMetadata
 import com.example.tracker.data.local.TrackerDatabase
 import com.example.tracker.data.local.entity.PlanEntity
 import com.example.tracker.data.local.entity.PlanExerciseEntity
+import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.repository.PlanRepository
@@ -29,15 +30,15 @@ class OfflineFirstPlanRepository(
 
     override fun observePlan(id: String): Flow<PlanDetails?> =
         combine(planDao.observe(id), planDao.observeExercises(id)) { plan, exercises ->
-            plan?.let { PlanDetails(it.id, it.name, exercises.map { row -> row.toDomain() }) }
+            plan?.let {
+                PlanDetails(
+                    id = it.id,
+                    name = it.name,
+                    exercises = exercises.map { row -> row.toDomain() },
+                    dayOfWeek = it.dayOfWeek?.toDayOfWeek(),
+                )
+            }
         }
-
-    override suspend fun createPlan(name: String): String {
-        val id = ids.newId()
-        val now = now()
-        planDao.upsertPlans(listOf(PlanEntity(id, requireName(name), SyncMetadata.created(now))))
-        return id
-    }
 
     override suspend fun renamePlan(id: String, name: String) {
         val plan = requirePlan(id)
@@ -53,22 +54,43 @@ class OfflineFirstPlanRepository(
         }
     }
 
-    override suspend fun addExercise(planId: String, exerciseId: String, targetSets: Int): String {
-        require(targetSets >= 1) { "A plan exercise needs at least one set" }
+    override suspend fun addExercise(planId: String, exerciseId: String, config: ExerciseConfig): String {
+        requireValid(config)
         return database.withTransaction {
             requirePlan(planId)
-            requireNotNull(exerciseDao.get(exerciseId)) { "Exercise $exerciseId not found" }
+            val exercise = requireNotNull(exerciseDao.get(exerciseId)) { "Exercise $exerciseId not found" }
             val id = ids.newId()
             val entity = PlanExerciseEntity(
                 id = id,
                 planId = planId,
                 exerciseId = exerciseId,
                 position = planDao.maxPosition(planId) + 1,
-                targetSets = targetSets,
+                targetSets = 0,
                 sync = SyncMetadata.created(now()),
-            )
+            ).withConfig(config.forType(exercise.type))
             planDao.upsertPlanExercises(listOf(entity))
             id
+        }
+    }
+
+    override suspend fun replaceExercise(planExerciseId: String, exerciseId: String) {
+        database.withTransaction {
+            val row = requireActivePlanExercise(planExerciseId)
+            if (row.exerciseId == exerciseId) return@withTransaction
+            val exercise = requireNotNull(exerciseDao.get(exerciseId)) { "Exercise $exerciseId not found" }
+            val config = row.config().forType(exercise.type)
+            planDao.upsertPlanExercises(
+                listOf(row.copy(exerciseId = exerciseId, sync = row.sync.touched(now())).withConfig(config)),
+            )
+        }
+    }
+
+    override suspend fun updateExerciseConfig(planExerciseId: String, config: ExerciseConfig) {
+        requireValid(config)
+        database.withTransaction {
+            val row = requireActivePlanExercise(planExerciseId)
+            val type = requireNotNull(exerciseDao.get(row.exerciseId)) { "Exercise ${row.exerciseId} not found" }.type
+            planDao.upsertPlanExercises(listOf(row.copy(sync = row.sync.touched(now())).withConfig(config.forType(type))))
         }
     }
 
@@ -107,4 +129,30 @@ class OfflineFirstPlanRepository(
 
     private suspend fun requirePlanExercise(id: String): PlanExerciseEntity =
         requireNotNull(planDao.getPlanExerciseIncludingDeleted(id)) { "Plan exercise $id not found" }
+
+    private suspend fun requireActivePlanExercise(id: String): PlanExerciseEntity =
+        requirePlanExercise(id).also { require(it.sync.deletedAt == null) { "Plan exercise $id was removed" } }
+
+    private fun requireValid(config: ExerciseConfig) {
+        require(config.targetSets in 1..ExerciseConfig.MAX_TARGET_SETS) { "Sets must be 1–${ExerciseConfig.MAX_TARGET_SETS}" }
+        require(config.targetReps == null || config.targetReps >= 1) { "Target reps must be at least 1" }
+        require(config.targetWeightKg == null || config.targetWeightKg >= 0.0) { "Target weight must not be negative" }
+        require(config.targetDurationSeconds == null || config.targetDurationSeconds >= 1) {
+            "Target hold must be at least one second"
+        }
+    }
 }
+
+private fun PlanExerciseEntity.config() = ExerciseConfig(
+    targetSets = targetSets,
+    targetReps = targetReps,
+    targetWeightKg = targetWeightKg,
+    targetDurationSeconds = targetDurationSeconds,
+)
+
+private fun PlanExerciseEntity.withConfig(config: ExerciseConfig) = copy(
+    targetSets = config.targetSets,
+    targetReps = config.targetReps,
+    targetWeightKg = config.targetWeightKg,
+    targetDurationSeconds = config.targetDurationSeconds,
+)

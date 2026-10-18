@@ -19,6 +19,8 @@ import com.example.tracker.ui.photos.photoCaptureScreen
 import com.example.tracker.ui.photos.progressPhotosScreen
 import com.example.tracker.ui.plan.navigateToPlan
 import com.example.tracker.ui.plan.planScreen
+import com.example.tracker.ui.program.navigateToProgram
+import com.example.tracker.ui.program.programScreen
 import com.example.tracker.ui.settings.navigateToSettings
 import com.example.tracker.ui.settings.settingsScreen
 import com.example.tracker.ui.weight.weightScreen
@@ -45,7 +47,7 @@ fun TrackerNavHost(
     ) {
         homeScreen(
             onOpenWorkout = navController::navigateToActiveWorkout,
-            onOpenPlan = navController::navigateToPlan,
+            onOpenProgram = navController::navigateToProgram,
             onOpenHistory = { navController.navigateToTopLevel(TopLevelDestination.HISTORY) },
             onOpenExerciseProgress = navController::navigateToExerciseDetails,
             onOpenSettings = navController::navigateToSettings,
@@ -57,6 +59,7 @@ fun TrackerNavHost(
             onOpenPhotos = navController::navigateToProgressPhotos,
             onTakePhotos = navController::navigateToPhotoCapture,
         )
+        programScreen(onBack = navController::popBackStack, onOpenDay = navController::navigateToPlan)
         planScreen(
             onBack = navController::popBackStack,
             onOpenWorkout = navController::navigateToActiveWorkout,

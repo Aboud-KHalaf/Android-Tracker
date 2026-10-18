@@ -12,7 +12,7 @@ internal class HistoryStateMapper(private val zone: ZoneId) {
     /** [workouts] are newest first, already filtered to [selectedPlanId]. */
     fun map(plans: List<WorkoutPlan>, selectedPlanId: String?, workouts: List<WorkoutSummary>): HistoryUiState.Success =
         HistoryUiState.Success(
-            filters = listOf(PlanFilterUi(planId = null, name = null)) + plans.map { PlanFilterUi(it.id, it.name) },
+            filters = listOf(PlanFilterUi(planId = null, name = null)) + plans.map { PlanFilterUi(it.id, it.name, it.dayOfWeek) },
             selectedPlanId = selectedPlanId,
             months = workouts
                 .map { it.toWorkoutSummaryUi(zone) }

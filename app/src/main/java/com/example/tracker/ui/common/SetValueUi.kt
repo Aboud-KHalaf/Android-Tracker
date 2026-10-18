@@ -4,11 +4,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.stringResource
 import com.example.tracker.R
+import com.example.tracker.domain.model.WorkoutSet
 
 /** A set's result, as shown in summaries. */
 sealed interface SetValueUi {
     data class WeightReps(val weightKg: Double, val reps: Int) : SetValueUi
     data class Hold(val seconds: Int) : SetValueUi
+}
+
+/** The set's logged or planned value, or null if it has none yet. */
+fun WorkoutSet.toSetValue(): SetValueUi? = when {
+    weightKg != null && reps != null -> SetValueUi.WeightReps(weightKg, reps)
+    durationSeconds != null -> SetValueUi.Hold(durationSeconds)
+    else -> null
 }
 
 /** "50 kg × 8" or "1:05". */

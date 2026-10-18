@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -22,14 +23,23 @@ import com.example.tracker.ui.navigation.TrackerNavHost
 import com.example.tracker.ui.navigation.TrackerNavigationBar
 import com.example.tracker.ui.navigation.navigateToTopLevel
 import com.example.tracker.ui.theme.Motion
+import com.example.tracker.ui.workout.navigateToActiveWorkout
 
 /**
  * App root: the navigation graph, with the bottom bar on the top-level screens only.
  * Screens below the bar see its height as already-consumed insets, so they don't pad twice.
+ * When [workoutToOpen] is set, the app opens that workout and calls [onWorkoutOpened].
  */
 @Composable
-fun TrackerApp() {
+fun TrackerApp(workoutToOpen: String? = null, onWorkoutOpened: () -> Unit = {}) {
     val navController = rememberNavController()
+
+    LaunchedEffect(workoutToOpen) {
+        if (workoutToOpen != null) {
+            navController.navigateToActiveWorkout(workoutToOpen)
+            onWorkoutOpened()
+        }
+    }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentTab = TopLevelDestination.of(backStackEntry?.destination)
 

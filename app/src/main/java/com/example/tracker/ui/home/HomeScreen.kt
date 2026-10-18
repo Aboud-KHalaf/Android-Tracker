@@ -13,9 +13,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,17 +34,19 @@ import com.example.tracker.R
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.GroupedListGap
 import com.example.tracker.ui.common.LoadingContent
-import com.example.tracker.ui.common.NameInputDialog
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.SectionHeader
 import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.WorkoutSummaryRow
 import com.example.tracker.ui.common.WorkoutSummaryUi
 import com.example.tracker.ui.common.groupedListItemShape
+import com.example.tracker.ui.common.rememberAfterNotificationPermission
 import com.example.tracker.ui.home.components.HomeHeader
-import com.example.tracker.ui.home.components.PlanRow
+import com.example.tracker.ui.home.components.ProgramRow
 import com.example.tracker.ui.home.components.UpNextCard
 import com.example.tracker.ui.home.components.WeekCard
+import com.example.tracker.ui.program.ProgramSetup
+import com.example.tracker.ui.program.components.CreateProgramSheet
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 
@@ -55,7 +57,7 @@ import com.example.tracker.ui.theme.spacing
 @Composable
 fun HomeRoute(
     onOpenWorkout: (workoutId: String) -> Unit,
-    onOpenPlan: (planId: String) -> Unit,
+    onOpenProgram: (programId: String) -> Unit,
     onOpenHistory: () -> Unit,
     onOpenExerciseProgress: (exerciseId: String) -> Unit,
     onOpenSettings: () -> Unit,
@@ -65,11 +67,12 @@ fun HomeRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val startWorkout = rememberAfterNotificationPermission(onResult = viewModel::onStartWorkout)
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             is HomeEvent.OpenWorkout -> onOpenWorkout(event.workoutId)
-            is HomeEvent.OpenPlan -> onOpenPlan(event.planId)
+            is HomeEvent.OpenProgram -> onOpenProgram(event.programId)
             is HomeEvent.ShowMessage -> snackbarHostState.showSnackbar(context.getString(event.messageRes))
         }
     }
@@ -78,10 +81,10 @@ fun HomeRoute(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         actions = HomeActions(
-            onStartWorkout = viewModel::onStartWorkout,
+            onStartWorkout = startWorkout,
             onResumeWorkout = onOpenWorkout,
-            onCreatePlan = viewModel::onCreatePlan,
-            onOpenPlan = onOpenPlan,
+            onCreateProgram = viewModel::onCreateProgram,
+            onOpenProgram = onOpenProgram,
             onOpenHistory = onOpenHistory,
             onOpenExerciseProgress = onOpenExerciseProgress,
             onOpenSettings = onOpenSettings,
@@ -95,8 +98,8 @@ fun HomeRoute(
 data class HomeActions(
     val onStartWorkout: (planId: String) -> Unit = {},
     val onResumeWorkout: (workoutId: String) -> Unit = {},
-    val onCreatePlan: (name: String) -> Unit = {},
-    val onOpenPlan: (planId: String) -> Unit = {},
+    val onCreateProgram: (ProgramSetup) -> Unit = {},
+    val onOpenProgram: (programId: String) -> Unit = {},
     val onOpenHistory: () -> Unit = {},
     val onOpenExerciseProgress: (exerciseId: String) -> Unit = {},
     val onOpenSettings: () -> Unit = {},
@@ -111,7 +114,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
-    var showCreatePlan by rememberSaveable { mutableStateOf(false) }
+    var showCreateProgram by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier,
@@ -129,23 +132,20 @@ fun HomeScreen(
                 is HomeUiState.Success -> HomeContent(
                     state = state,
                     actions = actions,
-                    onCreatePlanClick = { showCreatePlan = true },
+                    onCreateProgramClick = { showCreateProgram = true },
                     contentPadding = innerPadding,
                 )
             }
         }
     }
 
-    if (showCreatePlan) {
-        NameInputDialog(
-            title = stringResource(R.string.create_plan_title),
-            label = stringResource(R.string.plan_name_label),
-            confirmLabel = stringResource(R.string.create_plan_confirm),
-            onConfirm = { name ->
-                showCreatePlan = false
-                actions.onCreatePlan(name)
+    if (showCreateProgram) {
+        CreateProgramSheet(
+            onCreate = { setup ->
+                showCreateProgram = false
+                actions.onCreateProgram(setup)
             },
-            onDismiss = { showCreatePlan = false },
+            onDismiss = { showCreateProgram = false },
         )
     }
 }
@@ -154,7 +154,7 @@ fun HomeScreen(
 private fun HomeContent(
     state: HomeUiState.Success,
     actions: HomeActions,
-    onCreatePlanClick: () -> Unit,
+    onCreateProgramClick: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
@@ -180,10 +180,12 @@ private fun HomeContent(
             item(key = "up-next") {
                 UpNextCard(
                     upNext = state.upNext,
+                    today = state.today,
                     isStartingWorkout = state.isStartingWorkout,
                     onStartWorkout = actions.onStartWorkout,
                     onResumeWorkout = actions.onResumeWorkout,
-                    onCreatePlan = onCreatePlanClick,
+                    onOpenProgram = actions.onOpenProgram,
+                    onCreateProgram = onCreateProgramClick,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -196,34 +198,34 @@ private fun HomeContent(
                         .padding(top = spacing.xl),
                 )
             }
-            plansSection(state.plans, onOpenPlan = actions.onOpenPlan, onCreatePlan = onCreatePlanClick)
+            programsSection(state.programs, onOpenProgram = actions.onOpenProgram, onCreateProgram = onCreateProgramClick)
             recentWorkoutsSection(state.recentWorkouts, onSeeAll = actions.onOpenHistory)
         }
     }
 }
 
-private fun LazyListScope.plansSection(
-    plans: List<PlanItemUi>,
-    onOpenPlan: (String) -> Unit,
-    onCreatePlan: () -> Unit,
+private fun LazyListScope.programsSection(
+    programs: List<ProgramItemUi>,
+    onOpenProgram: (String) -> Unit,
+    onCreateProgram: () -> Unit,
 ) {
-    item(key = "plans-header") {
+    item(key = "programs-header") {
         SectionHeader(
-            title = stringResource(R.string.home_workout_plans),
-            actionLabel = stringResource(R.string.home_new_plan),
+            title = stringResource(R.string.home_programs),
+            actionLabel = stringResource(R.string.home_new_program),
             actionIcon = Icons.Outlined.Add,
-            onAction = onCreatePlan,
+            onAction = onCreateProgram,
             modifier = Modifier.padding(top = MaterialTheme.spacing.xl, bottom = MaterialTheme.spacing.sm),
         )
     }
-    if (plans.isEmpty()) {
-        item(key = "plans-empty") { EmptySectionText(stringResource(R.string.home_no_plans), Modifier.animateItem()) }
+    if (programs.isEmpty()) {
+        item(key = "programs-empty") { EmptySectionText(stringResource(R.string.home_no_programs), Modifier.animateItem()) }
     }
-    itemsIndexed(plans, key = { _, plan -> "plan-${plan.id}" }) { index, plan ->
-        PlanRow(
-            plan = plan,
-            shape = groupedListItemShape(index, plans.size),
-            onClick = { onOpenPlan(plan.id) },
+    itemsIndexed(programs, key = { _, program -> "program-${program.id}" }) { index, program ->
+        ProgramRow(
+            program = program,
+            shape = groupedListItemShape(index, programs.size),
+            onClick = { onOpenProgram(program.id) },
             modifier = Modifier
                 .animateItem()
                 .padding(top = if (index == 0) 0.dp else GroupedListGap),

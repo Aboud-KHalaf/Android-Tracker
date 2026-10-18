@@ -24,7 +24,6 @@
     <string name="home_title">Today</string>
     <string name="home_error_load">Couldn\'t load your workouts.</string>
     <string name="home_error_start_workout">Couldn\'t start the workout. Try again.</string>
-    <string name="home_error_create_plan">Couldn\'t create the plan. Try again.</string>
     <string name="home_up_next">Up next</string>
     <string name="home_last_done">last done %1$s</string>
     <string name="home_never_done">not done yet</string>
@@ -33,33 +32,28 @@
     <string name="home_started_at">Started %1$s</string>
     <string name="home_resume_workout">Resume workout</string>
     <string name="home_get_started">Get started</string>
-    <string name="home_create_first_plan">Create your first plan</string>
-    <string name="home_create_first_plan_body">Add the exercises you want to do, then start training.</string>
     <string name="home_this_week">This week</string>
     <string name="home_day_trained">%1$s, trained</string>
     <string name="home_day_today">%1$s, today</string>
     <string name="home_new_personal_best">New personal best</string>
     <string name="home_view_progress">View %1$s progress</string>
-    <string name="home_workout_plans">Workout plans</string>
-    <string name="home_new_plan">New plan</string>
-    <string name="home_no_plans">No plans yet. Create one to get started.</string>
     <string name="home_recent_workouts">Recent workouts</string>
     <string name="home_see_all">See all</string>
     <string name="home_no_recent">Finished workouts will show up here.</string>
 
     <!-- Workout plan -->
-    <string name="plan_error_load">Couldn\'t load this plan.</string>
-    <string name="plan_not_found">This plan no longer exists.</string>
+    <string name="plan_error_load">Couldn\'t load this training day.</string>
+    <string name="plan_not_found">This training day no longer exists.</string>
     <string name="plan_error_start_workout">Couldn\'t start the workout. Try again.</string>
-    <string name="plan_error_update">Couldn\'t update the plan. Try again.</string>
+    <string name="plan_error_update">Couldn\'t update the day. Try again.</string>
     <string name="plan_error_add_exercise">Couldn\'t add the exercise. Try again.</string>
-    <string name="plan_error_delete">Couldn\'t delete the plan. Try again.</string>
-    <string name="plan_options">Plan options</string>
-    <string name="plan_rename">Rename plan</string>
+    <string name="plan_error_delete">Couldn\'t delete the day. Try again.</string>
+    <string name="plan_options">Day options</string>
+    <string name="plan_rename">Rename day</string>
     <string name="plan_rename_confirm">Save</string>
-    <string name="plan_delete">Delete plan</string>
+    <string name="plan_delete">Delete day</string>
     <string name="plan_delete_title">Delete %1$s?</string>
-    <string name="plan_delete_body">The plan and its exercise list are deleted. Finished workouts stay in your history.</string>
+    <string name="plan_delete_body">The day and its exercise list are deleted. Finished workouts stay in your history.</string>
     <string name="plan_delete_confirm">Delete</string>
     <string name="plan_exercise_options">More options for %1$s</string>
     <string name="plan_move_up">Move up</string>
@@ -68,7 +62,7 @@
     <string name="plan_exercise_removed">%1$s removed</string>
     <string name="action_undo">Undo</string>
     <string name="plan_empty_title">No exercises yet</string>
-    <string name="plan_empty_body">Add the exercises you want to do in this plan.</string>
+    <string name="plan_empty_body">Add the exercises you want to do on this day.</string>
     <string name="plan_add_exercise">Add exercise</string>
     <string name="plan_start_workout">Start workout</string>
     <string name="plan_resume_workout">Resume workout</string>
@@ -85,11 +79,11 @@
     <string name="add_exercise_browse">Browse exercise catalog</string>
     <string name="add_exercise_browse_body">Pictures, muscles and instructions</string>
     <string name="add_exercise_create">Create new exercise</string>
-    <string name="add_exercise_library_empty">Every exercise in your library is already in this plan.</string>
+    <string name="add_exercise_library_empty">Every exercise in your library is already in this day.</string>
     <string name="add_exercise_new_title">New exercise</string>
     <string name="add_exercise_name_label">Exercise name</string>
     <string name="add_exercise_type_label">Measured by</string>
-    <string name="add_exercise_confirm">Add to plan</string>
+    <string name="add_exercise_confirm">Add to day</string>
 
     <!-- Exercise catalog -->
     <string name="catalog_title">Exercise catalog</string>
@@ -98,14 +92,14 @@
     <string name="catalog_error_load">Couldn\'t load the exercise catalog. Check your connection and try again.</string>
     <string name="catalog_error_add">Couldn\'t add the exercise. Try again.</string>
     <string name="catalog_empty_title">No matching exercises</string>
-    <string name="catalog_empty_body">Try a different name, or create your own exercise from the plan.</string>
-    <string name="catalog_in_plan">In plan</string>
-    <string name="catalog_added">%1$s added to the plan</string>
+    <string name="catalog_empty_body">Try a different name, or create your own exercise from the training day.</string>
+    <string name="catalog_in_plan">Already added</string>
+    <string name="catalog_added">%1$s added to the day</string>
     <string name="catalog_muscles">Muscles</string>
     <string name="catalog_secondary_muscles">Also works</string>
     <string name="catalog_equipment">Equipment</string>
     <string name="catalog_image_description">Demonstration of %1$s</string>
-    <string name="catalog_already_in_plan">Already in this plan</string>
+    <string name="catalog_already_in_plan">Already in this day</string>
     <string name="catalog_attribution">Exercise data from wger.de, licensed CC-BY-SA.</string>
 
     <!-- Active workout -->
@@ -229,17 +223,17 @@
     <!-- History -->
     <string name="history_title">History</string>
     <string name="history_error_load">Couldn\'t load your history.</string>
-    <string name="history_filter_group">Filter by plan</string>
+    <string name="history_filter_group">Filter by training day</string>
     <string name="history_filter_all">All</string>
     <string name="history_empty_title">No workouts yet</string>
     <string name="history_empty_all">Finished workouts will show up here.</string>
-    <string name="history_empty_plan">Finished workouts for this plan will show up here.</string>
+    <string name="history_empty_plan">Finished workouts for this day will show up here.</string>
 
     <!-- Progress tab (exercise library) -->
     <string name="exercises_title">Progress</string>
     <string name="exercises_error_load">Couldn\'t load your exercises.</string>
     <string name="exercises_empty_title">No exercises yet</string>
-    <string name="exercises_empty_body">Add exercises to a plan to track their progress here.</string>
+    <string name="exercises_empty_body">Add exercises to a training day to track their progress here.</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
@@ -263,10 +257,7 @@
     <string name="nav_history">History</string>
     <string name="nav_progress">Progress</string>
 
-    <!-- Create plan dialog -->
-    <string name="create_plan_title">New plan</string>
-    <string name="plan_name_label">Plan name</string>
-    <string name="create_plan_confirm">Create</string>
+    <string name="plan_name_label">Day name</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_save">Save</string>
     <string name="action_delete">Delete</string>
@@ -512,4 +503,105 @@
     <string name="capture_permission_body">Tracker needs the camera to take your progress photos. Photos stay on this device.</string>
     <string name="capture_permission_allow">Allow camera</string>
     <string name="capture_permission_settings">Open settings</string>
+
+    <!-- Programs -->
+    <string name="home_programs">Programs</string>
+    <string name="home_new_program">New program</string>
+    <string name="home_no_programs">No programs yet. Create one to plan your week.</string>
+    <string name="home_create_first_program">Create your first program</string>
+    <string name="home_create_first_program_body">Pick a split and your training days, then add exercises to each day.</string>
+    <string name="home_error_create_program">Couldn\'t create the program. Try again.</string>
+    <string name="home_today">Today</string>
+    <string name="home_next_on">Next up · %1$s</string>
+    <string name="home_active_program">Active program</string>
+    <string name="home_empty_program_body">Add exercises to its training days to start a workout.</string>
+    <string name="home_open_program">Open program</string>
+    <string name="program_active">Active</string>
+    <string name="program_no_training_days">No training days yet</string>
+    <string name="program_error_load">Couldn\'t load this program.</string>
+    <string name="program_not_found">This program no longer exists.</string>
+    <string name="program_error_update">Couldn\'t update the program. Try again.</string>
+    <string name="program_error_delete">Couldn\'t delete the program. Try again.</string>
+    <string name="program_options">Program options</string>
+    <string name="program_rename">Rename program</string>
+    <string name="program_name_label">Program name</string>
+    <string name="program_delete">Delete program</string>
+    <string name="program_delete_body">The program, its training days and their exercise lists are deleted. Finished workouts stay in your history.</string>
+    <string name="program_active_body">Home suggests your workouts from this program.</string>
+    <string name="program_inactive_body">Home suggests workouts from your active program.</string>
+    <string name="program_make_active">Use this program</string>
+    <string name="program_training_days">Training days</string>
+    <string name="program_training_days_hint">Tap a weekday to add or remove a training day.</string>
+    <string name="program_days">Workouts</string>
+    <string name="program_any_day">Any day</string>
+    <string name="program_no_days">Pick training days above, or add a day without a fixed weekday.</string>
+    <string name="program_add_flexible_day">Add day without fixed weekday</string>
+    <string name="program_new_day_title">New training day</string>
+    <string name="program_new_day_confirm">Add</string>
+    <string name="program_day_options">More options for %1$s</string>
+    <string name="program_change_weekday">Change weekday</string>
+    <string name="program_remove_day">Remove day</string>
+    <string name="program_remove_day_title">Remove %1$s?</string>
+    <string name="program_remove_day_body">Its exercise list is deleted. Finished workouts stay in your history.</string>
+    <string name="program_remove_day_confirm">Remove</string>
+    <string name="program_schedule_title">Train %1$s on</string>
+    <string name="program_schedule_none">No fixed weekday</string>
+    <string name="program_schedule_taken">%1$s · %2$s</string>
+    <string name="program_day_on_weekday">%1$s · %2$s</string>
+
+    <!-- Create program sheet -->
+    <string name="create_program_title">New program</string>
+    <string name="create_program_split">Split</string>
+    <string name="create_program_days">Training days</string>
+    <string name="create_program_days_hint">Each day gets its own exercise list. You can change this later.</string>
+    <string name="create_program_confirm">Create program</string>
+    <string name="template_full_body">Full Body</string>
+    <string name="template_upper_lower">Upper/Lower</string>
+    <string name="template_push_pull_legs">Push/Pull/Legs</string>
+    <string name="template_custom">Custom</string>
+    <string name="day_full_body">Full Body</string>
+    <string name="day_upper">Upper</string>
+    <string name="day_lower">Lower</string>
+    <string name="day_push">Push</string>
+    <string name="day_pull">Pull</string>
+    <string name="day_legs">Legs</string>
+
+    <!-- Day exercises: replace, reorder, targets -->
+    <string name="plan_replace">Replace</string>
+    <string name="plan_edit_targets">Edit targets</string>
+    <string name="plan_drag_handle">Reorder %1$s</string>
+    <string name="plan_error_replace">Couldn\'t replace the exercise. Try again.</string>
+    <string name="replace_exercise_title">Replace %1$s</string>
+    <string name="replace_exercise_library_empty">There are no other exercises in your library yet.</string>
+    <string name="replace_exercise_confirm">Replace</string>
+    <plurals name="target_reps">
+        <item quantity="one">%1$d rep</item>
+        <item quantity="other">%1$d reps</item>
+    </plurals>
+    <string name="target_weight">%1$s kg</string>
+    <string name="target_hold">%1$s hold</string>
+    <string name="config_subtitle">Defaults for every workout of this day</string>
+    <string name="config_sets">Sets</string>
+    <string name="config_decrease_sets">Fewer sets</string>
+    <string name="config_increase_sets">More sets</string>
+    <string name="config_reps">Target reps</string>
+    <string name="config_weight">Target weight (kg)</string>
+    <string name="config_hold">Target hold (seconds)</string>
+    <string name="config_repeat_last_time">Leave empty to repeat last time</string>
+    <string name="config_invalid">Enter a number above 0</string>
+    <string name="config_invalid_weight">Enter a weight of 0 or more</string>
+    <string name="config_recorded">Recorded last workout</string>
+    <string name="config_recorded_none">Not done yet. What you log in a workout is kept separately from these targets.</string>
+    <string name="config_save">Save</string>
+    <string name="plan_error_load_targets">Couldn\'t open the targets. Try again.</string>
+    <string name="plan_error_save_config">Couldn\'t save the targets. Try again.</string>
+
+    <!-- Workout in progress notification -->
+    <string name="workout_channel_name">Workout in progress</string>
+    <string name="workout_channel_description">Shows the workout you\'re doing and its timer while you\'re away from the app</string>
+    <string name="workout_notification_text">%1$s · %2$s</string>
+    <plurals name="workout_notification_sets">
+        <item quantity="one">%1$d of %2$d set done</item>
+        <item quantity="other">%1$d of %2$d sets done</item>
+    </plurals>
 </resources>
