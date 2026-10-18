@@ -316,18 +316,28 @@ private fun PlanContent(
 ) {
     val spacing = MaterialTheme.spacing
     // The order shown while dragging; saved on drop, then replaced by the stored order.
-    var order by remember(state.exercises) { mutableStateOf(state.exercises) }
+    var order by remember { mutableStateOf(state.exercises) }
+    var storedOrder by remember { mutableStateOf(state.exercises) }
     val listState = rememberLazyListState()
     val reorderState = rememberReorderableListState(
         listState = listState,
         canMove = { key -> order.any { it.id == key } },
         onMove = { from, to -> order = order.moveByKey(from, to) { it.id } },
         onDrop = { key ->
-            val from = state.exercises.indexOfFirst { it.id == key }
-            val to = order.indexOfFirst { it.id == key }
-            if (from != to) actions.onMoveExercise(from, to)
+            // If exercises were added or removed during the drag, the indices no longer match
+            // the stored list; keep the stored order rather than move the wrong exercise.
+            if (order.map { it.id }.toSet() == state.exercises.map { it.id }.toSet()) {
+                val from = state.exercises.indexOfFirst { it.id == key }
+                val to = order.indexOfFirst { it.id == key }
+                if (from != to) actions.onMoveExercise(from, to)
+            }
         },
     )
+    // Show the stored order when it changes, but never mid-drag, which would drop the drag.
+    if (state.exercises != storedOrder && reorderState.draggingKey == null) {
+        storedOrder = state.exercises
+        order = state.exercises
+    }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         LazyColumn(
             state = listState,

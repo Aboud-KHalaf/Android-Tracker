@@ -1,5 +1,8 @@
 package com.example.tracker.ui.plan
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -124,6 +127,27 @@ class PlanScreenTest {
         compose.onNodeWithText("Save").performClick()
 
         assertEquals(listOf("pe0" to ExerciseConfig(targetSets = 4, targetReps = 8, targetWeightKg = 60.0)), saved)
+    }
+
+    @Test
+    fun listUpdateDuringADrag_doesNotDropIt() {
+        val moves = mutableListOf<Pair<Int, Int>>()
+        var uiState by mutableStateOf(state)
+        compose.setContent {
+            TrackerTheme {
+                PlanScreen(uiState = uiState, actions = PlanActions(onMoveExercise = { from, to -> moves += from to to }))
+            }
+        }
+
+        val handle = compose.onNodeWithContentDescription("Reorder Bench Press", useUnmergedTree = true)
+        handle.performTouchInput { down(center) }
+        repeat(STEPS / 2) { handle.performTouchInput { moveBy(Offset(0f, height * STEP_FRACTION)) } }
+        // Something else changes the stored day mid-drag, e.g. a target is saved.
+        uiState = state.copy(exercises = state.exercises.map { it.copy(config = ExerciseConfig(targetSets = 4)) })
+        repeat(STEPS / 2) { handle.performTouchInput { moveBy(Offset(0f, height * STEP_FRACTION)) } }
+        handle.performTouchInput { up() }
+
+        assertEquals(listOf(0 to 2), moves)
     }
 
     private companion object {
