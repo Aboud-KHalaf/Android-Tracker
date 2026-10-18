@@ -75,11 +75,62 @@ class ProgramViewModelTest {
         seed()
         val viewModel = createViewModel()
 
-        viewModel.onAddDay(DayOfWeek.FRIDAY, " Legs ")
+        viewModel.onAddDay(null, " Legs ")
         viewModel.onScheduleDay("extra", DayOfWeek.SUNDAY)
-        viewModel.onRemoveDay("push")
 
-        assertEquals(listOf("add ppl FRIDAY Legs", "schedule extra SUNDAY"), programs.writes)
+        assertEquals(listOf("add ppl null Legs", "schedule extra SUNDAY"), programs.writes)
+    }
+
+    @Test
+    fun toggleFreeWeekday_addsADay_andARepeatTapIsIgnoredUntilItShows() = runTest {
+        seed()
+        val viewModel = createViewModel()
+        collectState(viewModel)
+
+        viewModel.onToggleWeekday(DayOfWeek.FRIDAY, "Friday")
+        viewModel.onToggleWeekday(DayOfWeek.FRIDAY, "Friday")
+
+        assertEquals(listOf("add ppl FRIDAY Friday"), programs.writes)
+    }
+
+    @Test
+    fun toggleWeekdayWithExercises_asksBeforeRemoving() = runTest {
+        seed()
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onToggleWeekday(DayOfWeek.MONDAY, "Monday")
+        assertEquals("push", (state() as ProgramUiState.Success).removalToConfirm?.id)
+        assertTrue(plans.writes.isEmpty())
+
+        viewModel.onConfirmRemoveDay()
+        assertEquals(listOf("delete push"), plans.writes)
+        assertEquals(null, (state() as ProgramUiState.Success).removalToConfirm)
+    }
+
+    @Test
+    fun cancellingTheRemoval_keepsTheDay() = runTest {
+        seed()
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onRequestRemoveDay("extra")
+        viewModel.onCancelRemoveDay()
+
+        assertEquals(null, (state() as ProgramUiState.Success).removalToConfirm)
+        assertTrue(plans.writes.isEmpty())
+    }
+
+    @Test
+    fun toggleEmptyScheduledDay_removesItRightAway() = runTest {
+        programs.programs.value = listOf(
+            Program("ppl", "PPL", true, listOf(WorkoutPlan("push", "Push", 0, null, "ppl", DayOfWeek.MONDAY))),
+        )
+        val viewModel = createViewModel()
+        collectState(viewModel)
+
+        viewModel.onToggleWeekday(DayOfWeek.MONDAY, "Monday")
+
         assertEquals(listOf("delete push"), plans.writes)
     }
 
@@ -117,8 +168,9 @@ class ProgramViewModelTest {
         seed()
         programs.writeError = IllegalArgumentException("taken")
         val viewModel = createViewModel()
+        collectState(viewModel)
 
-        viewModel.onAddDay(DayOfWeek.MONDAY, "Pull")
+        viewModel.onToggleWeekday(DayOfWeek.FRIDAY, "Friday")
 
         assertEquals(ProgramEvent.ShowMessage(R.string.program_error_update), viewModel.events.first())
     }

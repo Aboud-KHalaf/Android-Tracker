@@ -15,6 +15,8 @@ sealed interface ProgramUiState {
         val isActive: Boolean,
         /** Scheduled days Monday to Sunday, then days without a fixed weekday. */
         val days: List<ProgramDayUi>,
+        /** A day with exercises the user asked to remove; they confirm first. */
+        val removalToConfirm: ProgramDayUi? = null,
     ) : ProgramUiState {
         val trainingDays: Set<DayOfWeek> get() = days.mapNotNullTo(mutableSetOf()) { it.dayOfWeek }
     }

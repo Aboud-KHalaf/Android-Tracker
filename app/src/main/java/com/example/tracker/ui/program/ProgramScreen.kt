@@ -93,7 +93,10 @@ fun ProgramRoute(
             onBack = onBack,
             onOpenDay = onOpenDay,
             onAddDay = viewModel::onAddDay,
-            onRemoveDay = viewModel::onRemoveDay,
+            onToggleWeekday = viewModel::onToggleWeekday,
+            onRequestRemoveDay = viewModel::onRequestRemoveDay,
+            onConfirmRemoveDay = viewModel::onConfirmRemoveDay,
+            onCancelRemoveDay = viewModel::onCancelRemoveDay,
             onScheduleDay = viewModel::onScheduleDay,
             onMakeActive = viewModel::onMakeActive,
             onRenameProgram = viewModel::onRenameProgram,
@@ -109,7 +112,10 @@ data class ProgramActions(
     val onBack: () -> Unit = {},
     val onOpenDay: (planId: String) -> Unit = {},
     val onAddDay: (dayOfWeek: DayOfWeek?, name: String) -> Unit = { _, _ -> },
-    val onRemoveDay: (planId: String) -> Unit = {},
+    val onToggleWeekday: (dayOfWeek: DayOfWeek, defaultName: String) -> Unit = { _, _ -> },
+    val onRequestRemoveDay: (planId: String) -> Unit = {},
+    val onConfirmRemoveDay: () -> Unit = {},
+    val onCancelRemoveDay: () -> Unit = {},
     val onScheduleDay: (planId: String, dayOfWeek: DayOfWeek?) -> Unit = { _, _ -> },
     val onMakeActive: () -> Unit = {},
     val onRenameProgram: (name: String) -> Unit = {},
@@ -117,8 +123,11 @@ data class ProgramActions(
     val onRetry: () -> Unit = {},
 )
 
-/** Which dialog is open; only one at a time. Day dialogs act on the day in `selectedDayId`. */
-private enum class ProgramOverlay { NONE, RENAME, DELETE, ADD_DAY, REMOVE_DAY, SCHEDULE_DAY }
+/**
+ * Which dialog is open; only one at a time. SCHEDULE_DAY acts on the day in `selectedDayId`.
+ * Confirming a day's removal is driven by the ViewModel instead.
+ */
+private enum class ProgramOverlay { NONE, RENAME, DELETE, ADD_DAY, SCHEDULE_DAY }
 
 /** Stateless Program screen. */
 @Composable
@@ -171,17 +180,9 @@ fun ProgramScreen(
                 is ProgramUiState.Success -> ProgramContent(
                     state = state,
                     actions = actions,
-                    onToggleWeekday = { weekday ->
-                        val existing = state.days.firstOrNull { it.dayOfWeek == weekday }
-                        when {
-                            existing == null -> actions.onAddDay(weekday, weekday.fullName(locale))
-                            // Removing a day throws away its exercise list, so ask first.
-                            existing.exerciseCount > 0 -> openDayOverlay(existing.id, ProgramOverlay.REMOVE_DAY)
-                            else -> actions.onRemoveDay(existing.id)
-                        }
-                    },
+                    onToggleWeekday = { weekday -> actions.onToggleWeekday(weekday, weekday.fullName(locale)) },
                     onChangeWeekday = { openDayOverlay(it, ProgramOverlay.SCHEDULE_DAY) },
-                    onRemoveDay = { openDayOverlay(it, ProgramOverlay.REMOVE_DAY) },
+                    onRemoveDay = actions.onRequestRemoveDay,
                     onAddFlexibleDay = { overlay = ProgramOverlay.ADD_DAY },
                     contentPadding = innerPadding,
                 )
@@ -192,6 +193,15 @@ fun ProgramScreen(
     if (success != null) {
         val selectedDay = success.days.firstOrNull { it.id == selectedDayId }
         ProgramOverlays(overlay, success, selectedDay, actions, onDismiss = { overlay = ProgramOverlay.NONE })
+        success.removalToConfirm?.let { day ->
+            DestructiveConfirmDialog(
+                title = stringResource(R.string.program_remove_day_title, day.name),
+                body = stringResource(R.string.program_remove_day_body),
+                confirmLabel = stringResource(R.string.program_remove_day_confirm),
+                onConfirm = actions.onConfirmRemoveDay,
+                onDismiss = actions.onCancelRemoveDay,
+            )
+        }
     }
 }
 
@@ -240,21 +250,6 @@ private fun ProgramOverlays(
         )
 
         // The day may disappear while its dialog is open (e.g. deleted elsewhere); then close it.
-        ProgramOverlay.REMOVE_DAY -> if (selectedDay == null) {
-            LaunchedEffect(Unit) { onDismiss() }
-        } else {
-            DestructiveConfirmDialog(
-                title = stringResource(R.string.program_remove_day_title, selectedDay.name),
-                body = stringResource(R.string.program_remove_day_body),
-                confirmLabel = stringResource(R.string.program_remove_day_confirm),
-                onConfirm = {
-                    onDismiss()
-                    actions.onRemoveDay(selectedDay.id)
-                },
-                onDismiss = onDismiss,
-            )
-        }
-
         ProgramOverlay.SCHEDULE_DAY -> if (selectedDay == null) {
             LaunchedEffect(Unit) { onDismiss() }
         } else {
