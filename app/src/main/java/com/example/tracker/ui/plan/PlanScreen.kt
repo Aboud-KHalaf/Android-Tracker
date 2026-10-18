@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -93,7 +93,8 @@ fun PlanRoute(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val afterNotificationPermission = rememberAfterNotificationPermission()
+    // This screen has one plan, so the token carries nothing.
+    val startWorkout = rememberAfterNotificationPermission(onResult = { viewModel.onStartWorkout() })
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
@@ -122,7 +123,7 @@ fun PlanRoute(
         snackbarHostState = snackbarHostState,
         actions = PlanActions(
             onBack = onBack,
-            onStartWorkout = { afterNotificationPermission(viewModel::onStartWorkout) },
+            onStartWorkout = { startWorkout("") },
             onResumeWorkout = onOpenWorkout,
             onMoveUp = viewModel::onMoveUp,
             onMoveDown = viewModel::onMoveDown,
@@ -352,7 +353,7 @@ private fun PlanContent(
             item(key = "summary") {
                 PlanSummary(state, Modifier.padding(start = spacing.lg, end = spacing.lg, bottom = spacing.sm))
             }
-            itemsIndexed(order, key = { _, exercise -> exercise.id }) { index, exercise ->
+            items(order, key = { it.id }) { exercise ->
                 ReorderableItem(reorderState, key = exercise.id) { isDragging ->
                     PlanExerciseRow(
                         exercise = exercise,
@@ -367,8 +368,9 @@ private fun PlanContent(
                         actions = PlanExerciseRowActions(
                             onEdit = { actions.onEditExercise(exercise.id) },
                             onReplace = { onReplaceClick(exercise.id) },
-                            onMoveUp = { actions.onMoveUp(index) },
-                            onMoveDown = { actions.onMoveDown(index) },
+                            // Indices of the stored order: a drag whose save failed may still show.
+                            onMoveUp = { actions.onMoveUp(state.exercises.indexOfFirst { it.id == exercise.id }) },
+                            onMoveDown = { actions.onMoveDown(state.exercises.indexOfFirst { it.id == exercise.id }) },
                             onRemove = { actions.onRemoveExercise(exercise.id) },
                         ),
                         modifier = Modifier.longPressDraggable(reorderState, exercise.id),

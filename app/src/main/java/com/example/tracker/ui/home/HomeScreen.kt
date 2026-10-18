@@ -67,7 +67,7 @@ fun HomeRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
-    val afterNotificationPermission = rememberAfterNotificationPermission()
+    val startWorkout = rememberAfterNotificationPermission(onResult = viewModel::onStartWorkout)
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
@@ -81,7 +81,7 @@ fun HomeRoute(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         actions = HomeActions(
-            onStartWorkout = { planId -> afterNotificationPermission { viewModel.onStartWorkout(planId) } },
+            onStartWorkout = startWorkout,
             onResumeWorkout = onOpenWorkout,
             onCreateProgram = viewModel::onCreateProgram,
             onOpenProgram = onOpenProgram,

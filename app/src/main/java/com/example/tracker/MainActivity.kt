@@ -60,8 +60,13 @@ class MainActivity : ComponentActivity() {
         intent.workoutToOpen()?.let(appViewModel::onOpenWorkout)
     }
 
+    /**
+     * The workout a notification tap asks for. Reopening from Recents can replay an old tap
+     * for a workout that has ended since, so that is ignored.
+     */
     private fun Intent.workoutToOpen(): String? =
         takeIf { it.action == AndroidActiveWorkoutNotifier.ACTION_OPEN_WORKOUT }
+            ?.takeIf { it.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == 0 }
             ?.getStringExtra(AndroidActiveWorkoutNotifier.EXTRA_WORKOUT_ID)
 }
 

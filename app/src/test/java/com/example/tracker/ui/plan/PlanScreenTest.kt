@@ -150,6 +150,26 @@ class PlanScreenTest {
         assertEquals(listOf(0 to 2), moves)
     }
 
+    @Test
+    fun menuMoves_useTheStoredOrder_evenIfADraggedOrderWasNotSaved() {
+        val movedUp = mutableListOf<Int>()
+        compose.setContent {
+            TrackerTheme {
+                // The drop's save never arrives, so the stored order stays Bench, Overhead, Dips.
+                PlanScreen(uiState = state, actions = PlanActions(onMoveUp = { movedUp += it }))
+            }
+        }
+        val handle = compose.onNodeWithContentDescription("Reorder Bench Press", useUnmergedTree = true)
+        handle.performTouchInput { down(center) }
+        repeat(STEPS) { handle.performTouchInput { moveBy(Offset(0f, height * STEP_FRACTION)) } }
+        handle.performTouchInput { up() }
+
+        compose.onNodeWithContentDescription("More options for Dips").performClick()
+        compose.onNodeWithText("Move up").performClick()
+
+        assertEquals(listOf(2), movedUp)
+    }
+
     private companion object {
         const val STEPS = 30
         const val STEP_FRACTION = 0.12f
