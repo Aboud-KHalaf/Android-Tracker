@@ -2,7 +2,6 @@ package com.example.tracker.ui.weight
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,10 +9,13 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.MonitorWeight
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -21,6 +23,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -43,12 +46,10 @@ import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.PeriodSelector
-import com.example.tracker.ui.common.ScreenTitle
 import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 import com.example.tracker.ui.weight.components.CurrentWeightCard
-import com.example.tracker.ui.weight.components.ProgressPhotosCard
 import com.example.tracker.ui.weight.components.WeightChartCard
 import com.example.tracker.ui.weight.components.WeightEditorDialog
 import com.example.tracker.ui.weight.components.WeightRow
@@ -61,15 +62,13 @@ private val FabClearance = 88.dp
 /** Weight destination: connects [WeightViewModel] to [WeightScreen]. */
 @Composable
 fun WeightRoute(
-    onOpenPhotos: () -> Unit,
-    onTakePhotos: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: WeightViewModel = viewModel(factory = WeightViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val editor by viewModel.editor.collectAsStateWithLifecycle()
     val isExporting by viewModel.isExporting.collectAsStateWithLifecycle()
-    val latestCheckIn by viewModel.latestCheckIn.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -98,10 +97,8 @@ fun WeightRoute(
         onOpenEntry = viewModel::onOpenEditor,
         onSelectPeriod = viewModel::onSelectPeriod,
         onRetry = viewModel::onRetry,
+        onBack = onBack,
         modifier = modifier,
-        photosCard = { cardModifier ->
-            ProgressPhotosCard(latest = latestCheckIn, onOpen = onOpenPhotos, onTakePhotos = onTakePhotos, modifier = cardModifier)
-        },
         exportButton = {
             ExportButton(isExporting = isExporting, fileName = viewModel::exportFileName, onExport = viewModel::onExport)
         },
@@ -122,22 +119,34 @@ fun WeightRoute(
 }
 
 /**
- * Stateless Weight screen. [onOpenEntry] with null opens today. [exportButton] sits beside the
- * title once the log has loaded; [photosCard] goes below the current weight.
+ * Stateless Weight screen, opened from the Stats tab. [onOpenEntry] with null opens today.
+ * [exportButton] sits in the top bar once the log has loaded.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeightScreen(
     uiState: WeightUiState,
     onOpenEntry: (LocalDate?) -> Unit,
     onSelectPeriod: (DatePeriod) -> Unit,
     onRetry: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    photosCard: @Composable (Modifier) -> Unit = {},
     exportButton: @Composable () -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.weight_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                    }
+                },
+                actions = { if (uiState is WeightUiState.Success) exportButton() },
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             AnimatedFab(visible = uiState is WeightUiState.Success) {
@@ -158,7 +167,7 @@ fun WeightScreen(
                     modifier = Modifier.padding(innerPadding),
                 )
 
-                is WeightUiState.Success -> WeightContent(state, onOpenEntry, onSelectPeriod, photosCard, exportButton, innerPadding)
+                is WeightUiState.Success -> WeightContent(state, onOpenEntry, onSelectPeriod, innerPadding)
             }
         }
     }
@@ -169,8 +178,6 @@ private fun WeightContent(
     state: WeightUiState.Success,
     onOpenEntry: (LocalDate?) -> Unit,
     onSelectPeriod: (DatePeriod) -> Unit,
-    photosCard: @Composable (Modifier) -> Unit,
-    exportButton: @Composable () -> Unit,
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
@@ -183,19 +190,10 @@ private fun WeightContent(
                 .widthIn(max = Dimens.maxContentWidth)
                 .fillMaxSize(),
             contentPadding = PaddingValues(
-                top = contentPadding.calculateTopPadding() + spacing.xl,
+                top = contentPadding.calculateTopPadding(),
                 bottom = contentPadding.calculateBottomPadding() + FabClearance,
             ),
         ) {
-            item(key = "title") {
-                Row(
-                    modifier = Modifier.padding(start = spacing.lg, end = spacing.sm, bottom = spacing.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    ScreenTitle(text = stringResource(R.string.weight_title), modifier = Modifier.weight(1f))
-                    exportButton()
-                }
-            }
             item(key = "current") {
                 CurrentWeightCard(
                     latest = state.latest,
@@ -204,7 +202,6 @@ private fun WeightContent(
                     modifier = cardModifier,
                 )
             }
-            item(key = "photos") { photosCard(cardModifier) }
             item(key = "period") {
                 PeriodSelector(
                     selected = state.period,

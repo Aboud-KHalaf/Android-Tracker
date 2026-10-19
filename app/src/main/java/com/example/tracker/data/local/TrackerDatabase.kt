@@ -5,6 +5,7 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.tracker.data.local.dao.CustomStatDao
 import com.example.tracker.data.local.dao.ExerciseDao
 import com.example.tracker.data.local.dao.NutritionDao
 import com.example.tracker.data.local.dao.PlanDao
@@ -13,6 +14,8 @@ import com.example.tracker.data.local.dao.ProgressPhotoDao
 import com.example.tracker.data.local.dao.WeightDao
 import com.example.tracker.data.local.dao.WorkoutDao
 import com.example.tracker.data.local.entity.BodyWeightEntity
+import com.example.tracker.data.local.entity.CustomStatEntity
+import com.example.tracker.data.local.entity.CustomStatEntryEntity
 import com.example.tracker.data.local.entity.DailyNutritionEntity
 import com.example.tracker.data.local.entity.ExerciseEntity
 import com.example.tracker.data.local.entity.PlanEntity
@@ -35,8 +38,10 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         DailyNutritionEntity::class,
         BodyWeightEntity::class,
         ProgressPhotoEntity::class,
+        CustomStatEntity::class,
+        CustomStatEntryEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
     autoMigrations = [
         // Adds daily_nutrition.
@@ -49,6 +54,8 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         AutoMigration(from = 4, to = 5),
         // Adds programs, weekday training days, exercise targets and the current exercise.
         AutoMigration(from = 5, to = 6, spec = ProgramsMigration::class),
+        // Adds custom_stats and custom_stat_entries.
+        AutoMigration(from = 6, to = 7),
     ],
 )
 abstract class TrackerDatabase : RoomDatabase() {
@@ -59,6 +66,7 @@ abstract class TrackerDatabase : RoomDatabase() {
     abstract fun nutritionDao(): NutritionDao
     abstract fun weightDao(): WeightDao
     abstract fun progressPhotoDao(): ProgressPhotoDao
+    abstract fun customStatDao(): CustomStatDao
 
     companion object {
         private const val NAME = "tracker.db"

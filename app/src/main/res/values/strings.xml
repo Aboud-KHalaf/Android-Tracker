@@ -264,7 +264,6 @@
     <string name="action_ok">OK</string>
 
     <!-- Daily log (calories, protein and steps; "nutrition" in code) -->
-    <string name="nav_nutrition">Daily</string>
     <string name="nutrition_title">Daily log</string>
     <string name="nutrition_error_load">Couldn\'t load your daily log.</string>
     <string name="nutrition_today">Today</string>
@@ -354,7 +353,6 @@
     <string name="settings_author_url" translatable="false">https://aboud-khalaf.github.io/My-Portfolio/</string>
 
     <!-- Weight -->
-    <string name="nav_weight">Weight</string>
     <string name="weight_title">Weight</string>
     <string name="weight_today">Today</string>
     <string name="weight_current">Current weight</string>
@@ -604,4 +602,87 @@
         <item quantity="one">%1$d of %2$d set done</item>
         <item quantity="other">%1$d of %2$d sets done</item>
     </plurals>
+
+    <!-- Stats -->
+    <string name="nav_stats">Stats</string>
+    <string name="stats_title">Stats</string>
+    <string name="stats_error_load">Couldn\'t load your stats.</string>
+    <string name="stats_not_logged">Not logged yet</string>
+    <string name="stats_weight_recent_change">%1$s in 30 days</string>
+    <string name="stats_daily_none">Nothing logged today</string>
+    <string name="stats_daily_protein">%1$s g protein</string>
+    <string name="stats_mine">My stats</string>
+    <string name="stats_new">New stat</string>
+    <string name="stats_empty_title">Track anything</string>
+    <string name="stats_empty_body">Create a stat for anything you measure, such as body fat, waist size or hours of sleep, and log it each day. Start from one of these, or tap New stat.</string>
+    <string name="stat_value_with_unit">%1$s %2$s</string>
+    <string name="stat_change_up">+%1$s</string>
+    <string name="stat_change_down">−%1$s</string>
+    <string name="stat_since_start">%1$s since start</string>
+    <string name="stat_target_progress">%1$d%% of the way to %2$s</string>
+    <string name="stat_target">Target %1$s</string>
+    <string name="stat_percent">%1$d%%</string>
+    <string name="stat_current">Current</string>
+    <string name="stat_none_yet">Nothing logged yet. Log today\'s value to start the chart.</string>
+    <string name="stat_log">Log</string>
+    <string name="stat_log_named">Log %1$s</string>
+    <string name="stat_edit_entry">Edit %1$s</string>
+    <string name="stat_entry_deleted">Entry deleted</string>
+    <string name="stat_empty_title">Nothing logged in this period</string>
+    <string name="stat_empty_body">Log a value to see how it moves.</string>
+    <plurals name="stat_entry_count">
+        <item quantity="one">%1$d entry</item>
+        <item quantity="other">%1$d entries</item>
+    </plurals>
+    <string name="stat_error_load">Couldn\'t load this stat.</string>
+    <string name="stat_error_open">Couldn\'t open this day.</string>
+    <string name="stat_error_save">Couldn\'t save the value.</string>
+    <string name="stat_error_delete">Couldn\'t delete the entry.</string>
+    <string name="stat_error_value">Enter a number</string>
+    <string name="stat_edit">Edit stat</string>
+    <string name="stat_name">Name</string>
+    <string name="stat_name_placeholder">New stat</string>
+    <string name="stat_error_name">Give the stat a name</string>
+    <string name="stat_unit">Unit (optional)</string>
+    <string name="stat_unit_placeholder" formatted="false">e.g. %, cm, kg</string>
+    <string name="stat_decimals">Decimal places</string>
+    <string name="stat_target_optional">Target (optional)</string>
+    <string name="stat_target_hint">Whether it means going up or down follows from your first entry.</string>
+    <string name="stat_icon">Icon</string>
+    <string name="stat_color">Colour</string>
+    <string name="stat_delete">Delete stat</string>
+    <string name="stat_delete_title">Delete %1$s?</string>
+    <string name="stat_delete_body">The stat and every value logged for it will be deleted.</string>
+    <string name="stat_error_save_stat">Couldn\'t save the stat.</string>
+    <string name="stat_error_delete_stat">Couldn\'t delete the stat.</string>
+    <string name="stat_template_body_fat">Body fat</string>
+    <string name="stat_template_waist">Waist</string>
+    <string name="stat_template_water">Water</string>
+    <string name="stat_template_sleep">Sleep</string>
+    <string name="stat_template_resting_heart_rate">Resting heart rate</string>
+    <string name="stat_unit_percent" translatable="false" formatted="false">%</string>
+    <string name="stat_unit_cm">cm</string>
+    <string name="stat_unit_liters">L</string>
+    <string name="stat_unit_hours">h</string>
+    <string name="stat_unit_bpm">bpm</string>
+    <string name="stat_icon_chart">Chart</string>
+    <string name="stat_icon_scale">Scale</string>
+    <string name="stat_icon_ruler">Ruler</string>
+    <string name="stat_icon_percent">Percent</string>
+    <string name="stat_icon_fire">Flame</string>
+    <string name="stat_icon_water">Water drop</string>
+    <string name="stat_icon_sleep">Moon</string>
+    <string name="stat_icon_heart">Heart</string>
+    <string name="stat_icon_bolt">Bolt</string>
+    <string name="stat_icon_steps">Walking</string>
+    <string name="stat_icon_food">Food</string>
+    <string name="stat_icon_star">Star</string>
+    <string name="stat_color_blue">Blue</string>
+    <string name="stat_color_teal">Teal</string>
+    <string name="stat_color_green">Green</string>
+    <string name="stat_color_amber">Amber</string>
+    <string name="stat_color_orange">Orange</string>
+    <string name="stat_color_red">Red</string>
+    <string name="stat_color_pink">Pink</string>
+    <string name="stat_color_purple">Purple</string>
 </resources>

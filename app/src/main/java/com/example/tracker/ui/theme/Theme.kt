@@ -29,7 +29,10 @@ fun TrackerTheme(
         else -> LightColorScheme
     }
 
-    CompositionLocalProvider(LocalSpacing provides Spacing()) {
+    CompositionLocalProvider(
+        LocalSpacing provides Spacing(),
+        LocalStatPalette provides if (darkTheme) DarkStatPalette else LightStatPalette,
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,

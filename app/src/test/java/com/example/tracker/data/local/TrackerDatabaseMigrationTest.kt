@@ -166,6 +166,37 @@ class TrackerDatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun migrate6To7_keepsWeightAndAddsCustomStatTables() {
+        helper.createDatabase(DB_NAME, 6).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO body_weight (epoch_day, weight_kg, created_at, updated_at, deleted_at, sync_state)
+                VALUES (20000, 79.4, 0, 0, NULL, 'PENDING')
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 7, true).use { db ->
+            db.query("SELECT weight_kg FROM body_weight").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals(79.4, cursor.getDouble(0), 1e-9)
+            }
+            db.execSQL(
+                """
+                INSERT INTO custom_stats (id, name, unit, decimals, target, icon, color, created_at, updated_at, deleted_at, sync_state)
+                VALUES ('s1', 'Body fat', '%', 1, 15.0, 'PERCENT', 'ORANGE', 0, 0, NULL, 'PENDING')
+                """
+            )
+            db.execSQL(
+                """
+                INSERT INTO custom_stat_entries (stat_id, epoch_day, value, created_at, updated_at, deleted_at, sync_state)
+                VALUES ('s1', 20000, 19.5, 0, 0, NULL, 'PENDING')
+                """
+            )
+        }
+    }
+
     private companion object {
         const val DB_NAME = "migration-test.db"
     }

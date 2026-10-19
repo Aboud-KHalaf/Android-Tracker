@@ -18,7 +18,7 @@ private val previewState = WeightStateMapper().map(today, previewEntries.first()
 @Preview(name = "Dark", showBackground = true, heightDp = 1300, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun WeightScreenPreview() {
-    TrackerTheme { WeightScreen(uiState = previewState, onOpenEntry = {}, onSelectPeriod = {}, onRetry = {}) }
+    TrackerTheme { WeightScreen(uiState = previewState, onOpenEntry = {}, onSelectPeriod = {}, onRetry = {}, onBack = {}) }
 }
 
 @Preview(name = "Nothing logged", showBackground = true, heightDp = 700)
@@ -30,6 +30,7 @@ private fun WeightScreenEmptyPreview() {
             onOpenEntry = {},
             onSelectPeriod = {},
             onRetry = {},
+            onBack = {},
         )
     }
 }

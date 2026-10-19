@@ -1,6 +1,7 @@
 package com.example.tracker.testing
 
 import com.example.tracker.domain.model.CatalogExercise
+import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseConfig
@@ -12,6 +13,8 @@ import com.example.tracker.domain.model.PhotoPose
 import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.Program
 import com.example.tracker.domain.model.ProgressPhoto
+import com.example.tracker.domain.model.StatEntry
+import com.example.tracker.domain.model.StatOverview
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.model.WeekSummary
 import com.example.tracker.domain.model.WeightEntry
@@ -20,6 +23,7 @@ import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.domain.reminder.ReminderTime
+import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.NutritionRepository
@@ -37,6 +41,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -399,6 +404,71 @@ class FakeProgressPhotoRepository(private val capturesDirectory: File = createTe
 
     private companion object {
         fun createTempDir(): File = java.nio.file.Files.createTempDirectory("captures").toFile()
+    }
+}
+
+class FakeCustomStatRepository : CustomStatRepository {
+    val stats = MutableStateFlow<List<CustomStat>>(emptyList())
+
+    /** Entries by stat id and date. */
+    val entries = MutableStateFlow<Map<Pair<String, LocalDate>, StatEntry>>(emptyMap())
+
+    /** When set, [observeOverviews] fails with it, so screens can show their error state. */
+    var observeError: Exception? = null
+
+    /** When set, every write fails with it. */
+    var writeError: Exception? = null
+    private var nextId = 1
+
+    override fun observeOverviews(): Flow<List<StatOverview>> = flow {
+        observeError?.let { throw it }
+        emitAll(
+            combine(stats, entries) { stats, entries ->
+                stats.map { stat ->
+                    val ofStat = entries.values.filter { it.statId == stat.id }
+                    StatOverview(stat, ofStat.minByOrNull { it.date }, ofStat.maxByOrNull { it.date })
+                }
+            },
+        )
+    }
+
+    override fun observeEntries(statId: String, from: LocalDate, to: LocalDate): Flow<List<StatEntry>> =
+        entries.map { all -> all.values.filter { it.statId == statId && it.date in from..to }.sortedByDescending { it.date } }
+
+    override fun observeEntry(statId: String, date: LocalDate): Flow<StatEntry?> = entries.map { it[statId to date] }
+
+    override suspend fun getStat(id: String): CustomStat? = stats.value.firstOrNull { it.id == id }
+
+    override suspend fun createStat(stat: CustomStat): String {
+        writeError?.let { throw it }
+        val id = "stat-${nextId++}"
+        stats.value += stat.copy(id = id)
+        return id
+    }
+
+    override suspend fun updateStat(stat: CustomStat) {
+        writeError?.let { throw it }
+        stats.value = stats.value.map { if (it.id == stat.id) stat else it }
+    }
+
+    override suspend fun deleteStat(id: String) {
+        writeError?.let { throw it }
+        stats.value = stats.value.filterNot { it.id == id }
+        entries.value = entries.value.filterKeys { it.first != id }
+    }
+
+    override suspend fun saveEntry(entry: StatEntry) {
+        writeError?.let { throw it }
+        entries.value += (entry.statId to entry.date) to entry
+    }
+
+    override suspend fun deleteEntry(statId: String, date: LocalDate) {
+        writeError?.let { throw it }
+        entries.value -= statId to date
+    }
+
+    fun put(vararg logged: StatEntry) {
+        entries.value += logged.associateBy { it.statId to it.date }
     }
 }
 

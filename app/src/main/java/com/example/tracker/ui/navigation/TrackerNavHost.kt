@@ -13,6 +13,7 @@ import com.example.tracker.ui.history.historyScreen
 import com.example.tracker.ui.history.navigateToHistory
 import com.example.tracker.ui.home.HomeDestination
 import com.example.tracker.ui.home.homeScreen
+import com.example.tracker.ui.nutrition.navigateToNutrition
 import com.example.tracker.ui.nutrition.nutritionScreen
 import com.example.tracker.ui.photos.navigateToPhotoCapture
 import com.example.tracker.ui.photos.navigateToProgressPhotos
@@ -24,6 +25,16 @@ import com.example.tracker.ui.program.navigateToProgram
 import com.example.tracker.ui.program.programScreen
 import com.example.tracker.ui.settings.navigateToSettings
 import com.example.tracker.ui.settings.settingsScreen
+import com.example.tracker.ui.stats.StatsDestination
+import com.example.tracker.ui.stats.detail.StatDetailDestination
+import com.example.tracker.ui.stats.detail.navigateToStatDetail
+import com.example.tracker.ui.stats.detail.statDetailScreen
+import com.example.tracker.ui.stats.editor.StatEditorDestination
+import com.example.tracker.ui.stats.editor.navigateToEditStat
+import com.example.tracker.ui.stats.editor.navigateToNewStat
+import com.example.tracker.ui.stats.editor.statEditorScreen
+import com.example.tracker.ui.stats.statsScreen
+import com.example.tracker.ui.weight.navigateToWeight
 import com.example.tracker.ui.weight.weightScreen
 import com.example.tracker.ui.workout.activeWorkoutScreen
 import com.example.tracker.ui.workout.navigateToActiveWorkout
@@ -58,10 +69,26 @@ fun TrackerNavHost(
             onOpenExercise = navController::navigateToExerciseDetails,
             onOpenHistory = navController::navigateToHistory,
         )
-        nutritionScreen()
-        weightScreen(
+        statsScreen(
+            onOpenWeight = navController::navigateToWeight,
+            onOpenDaily = navController::navigateToNutrition,
             onOpenPhotos = navController::navigateToProgressPhotos,
             onTakePhotos = navController::navigateToPhotoCapture,
+            onNewStat = navController::navigateToNewStat,
+            onOpenStat = navController::navigateToStatDetail,
+        )
+        nutritionScreen(onBack = navController::popBackStack)
+        weightScreen(onBack = navController::popBackStack)
+        statDetailScreen(onBack = navController::popBackStack, onEdit = navController::navigateToEditStat)
+        statEditorScreen(
+            onClose = navController::popBackStack,
+            // The new stat replaces its editor, so Back from it returns to Stats.
+            onCreated = { statId ->
+                navController.navigate(StatDetailDestination(statId)) {
+                    popUpTo<StatEditorDestination> { inclusive = true }
+                }
+            },
+            onDeleted = { navController.popBackStack(StatsDestination, inclusive = false) },
         )
         programScreen(onBack = navController::popBackStack, onOpenDay = navController::navigateToPlan)
         planScreen(

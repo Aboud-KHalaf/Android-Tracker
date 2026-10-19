@@ -1,5 +1,6 @@
 package com.example.tracker.ui.weight
 
+import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import kotlinx.serialization.Serializable
@@ -7,6 +8,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object WeightDestination
 
-fun NavGraphBuilder.weightScreen(onOpenPhotos: () -> Unit, onTakePhotos: () -> Unit) {
-    composable<WeightDestination> { WeightRoute(onOpenPhotos = onOpenPhotos, onTakePhotos = onTakePhotos) }
+fun NavController.navigateToWeight() = navigate(WeightDestination) { launchSingleTop = true }
+
+fun NavGraphBuilder.weightScreen(onBack: () -> Unit) {
+    composable<WeightDestination> { WeightRoute(onBack = onBack) }
 }
