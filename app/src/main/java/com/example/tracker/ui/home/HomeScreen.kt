@@ -173,6 +173,7 @@ private fun HomeContent(
             item(key = "header") {
                 HomeHeader(
                     today = state.today,
+                    onOpenHistory = actions.onOpenHistory,
                     onOpenSettings = actions.onOpenSettings,
                     modifier = Modifier.padding(bottom = spacing.lg),
                 )

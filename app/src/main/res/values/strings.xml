@@ -222,6 +222,7 @@
 
     <!-- History -->
     <string name="history_title">History</string>
+    <string name="history_open">Workout history</string>
     <string name="history_error_load">Couldn\'t load your history.</string>
     <string name="history_filter_group">Filter by training day</string>
     <string name="history_filter_all">All</string>
@@ -254,7 +255,6 @@
 
     <!-- Bottom navigation -->
     <string name="nav_home">Home</string>
-    <string name="nav_history">History</string>
     <string name="nav_progress">Progress</string>
 
     <string name="plan_name_label">Day name</string>

@@ -38,13 +38,13 @@ private val previewState = HistoryUiState.Success(
 @Preview(name = "Dark", showBackground = true, heightDp = 764, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun HistoryScreenPreview() {
-    TrackerTheme { HistoryScreen(uiState = previewState, onSelectPlan = {}, onRetry = {}) }
+    TrackerTheme { HistoryScreen(uiState = previewState, onSelectPlan = {}, onRetry = {}, onBack = {}) }
 }
 
 @Preview(name = "Empty filter", showBackground = true, heightDp = 500)
 @Composable
 private fun HistoryScreenEmptyPreview() {
     TrackerTheme {
-        HistoryScreen(uiState = previewState.copy(selectedPlanId = "legs", months = emptyList()), onSelectPlan = {}, onRetry = {})
+        HistoryScreen(uiState = previewState.copy(selectedPlanId = "legs", months = emptyList()), onSelectPlan = {}, onRetry = {}, onBack = {})
     }
 }

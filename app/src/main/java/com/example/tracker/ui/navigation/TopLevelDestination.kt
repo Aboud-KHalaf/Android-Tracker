@@ -2,12 +2,10 @@ package com.example.tracker.ui.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Today
-import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.icons.outlined.MonitorWeight
@@ -20,7 +18,6 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.tracker.R
 import com.example.tracker.ui.exercises.ExerciseListDestination
-import com.example.tracker.ui.history.HistoryDestination
 import com.example.tracker.ui.home.HomeDestination
 import com.example.tracker.ui.nutrition.NutritionDestination
 import com.example.tracker.ui.weight.WeightDestination
@@ -34,7 +31,6 @@ enum class TopLevelDestination(
     val unselectedIcon: ImageVector,
 ) {
     HOME(HomeDestination, R.string.nav_home, Icons.Filled.Home, Icons.Outlined.Home),
-    HISTORY(HistoryDestination, R.string.nav_history, Icons.Filled.History, Icons.Outlined.History),
     PROGRESS(ExerciseListDestination, R.string.nav_progress, Icons.Filled.Insights, Icons.Outlined.Insights),
     NUTRITION(NutritionDestination, R.string.nav_nutrition, Icons.Filled.Today, Icons.Outlined.Today),
     WEIGHT(WeightDestination, R.string.nav_weight, Icons.Filled.MonitorWeight, Icons.Outlined.MonitorWeight);

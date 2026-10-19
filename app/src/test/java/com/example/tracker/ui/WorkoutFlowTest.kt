@@ -10,7 +10,6 @@ import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
-import androidx.compose.ui.test.isHeading
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -86,9 +85,9 @@ class WorkoutFlowTest {
         // Back on Home, the workout counts toward this week.
         waitForNode(hasText("1 workout", substring = true))
 
-        // The History tab lists it: month header count and the row's "Sat · 1 exercise · 0 min".
-        compose.onNodeWithText("History").performClick()
-        waitForNode(hasText("History") and isHeading())
+        // History, opened from the Home header, lists it: the row's "Sat · 1 exercise · 0 min".
+        compose.onNodeWithContentDescription("Workout history").performClick()
+        waitForNode(hasText("History"))
         waitForNode(hasText("1 exercise", substring = true))
         compose.onNodeWithText("Finished workouts will show up here.").assertDoesNotExist()
     }
