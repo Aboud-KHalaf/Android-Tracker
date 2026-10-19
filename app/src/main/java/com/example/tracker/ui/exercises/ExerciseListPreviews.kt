@@ -20,6 +20,7 @@ private fun ExerciseListPreview() {
                 ),
             ),
             onOpenExercise = {},
+            onOpenHistory = {},
             onRetry = {},
         )
     }
@@ -28,5 +29,5 @@ private fun ExerciseListPreview() {
 @Preview(name = "Empty", showBackground = true, heightDp = 500)
 @Composable
 private fun ExerciseListEmptyPreview() {
-    TrackerTheme { ExerciseListScreen(ExerciseListUiState.Success(emptyList()), onOpenExercise = {}, onRetry = {}) }
+    TrackerTheme { ExerciseListScreen(ExerciseListUiState.Success(emptyList()), onOpenExercise = {}, onOpenHistory = {}, onRetry = {}) }
 }

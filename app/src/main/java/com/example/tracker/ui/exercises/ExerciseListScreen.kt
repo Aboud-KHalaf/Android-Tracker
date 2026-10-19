@@ -3,6 +3,7 @@ package com.example.tracker.ui.exercises
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -10,8 +11,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -39,11 +42,18 @@ import com.example.tracker.ui.theme.spacing
 @Composable
 fun ExerciseListRoute(
     onOpenExercise: (exerciseId: String) -> Unit,
+    onOpenHistory: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ExerciseListViewModel = viewModel(factory = ExerciseListViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ExerciseListScreen(uiState, onOpenExercise = onOpenExercise, onRetry = viewModel::onRetry, modifier = modifier)
+    ExerciseListScreen(
+        uiState,
+        onOpenExercise = onOpenExercise,
+        onOpenHistory = onOpenHistory,
+        onRetry = viewModel::onRetry,
+        modifier = modifier,
+    )
 }
 
 /** Stateless Progress tab: every exercise, each opening its progress. */
@@ -51,6 +61,7 @@ fun ExerciseListRoute(
 fun ExerciseListScreen(
     uiState: ExerciseListUiState,
     onOpenExercise: (exerciseId: String) -> Unit,
+    onOpenHistory: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -64,7 +75,7 @@ fun ExerciseListScreen(
                     modifier = Modifier.padding(innerPadding),
                 )
 
-                is ExerciseListUiState.Success -> ExerciseList(state.exercises, onOpenExercise, innerPadding)
+                is ExerciseListUiState.Success -> ExerciseList(state.exercises, onOpenExercise, onOpenHistory, innerPadding)
             }
         }
     }
@@ -74,6 +85,7 @@ fun ExerciseListScreen(
 private fun ExerciseList(
     exercises: List<ExerciseItemUi>,
     onOpenExercise: (String) -> Unit,
+    onOpenHistory: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
@@ -88,10 +100,15 @@ private fun ExerciseList(
             ),
         ) {
             item(key = "title") {
-                ScreenTitle(
-                    text = stringResource(R.string.exercises_title),
-                    modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, bottom = spacing.sm),
-                )
+                Row(
+                    modifier = Modifier.padding(start = spacing.lg, end = spacing.sm, bottom = spacing.sm),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ScreenTitle(text = stringResource(R.string.exercises_title), modifier = Modifier.weight(1f))
+                    IconButton(onClick = onOpenHistory) {
+                        Icon(Icons.Outlined.History, contentDescription = stringResource(R.string.history_open))
+                    }
+                }
             }
             if (exercises.isEmpty()) {
                 item(key = "empty") {

@@ -7,6 +7,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object ExerciseListDestination
 
-fun NavGraphBuilder.exerciseListScreen(onOpenExercise: (exerciseId: String) -> Unit) {
-    composable<ExerciseListDestination> { ExerciseListRoute(onOpenExercise = onOpenExercise) }
+fun NavGraphBuilder.exerciseListScreen(
+    onOpenExercise: (exerciseId: String) -> Unit,
+    onOpenHistory: () -> Unit,
+) {
+    composable<ExerciseListDestination> {
+        ExerciseListRoute(onOpenExercise = onOpenExercise, onOpenHistory = onOpenHistory)
+    }
 }

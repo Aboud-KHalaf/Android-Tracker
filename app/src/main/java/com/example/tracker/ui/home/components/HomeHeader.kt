@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,9 +22,14 @@ import com.example.tracker.ui.common.longDate
 import com.example.tracker.ui.theme.spacing
 import java.time.LocalDate
 
-/** "Saturday, October 3" over the "Today" title, with the Settings button on the right. */
+/** "Saturday, October 3" over the "Today" title, with the History and Settings buttons on the right. */
 @Composable
-fun HomeHeader(today: LocalDate, onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
+fun HomeHeader(
+    today: LocalDate,
+    onOpenHistory: () -> Unit,
+    onOpenSettings: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Column(
             modifier = Modifier.weight(1f),
@@ -39,6 +45,9 @@ fun HomeHeader(today: LocalDate, onOpenSettings: () -> Unit, modifier: Modifier 
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.semantics { heading() },
             )
+        }
+        IconButton(onClick = onOpenHistory) {
+            Icon(Icons.Outlined.History, contentDescription = stringResource(R.string.history_open))
         }
         IconButton(onClick = onOpenSettings) {
             Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.settings_open))
