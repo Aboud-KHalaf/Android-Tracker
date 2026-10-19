@@ -12,6 +12,7 @@ import com.example.tracker.data.remote.UrlConnectionHttpClient
 import com.example.tracker.data.remote.wger.WgerApi
 import com.example.tracker.data.repository.LocalProgressPhotoRepository
 import com.example.tracker.data.repository.LocalSettingsRepository
+import com.example.tracker.data.repository.OfflineFirstCustomStatRepository
 import com.example.tracker.data.repository.OfflineFirstExerciseRepository
 import com.example.tracker.data.repository.OfflineFirstNutritionRepository
 import com.example.tracker.data.repository.OfflineFirstPlanRepository
@@ -20,6 +21,7 @@ import com.example.tracker.data.repository.OfflineFirstWeightRepository
 import com.example.tracker.data.repository.OfflineFirstWorkoutRepository
 import com.example.tracker.data.repository.WgerExerciseCatalogRepository
 import com.example.tracker.domain.export.ReportExporter
+import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.domain.reminder.NutritionReminder
 import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.ExerciseRepository
@@ -56,6 +58,7 @@ class AppContainer(context: Context) {
     val workoutRepository: WorkoutRepository by lazy { OfflineFirstWorkoutRepository(database, time, ids) }
     val nutritionRepository: NutritionRepository by lazy { OfflineFirstNutritionRepository(database, time) }
     val weightRepository: WeightRepository by lazy { OfflineFirstWeightRepository(database, time) }
+    val customStatRepository: CustomStatRepository by lazy { OfflineFirstCustomStatRepository(database, time, ids) }
     private val photoStore: ProgressPhotoStore by lazy {
         val appContext = context.applicationContext
         ProgressPhotoStore(
