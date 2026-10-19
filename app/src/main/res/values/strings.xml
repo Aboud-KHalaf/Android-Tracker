@@ -483,7 +483,7 @@
     <string name="capture_hint_side">Turn so your right side faces the camera, arms relaxed.</string>
     <string name="capture_hint_back">Turn your back to the camera, arms relaxed.</string>
     <string name="capture_hint_align">Line yourself up with your last photo.</string>
-    <string name="capture_hint_general">Stand inside the outline: head at the top line, feet at the bottom line.</string>
+    <string name="capture_hint_general">Stand inside the outline: head at the top line, feet at the bottom line, shoulders and hips level with their marks.</string>
     <string name="capture_tip">Use the same spot, light and time of day each time.</string>
     <string name="capture_shutter">Take photo</string>
     <string name="capture_cancel_timer">Stop timer</string>
@@ -495,6 +495,10 @@
     <string name="capture_use">Use photo</string>
     <string name="capture_taken">Taken</string>
     <string name="capture_done">Done</string>
+    <string name="capture_level_shoulders">Shoulders</string>
+    <string name="capture_level_waist">Waist</string>
+    <string name="capture_level_hips">Hips</string>
+    <string name="capture_level_knees">Knees</string>
     <string name="photos_check_in_at">%1$s, %2$s</string>
     <string name="photos_check_in_options">Check-in options</string>
     <string name="photos_check_in_delete">Delete check-in</string>
