@@ -25,7 +25,8 @@ android {
         applicationId = "com.example.tracker"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
+        // CI passes -PversionCode=<n> so every pipeline build installs as an update.
+        versionCode = providers.gradleProperty("versionCode").orNull?.toInt() ?: 3
         versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -76,6 +77,12 @@ android {
 
 room {
     schemaDirectory("$projectDir/schemas")
+}
+
+// Lets CI read the version without parsing this file.
+tasks.register("printVersionName") {
+    val versionName = android.defaultConfig.versionName
+    doLast { println(versionName) }
 }
 
 dependencies {
