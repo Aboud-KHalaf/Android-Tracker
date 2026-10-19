@@ -262,6 +262,7 @@
     <string name="action_save">Save</string>
     <string name="action_delete">Delete</string>
     <string name="action_ok">OK</string>
+    <string name="action_add">Add</string>
 
     <!-- Daily log (calories, protein and steps; "nutrition" in code) -->
     <string name="nutrition_title">Daily log</string>
@@ -465,7 +466,7 @@
     <string name="photos_empty_title">No progress photos yet</string>
     <string name="photos_empty_body">Take a front, side and back photo every week or two, in the same place and light, to see how your body changes.</string>
     <string name="photos_compare">Compare</string>
-    <string name="photos_compare_needs_more">Take a %1$s photo on another day to compare.</string>
+    <string name="photos_compare_needs_more">Take another %1$s photo to compare.</string>
     <string name="photos_before">First</string>
     <string name="photos_after">Latest</string>
     <string name="photos_history">History</string>
@@ -493,6 +494,34 @@
     <string name="capture_retake">Retake</string>
     <string name="capture_use">Use photo</string>
     <string name="capture_taken">Taken</string>
+    <string name="capture_done">Done</string>
+    <string name="photos_check_in_at">%1$s, %2$s</string>
+    <string name="photos_check_in_options">Check-in options</string>
+    <string name="photos_check_in_delete">Delete check-in</string>
+    <string name="photos_check_in_delete_title">Delete this check-in?</string>
+    <string name="photos_check_in_delete_body">Its photos and measurements are permanently deleted from this device.</string>
+    <string name="photos_check_in_deleted">Check-in deleted</string>
+
+    <!-- Measurements noted with a photo check-in -->
+    <string name="measurements_title">Measurements</string>
+    <string name="measurements_body">Optional. Pick what you measured, then enter the values; they\'re kept with these photos. Next time the same ones are ready to fill in.</string>
+    <string name="measurements_pick">What did you measure?</string>
+    <string name="measurements_custom">Custom</string>
+    <string name="measurements_remove">Remove %1$s</string>
+    <string name="measurements_skip">Skip</string>
+    <string name="measurements_edit">Edit measurements</string>
+    <string name="measurements_add">Add measurements</string>
+    <string name="measurements_error_save">Couldn\'t save the measurements.</string>
+    <string name="measurement_weight">Weight</string>
+    <string name="measurement_chest">Chest</string>
+    <string name="measurement_hips">Hips</string>
+    <string name="measurement_shoulders">Shoulders</string>
+    <string name="measurement_neck">Neck</string>
+    <string name="measurement_left_arm">Left arm</string>
+    <string name="measurement_right_arm">Right arm</string>
+    <string name="measurement_left_thigh">Left thigh</string>
+    <string name="measurement_right_thigh">Right thigh</string>
+    <string name="measurement_calves">Calves</string>
     <string name="capture_review_description">The photo you just took</string>
     <string name="capture_error_camera">Couldn\'t open the camera.</string>
     <string name="capture_error_take">Couldn\'t take the photo. Try again.</string>

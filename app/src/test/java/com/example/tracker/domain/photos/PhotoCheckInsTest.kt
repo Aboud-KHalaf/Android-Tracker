@@ -1,8 +1,12 @@
 package com.example.tracker.domain.photos
 
+import com.example.tracker.domain.model.PhotoMeasurement
 import com.example.tracker.domain.model.PhotoPose
 import com.example.tracker.domain.model.ProgressPhoto
+import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -11,53 +15,89 @@ class PhotoCheckInsTest {
 
     private val day = LocalDate.of(2026, 10, 1)
 
-    private fun photo(date: LocalDate, pose: PhotoPose) =
-        ProgressPhoto(id = "$date-$pose", date = date, pose = pose, filePath = "/photos/$date-$pose.jpg")
-
-    @Test
-    fun checkInsOf_groupsByDayNewestFirst() {
-        val photos = listOf(
-            photo(day, PhotoPose.FRONT),
-            photo(day.plusDays(7), PhotoPose.BACK),
-            photo(day, PhotoPose.SIDE),
+    /** A check-in [daysLater] days (plus [hoursLater] hours) after [day], with photos of [poses]. */
+    private fun checkIn(
+        id: String,
+        daysLater: Long,
+        vararg poses: PhotoPose,
+        hoursLater: Long = 0,
+        measurements: List<PhotoMeasurement> = emptyList(),
+    ): PhotoCheckIn {
+        val date = day.plusDays(daysLater)
+        val takenAt: Instant = date.atStartOfDay().toInstant(ZoneOffset.UTC).plus(Duration.ofHours(8 + hoursLater))
+        return PhotoCheckIn(
+            id = id,
+            date = date,
+            takenAt = takenAt,
+            photos = poses.associateWith { ProgressPhoto("$id-$it", id, date, it, "/photos/$id-$it.jpg") },
+            measurements = measurements,
         )
-
-        val checkIns = checkInsOf(photos)
-
-        assertEquals(listOf(day.plusDays(7), day), checkIns.map { it.date })
-        assertEquals(setOf(PhotoPose.FRONT, PhotoPose.SIDE), checkIns[1].photos.keys)
     }
 
     @Test
-    fun comparisonOf_usesFirstAndLatestPhotoOfThePose() {
-        val first = photo(day, PhotoPose.FRONT)
-        val middle = photo(day.plusDays(7), PhotoPose.FRONT)
-        val latest = photo(day.plusDays(14), PhotoPose.FRONT)
+    fun comparisonOf_usesFirstAndLatestCheckInWithThePose() {
+        val first = checkIn("a", 0, PhotoPose.FRONT)
+        val middle = checkIn("b", 7, PhotoPose.FRONT)
+        val latest = checkIn("c", 14, PhotoPose.FRONT)
 
-        val comparison = comparisonOf(listOf(latest, photo(day.plusDays(20), PhotoPose.BACK), middle, first), PhotoPose.FRONT)
+        val comparison = comparisonOf(listOf(latest, checkIn("d", 20, PhotoPose.BACK), middle, first), PhotoPose.FRONT)
 
-        assertEquals(PhotoComparison(first, latest), comparison)
+        assertEquals(PhotoComparison(first.photos.getValue(PhotoPose.FRONT), latest.photos.getValue(PhotoPose.FRONT)), comparison)
     }
 
     @Test
-    fun comparisonOf_needsTwoDays() {
-        assertNull(comparisonOf(listOf(photo(day, PhotoPose.SIDE)), PhotoPose.SIDE))
-        assertNull(comparisonOf(listOf(photo(day, PhotoPose.FRONT), photo(day.plusDays(1), PhotoPose.FRONT)), PhotoPose.SIDE))
+    fun comparisonOf_twoCheckInsTheSameDay_compare() {
+        val morning = checkIn("a", 0, PhotoPose.SIDE)
+        val evening = checkIn("b", 0, PhotoPose.SIDE, hoursLater = 10)
+
+        assertEquals(
+            PhotoComparison(morning.photos.getValue(PhotoPose.SIDE), evening.photos.getValue(PhotoPose.SIDE)),
+            comparisonOf(listOf(evening, morning), PhotoPose.SIDE),
+        )
     }
 
     @Test
-    fun guidePhotoFor_prefersTheLatestEarlierDay() {
-        val lastWeek = photo(day.minusDays(7), PhotoPose.SIDE)
-        val today = photo(day, PhotoPose.SIDE)
-
-        assertEquals(lastWeek, guidePhotoFor(listOf(today, lastWeek, photo(day.minusDays(14), PhotoPose.SIDE)), PhotoPose.SIDE, day))
+    fun comparisonOf_needsTwoCheckInsWithThePose() {
+        assertNull(comparisonOf(listOf(checkIn("a", 0, PhotoPose.SIDE)), PhotoPose.SIDE))
+        assertNull(comparisonOf(listOf(checkIn("a", 0, PhotoPose.FRONT), checkIn("b", 1, PhotoPose.FRONT)), PhotoPose.SIDE))
     }
 
     @Test
-    fun guidePhotoFor_fallsBackToTodaysPhoto() {
-        val today = photo(day, PhotoPose.BACK)
+    fun guidePhotoFor_prefersTheLatestOtherCheckIn() {
+        val lastWeek = checkIn("old", 0, PhotoPose.SIDE)
+        val earlierToday = checkIn("earlier", 7, PhotoPose.SIDE)
+        val current = checkIn("current", 7, PhotoPose.SIDE, hoursLater = 2)
 
-        assertEquals(today, guidePhotoFor(listOf(today), PhotoPose.BACK, day))
-        assertNull(guidePhotoFor(listOf(today), PhotoPose.FRONT, day))
+        val guide = guidePhotoFor(listOf(current, earlierToday, lastWeek), PhotoPose.SIDE, currentCheckInId = "current")
+
+        assertEquals(earlierToday.photos.getValue(PhotoPose.SIDE), guide)
+    }
+
+    @Test
+    fun guidePhotoFor_fallsBackToTheCurrentCheckIn_orNothing() {
+        val current = checkIn("current", 0, PhotoPose.BACK)
+
+        assertEquals(current.photos.getValue(PhotoPose.BACK), guidePhotoFor(listOf(current), PhotoPose.BACK, "current"))
+        assertNull(guidePhotoFor(listOf(current), PhotoPose.FRONT, "current"))
+        assertNull(guidePhotoFor(emptyList(), PhotoPose.FRONT, null))
+    }
+
+    @Test
+    fun measurementChanges_compareWithTheLatestEarlierCheckInThatHasIt() {
+        val oldest = checkIn("a", 0, PhotoPose.FRONT, measurements = listOf(PhotoMeasurement("Waist", "cm", 90.0)))
+        val middle = checkIn(
+            "b",
+            7,
+            PhotoPose.FRONT,
+            measurements = listOf(PhotoMeasurement("Waist", "cm", 88.0), PhotoMeasurement("Weight", "kg", 80.0)),
+        )
+        val noWaist = checkIn("c", 10, PhotoPose.FRONT, measurements = listOf(PhotoMeasurement("Weight", "kg", 79.0)))
+        val latestWaist = PhotoMeasurement("waist", "cm", 86.5)
+        val latestChest = PhotoMeasurement("Chest", "cm", 100.0)
+        val latest = checkIn("d", 14, PhotoPose.FRONT, measurements = listOf(latestWaist, latestChest))
+
+        val changes = measurementChanges(listOf(latest, noWaist, middle, oldest), latest)
+
+        assertEquals(mapOf(latestWaist to -1.5), changes)
     }
 }

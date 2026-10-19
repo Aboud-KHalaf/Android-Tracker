@@ -18,6 +18,8 @@ import com.example.tracker.data.local.entity.CustomStatEntity
 import com.example.tracker.data.local.entity.CustomStatEntryEntity
 import com.example.tracker.data.local.entity.DailyNutritionEntity
 import com.example.tracker.data.local.entity.ExerciseEntity
+import com.example.tracker.data.local.entity.PhotoMeasurementEntity
+import com.example.tracker.data.local.entity.PhotoSessionEntity
 import com.example.tracker.data.local.entity.PlanEntity
 import com.example.tracker.data.local.entity.PlanExerciseEntity
 import com.example.tracker.data.local.entity.ProgramEntity
@@ -40,8 +42,10 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         ProgressPhotoEntity::class,
         CustomStatEntity::class,
         CustomStatEntryEntity::class,
+        PhotoSessionEntity::class,
+        PhotoMeasurementEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
     autoMigrations = [
         // Adds daily_nutrition.
@@ -56,6 +60,7 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         AutoMigration(from = 5, to = 6, spec = ProgramsMigration::class),
         // Adds custom_stats and custom_stat_entries.
         AutoMigration(from = 6, to = 7),
+        // 7 to 8 groups progress photos into sessions: PhotoSessionsMigration, added below.
     ],
 )
 abstract class TrackerDatabase : RoomDatabase() {
@@ -72,6 +77,8 @@ abstract class TrackerDatabase : RoomDatabase() {
         private const val NAME = "tracker.db"
 
         fun create(context: Context): TrackerDatabase =
-            Room.databaseBuilder(context, TrackerDatabase::class.java, NAME).build()
+            Room.databaseBuilder(context, TrackerDatabase::class.java, NAME)
+                .addMigrations(PhotoSessionsMigration)
+                .build()
     }
 }

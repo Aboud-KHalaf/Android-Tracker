@@ -10,6 +10,6 @@ sealed interface PhotoCaptureEvent {
 
     data class ShowMessage(@StringRes val messageRes: Int) : PhotoCaptureEvent
 
-    /** All three poses are saved for today. */
+    /** The session is saved, with or without measurements. */
     data object Finished : PhotoCaptureEvent
 }

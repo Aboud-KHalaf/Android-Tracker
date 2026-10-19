@@ -8,14 +8,13 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.tracker.R
 import com.example.tracker.TrackerApplication
-import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.model.PhotoPose
-import com.example.tracker.domain.model.ProgressPhoto
+import com.example.tracker.domain.photos.PhotoCheckIn
 import com.example.tracker.domain.photos.guidePhotoFor
 import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.ui.common.launchCatching
+import com.example.tracker.ui.photos.measurements.MeasurementsForm
 import java.io.File
-import java.time.LocalDate
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -32,22 +31,22 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * Walks through today's front, side and back photos. Each pose shows the last photo of it to
- * line up with; a self-timer gives time to step back. The screen owns the camera: it takes a
- * picture on [PhotoCaptureEvent.TakePicture] and reports the result.
+ * Walks through a new check-in's front, side and back photos, then offers to note
+ * measurements with them. Each pose shows the last photo of it to line up with; a self-timer
+ * gives time to step back. The screen owns the camera: it takes a picture on
+ * [PhotoCaptureEvent.TakePicture] and reports the result.
  */
 class PhotoCaptureViewModel(
     private val photoRepository: ProgressPhotoRepository,
-    private val time: TimeProvider,
 ) : ViewModel() {
 
     private val controls = MutableStateFlow(PhotoCaptureUiState())
 
     // Without the saved photos the camera still works; it just has nothing to line up with.
-    private val photos = photoRepository.observePhotos().catch { emit(emptyList()) }
+    private val checkIns = photoRepository.observeCheckIns().catch { emit(emptyList()) }
 
-    val uiState: StateFlow<PhotoCaptureUiState> = combine(controls, photos) { state, photos ->
-        state.withPhotos(photos)
+    val uiState: StateFlow<PhotoCaptureUiState> = combine(controls, checkIns) { state, checkIns ->
+        state.withCheckIns(checkIns)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), PhotoCaptureUiState())
 
     private val _events = Channel<PhotoCaptureEvent>(Channel.BUFFERED)
@@ -125,7 +124,10 @@ class PhotoCaptureViewModel(
         viewModelScope.launchCatching(onError = {}) { photoRepository.discardCapture(capture) }
     }
 
-    /** Keeps the reviewed picture as today's photo of the pose and moves on to the next pose not taken yet. */
+    /**
+     * Keeps the reviewed picture as this session's photo of the pose and moves on to the next
+     * pose not taken yet, or to the measurements once all are.
+     */
     fun onUsePhoto() {
         val capture = pendingCapture ?: return
         val state = uiState.value
@@ -137,12 +139,60 @@ class PhotoCaptureViewModel(
                 showMessage(R.string.capture_error_save)
             },
         ) {
-            photoRepository.savePhoto(today(), state.pose, capture)
+            val checkInId = photoRepository.savePhoto(state.checkInId, state.pose, capture)
             pendingCapture = null
-            val next = nextPose(state.pose, state.takenToday + state.pose)
-            controls.update { it.copy(pose = next ?: it.pose, reviewPath = null, isSaving = false) }
-            if (next == null) _events.send(PhotoCaptureEvent.Finished)
+            val next = nextPose(state.pose, state.taken + state.pose)
+            controls.update { it.copy(checkInId = checkInId, pose = next ?: it.pose, reviewPath = null, isSaving = false) }
+            if (next == null) onFinishPhotos()
         }
+    }
+
+    /** Ends the photos, even with poses left, and asks for measurements, starting with last time's. */
+    fun onFinishPhotos() {
+        // The controls, not uiState, which may not have caught up with a photo just saved.
+        val controls = controls.value
+        val checkInId = controls.checkInId ?: return
+        if (!controls.canFinish || controls.measurements != null) return
+        stopCountdown()
+        val previous = uiState.value.previousMeasurements
+        this.controls.update { it.copy(measurements = MeasurementsForm.newFor(checkInId, previous)) }
+    }
+
+    fun onToggleMeasurement(name: String, unit: String) = updateMeasurements { it.toggled(name, unit) }
+
+    fun onAddMeasurement(name: String, unit: String) = updateMeasurements { it.added(name, unit) }
+
+    fun onRemoveMeasurement(index: Int) = updateMeasurements { it.removed(index) }
+
+    fun onMeasurementValueChange(index: Int, text: String) = updateMeasurements { it.withValue(index, text) }
+
+    fun onSkipMeasurements() {
+        if (controls.value.measurements?.isSaving == true) return
+        viewModelScope.launch { _events.send(PhotoCaptureEvent.Finished) }
+    }
+
+    fun onSaveMeasurements() {
+        val form = controls.value.measurements ?: return
+        if (form.isSaving) return
+        val (checked, measurements) = form.validated()
+        if (measurements == null) {
+            updateMeasurements { checked }
+            return
+        }
+        updateMeasurements { it.copy(isSaving = true) }
+        viewModelScope.launchCatching(
+            onError = {
+                updateMeasurements { it.copy(isSaving = false) }
+                showMessage(R.string.measurements_error_save)
+            },
+        ) {
+            photoRepository.saveMeasurements(form.checkInId, measurements)
+            _events.send(PhotoCaptureEvent.Finished)
+        }
+    }
+
+    private inline fun updateMeasurements(crossinline transform: (MeasurementsForm) -> MeasurementsForm) {
+        controls.update { state -> state.measurements?.let { state.copy(measurements = transform(it)) } ?: state }
     }
 
     private fun stopCountdown() {
@@ -151,15 +201,11 @@ class PhotoCaptureViewModel(
         controls.update { it.copy(countdown = null) }
     }
 
-    private fun PhotoCaptureUiState.withPhotos(photos: List<ProgressPhoto>): PhotoCaptureUiState {
-        val today = today()
-        return copy(
-            takenToday = photos.filter { it.date == today }.mapTo(mutableSetOf()) { it.pose },
-            guidePhotoPath = guidePhotoFor(photos, pose, today)?.filePath,
-        )
-    }
-
-    private fun today(): LocalDate = time.now().atZone(time.zone()).toLocalDate()
+    private fun PhotoCaptureUiState.withCheckIns(checkIns: List<PhotoCheckIn>): PhotoCaptureUiState = copy(
+        taken = checkIns.firstOrNull { it.id == checkInId }?.photos?.keys.orEmpty(),
+        guidePhotoPath = guidePhotoFor(checkIns, pose, checkInId)?.filePath,
+        previousMeasurements = checkIns.firstOrNull { it.id != checkInId && it.measurements.isNotEmpty() }?.measurements.orEmpty(),
+    )
 
     private suspend fun showMessage(@StringRes messageRes: Int) {
         _events.send(PhotoCaptureEvent.ShowMessage(messageRes))
@@ -180,7 +226,7 @@ class PhotoCaptureViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
-                PhotoCaptureViewModel(container.progressPhotoRepository, container.time)
+                PhotoCaptureViewModel(container.progressPhotoRepository)
             }
         }
     }

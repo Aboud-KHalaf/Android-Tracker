@@ -197,6 +197,56 @@ class TrackerDatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun migrate7To8_turnsEachDayOfPhotosIntoOneSession() {
+        helper.createDatabase(DB_NAME, 7).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO progress_photo (id, epoch_day, pose, file_name, created_at)
+                VALUES ('f1', 20000, 'FRONT', 'f1.jpg', 500), ('s1', 20000, 'SIDE', 's1.jpg', 400),
+                       ('f2', 20007, 'FRONT', 'f2.jpg', 900)
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 8, true, PhotoSessionsMigration).use { db ->
+            db.query("SELECT id, epoch_day, taken_at FROM photo_session ORDER BY epoch_day").use { cursor ->
+                assertEquals(2, cursor.count)
+                cursor.moveToFirst()
+                assertEquals(20000, cursor.getLong(1))
+                assertEquals(400, cursor.getLong(2)) // when the day's first photo was taken
+            }
+            db.query(
+                """
+                SELECT p.id, p.file_name, s.epoch_day FROM progress_photo AS p
+                JOIN photo_session AS s ON s.id = p.session_id ORDER BY p.id
+                """
+            ).use { cursor ->
+                assertEquals(3, cursor.count)
+                cursor.moveToFirst()
+                assertEquals("f1", cursor.getString(0))
+                assertEquals("f1.jpg", cursor.getString(1))
+                assertEquals(20000, cursor.getLong(2))
+            }
+            // A second session the same day can now hold its own front photo.
+            db.execSQL("INSERT INTO photo_session (id, epoch_day, taken_at) VALUES ('later', 20000, 1000)")
+            db.execSQL("INSERT INTO progress_photo (id, session_id, pose, file_name, created_at) VALUES ('f3', 'later', 'FRONT', 'f3.jpg', 1000)")
+            db.execSQL("INSERT INTO photo_measurement (session_id, position, name, unit, value) VALUES ('later', 0, 'Waist', 'cm', 84.5)")
+        }
+    }
+
+    @Test
+    fun migrate7To8_withoutPhotos_createsNoSession() {
+        helper.createDatabase(DB_NAME, 7).close()
+
+        helper.runMigrationsAndValidate(DB_NAME, 8, true, PhotoSessionsMigration).use { db ->
+            db.query("SELECT COUNT(*) FROM photo_session").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals(0, cursor.getInt(0))
+            }
+        }
+    }
+
     private companion object {
         const val DB_NAME = "migration-test.db"
     }
