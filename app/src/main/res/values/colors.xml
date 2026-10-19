@@ -7,4 +7,6 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <!-- Tints the notification icon; matches the light theme primary in ui/theme/Color.kt. -->
+    <color name="notification_accent">#FF2A5FA8</color>
 </resources>

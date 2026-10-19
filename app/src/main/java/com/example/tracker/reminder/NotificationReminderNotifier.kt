@@ -37,6 +37,7 @@ class NotificationReminderNotifier(private val context: Context) : ReminderNotif
         )
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
+            .setColor(ContextCompat.getColor(context, R.color.notification_accent))
             .setContentTitle(context.getString(R.string.reminder_title))
             .setContentText(context.getString(R.string.reminder_text))
             .setContentIntent(openNutrition)
