@@ -34,12 +34,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.domain.model.PhotoPose
 import com.example.tracker.domain.model.ProgressPhoto
+import com.example.tracker.domain.photos.PhotoCheckIn
 import com.example.tracker.ui.common.AnimatedFab
+import com.example.tracker.ui.common.DestructiveConfirmDialog
 import com.example.tracker.ui.common.EmptyState
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
@@ -49,6 +53,8 @@ import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.photos.components.CheckInRow
 import com.example.tracker.ui.photos.components.ComparisonCard
 import com.example.tracker.ui.photos.components.PhotoViewerDialog
+import com.example.tracker.ui.photos.measurements.MeasurementsActions
+import com.example.tracker.ui.photos.measurements.MeasurementsScreen
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 import kotlinx.coroutines.launch
@@ -65,6 +71,7 @@ fun ProgressPhotosRoute(
     viewModel: ProgressPhotosViewModel = viewModel(factory = ProgressPhotosViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val measurements by viewModel.measurements.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -83,13 +90,35 @@ fun ProgressPhotosRoute(
         onTakePhotos = onTakePhotos,
         onSelectComparePose = viewModel::onSelectComparePose,
         onDeletePhoto = viewModel::onDeletePhoto,
+        onEditMeasurements = viewModel::onEditMeasurements,
+        onDeleteCheckIn = viewModel::onDeleteCheckIn,
         onRetry = viewModel::onRetry,
         snackbarHostState = snackbarHostState,
         modifier = modifier,
     )
+
+    measurements?.let { form ->
+        Dialog(
+            onDismissRequest = viewModel::onDismissMeasurements,
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        ) {
+            MeasurementsScreen(
+                form = form,
+                dismissLabel = stringResource(R.string.action_cancel),
+                actions = MeasurementsActions(
+                    onToggle = viewModel::onToggleMeasurement,
+                    onAdd = viewModel::onAddMeasurement,
+                    onRemove = viewModel::onRemoveMeasurement,
+                    onValueChange = viewModel::onMeasurementValueChange,
+                    onSave = viewModel::onSaveMeasurements,
+                    onDismiss = viewModel::onDismissMeasurements,
+                ),
+            )
+        }
+    }
 }
 
-/** Stateless Progress photos screen: a comparison, then every day's photos, newest first. */
+/** Stateless Progress photos screen: a comparison, then every check-in, newest first. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgressPhotosScreen(
@@ -98,11 +127,14 @@ fun ProgressPhotosScreen(
     onTakePhotos: () -> Unit,
     onSelectComparePose: (PhotoPose) -> Unit,
     onDeletePhoto: (String) -> Unit,
+    onEditMeasurements: (PhotoCheckIn) -> Unit,
+    onDeleteCheckIn: (String) -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var openPhotoId by rememberSaveable { mutableStateOf<String?>(null) }
+    var deletingCheckInId by rememberSaveable { mutableStateOf<String?>(null) }
 
     Scaffold(
         modifier = modifier,
@@ -140,6 +172,8 @@ fun ProgressPhotosScreen(
                     state = state,
                     onSelectComparePose = onSelectComparePose,
                     onOpenPhoto = { openPhotoId = it.id },
+                    onEditMeasurements = onEditMeasurements,
+                    onDeleteCheckIn = { deletingCheckInId = it },
                     contentPadding = innerPadding,
                 )
             }
@@ -157,16 +191,31 @@ fun ProgressPhotosScreen(
             onDismiss = { openPhotoId = null },
         )
     }
+
+    deletingCheckInId?.let { id ->
+        DestructiveConfirmDialog(
+            title = stringResource(R.string.photos_check_in_delete_title),
+            body = stringResource(R.string.photos_check_in_delete_body),
+            confirmLabel = stringResource(R.string.action_delete),
+            onConfirm = {
+                deletingCheckInId = null
+                onDeleteCheckIn(id)
+            },
+            onDismiss = { deletingCheckInId = null },
+        )
+    }
 }
 
 private fun ProgressPhotosUiState.Success.findPhoto(id: String?): ProgressPhoto? =
-    id?.let { checkIns.firstNotNullOfOrNull { checkIn -> checkIn.photos.values.firstOrNull { it.id == id } } }
+    id?.let { checkIns.firstNotNullOfOrNull { item -> item.checkIn.photos.values.firstOrNull { it.id == id } } }
 
 @Composable
 private fun PhotosContent(
     state: ProgressPhotosUiState.Success,
     onSelectComparePose: (PhotoPose) -> Unit,
     onOpenPhoto: (ProgressPhoto) -> Unit,
+    onEditMeasurements: (PhotoCheckIn) -> Unit,
+    onDeleteCheckIn: (String) -> Unit,
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
@@ -208,8 +257,14 @@ private fun PhotosContent(
                     modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, top = spacing.md),
                 )
             }
-            items(state.checkIns, key = { it.date.toEpochDay() }) { checkIn ->
-                CheckInRow(checkIn = checkIn, onOpenPhoto = onOpenPhoto, modifier = rowModifier.animateItem())
+            items(state.checkIns, key = { it.checkIn.id }) { item ->
+                CheckInRow(
+                    item = item,
+                    onOpenPhoto = onOpenPhoto,
+                    onEditMeasurements = { onEditMeasurements(item.checkIn) },
+                    onDelete = { onDeleteCheckIn(item.checkIn.id) },
+                    modifier = rowModifier.animateItem(),
+                )
             }
         }
     }

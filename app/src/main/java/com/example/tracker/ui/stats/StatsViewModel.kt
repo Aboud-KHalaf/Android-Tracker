@@ -9,7 +9,6 @@ import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.model.StatOverview
 import com.example.tracker.domain.photos.PhotoCheckIn
-import com.example.tracker.domain.photos.checkInsOf
 import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.ProgressPhotoRepository
@@ -68,9 +67,9 @@ class StatsViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), StatsUiState.Loading)
 
-    /** The latest day with progress photos, or null before the first; photos failing to load just hide it. */
-    val latestCheckIn: StateFlow<PhotoCheckIn?> = photoRepository.observePhotos()
-        .map { checkInsOf(it).firstOrNull() }
+    /** The latest photo check-in, or null before the first; photos failing to load just hide it. */
+    val latestCheckIn: StateFlow<PhotoCheckIn?> = photoRepository.observeCheckIns()
+        .map { it.firstOrNull() }
         .catch { emit(null) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 

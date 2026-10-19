@@ -1,29 +1,39 @@
 package com.example.tracker.domain.repository
 
+import com.example.tracker.domain.model.PhotoMeasurement
 import com.example.tracker.domain.model.PhotoPose
-import com.example.tracker.domain.model.ProgressPhoto
+import com.example.tracker.domain.photos.PhotoCheckIn
 import java.io.File
-import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Progress photos, kept only on this device. The camera writes into a file from
- * [createCaptureFile]; [savePhoto] then keeps it, or [discardCapture] throws it away.
- * Storage failures propagate as exceptions.
+ * Progress photos, kept only on this device and grouped into check-ins (photo sessions).
+ * The camera writes into a file from [createCaptureFile]; [savePhoto] then keeps it, or
+ * [discardCapture] throws it away. Storage failures propagate as exceptions.
  */
 interface ProgressPhotoRepository {
-    /** Every photo, newest day first, and within a day in [PhotoPose] order. */
-    fun observePhotos(): Flow<List<ProgressPhoto>>
+    /** Every check-in, newest first; their photos are in [PhotoPose] order. */
+    fun observeCheckIns(): Flow<List<PhotoCheckIn>>
 
     /** A new, empty file for the camera to write one picture into. */
     suspend fun createCaptureFile(): File
 
-    /** Keeps [capture] as the [pose] photo of [date], replacing one already taken that day. [capture] is moved. */
-    suspend fun savePhoto(date: LocalDate, pose: PhotoPose, capture: File)
+    /**
+     * Keeps [capture] as the [pose] photo of the check-in [checkInId], replacing one already
+     * taken in it; with a null id, starts a new check-in today. Returns the check-in's id.
+     * [capture] is moved.
+     */
+    suspend fun savePhoto(checkInId: String?, pose: PhotoPose, capture: File): String
+
+    /** Replaces the check-in's measurements. Throws [IllegalArgumentException] for invalid ones. */
+    suspend fun saveMeasurements(checkInId: String, measurements: List<PhotoMeasurement>)
 
     /** Deletes a capture that wasn't saved. */
     suspend fun discardCapture(capture: File)
 
-    /** Deletes the photo and its picture; this can't be undone. */
+    /** Deletes the photo and its picture, and its check-in once that has no photos left; this can't be undone. */
     suspend fun deletePhoto(id: String)
+
+    /** Deletes the check-in with its photos, pictures and measurements; this can't be undone. */
+    suspend fun deleteCheckIn(id: String)
 }

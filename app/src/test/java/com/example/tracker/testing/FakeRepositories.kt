@@ -9,6 +9,7 @@ import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.PersonalBest
+import com.example.tracker.domain.model.PhotoMeasurement
 import com.example.tracker.domain.model.PhotoPose
 import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.Program
@@ -22,6 +23,7 @@ import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.model.WorkoutSummary
+import com.example.tracker.domain.photos.PhotoCheckIn
 import com.example.tracker.domain.reminder.ReminderTime
 import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.domain.repository.ExerciseCatalogRepository
@@ -39,6 +41,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneOffset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -361,10 +364,15 @@ class FakeWeightRepository : WeightRepository {
     }
 }
 
-class FakeProgressPhotoRepository(private val capturesDirectory: File = createTempDir()) : ProgressPhotoRepository {
-    val photos = MutableStateFlow<List<ProgressPhoto>>(emptyList())
+class FakeProgressPhotoRepository(
+    private val capturesDirectory: File = createTempDir(),
+    /** When new check-ins are taken; their day is this in UTC. */
+    var now: Instant = Instant.parse("2026-10-03T09:00:00Z"),
+) : ProgressPhotoRepository {
+    /** Every check-in, in any order; [observeCheckIns] sorts them newest first. */
+    val checkIns = MutableStateFlow<List<PhotoCheckIn>>(emptyList())
 
-    /** When set, [observePhotos] fails with it. */
+    /** When set, [observeCheckIns] fails with it. */
     var observeError: Exception? = null
 
     /** When set, every write fails with it. */
@@ -372,9 +380,9 @@ class FakeProgressPhotoRepository(private val capturesDirectory: File = createTe
     val discarded = mutableListOf<File>()
     private var nextId = 1
 
-    override fun observePhotos(): Flow<List<ProgressPhoto>> = flow {
+    override fun observeCheckIns(): Flow<List<PhotoCheckIn>> = flow {
         observeError?.let { throw it }
-        emitAll(photos)
+        emitAll(checkIns.map { all -> all.sortedByDescending { it.takenAt } })
     }
 
     override suspend fun createCaptureFile(): File {
@@ -382,10 +390,18 @@ class FakeProgressPhotoRepository(private val capturesDirectory: File = createTe
         return File.createTempFile("capture-", ".jpg", capturesDirectory)
     }
 
-    override suspend fun savePhoto(date: LocalDate, pose: PhotoPose, capture: File) {
+    override suspend fun savePhoto(checkInId: String?, pose: PhotoPose, capture: File): String {
         writeError?.let { throw it }
-        val photo = ProgressPhoto("photo-${nextId++}", date, pose, capture.absolutePath)
-        photos.value = photos.value.filterNot { it.date == date && it.pose == pose } + photo
+        val checkIn = checkInId?.let { id -> checkIns.value.first { it.id == id } }
+            ?: PhotoCheckIn("check-in-${nextId++}", now.atZone(ZoneOffset.UTC).toLocalDate(), now, emptyMap())
+        val photo = ProgressPhoto("photo-${nextId++}", checkIn.id, checkIn.date, pose, capture.absolutePath)
+        replace(checkIn.copy(photos = checkIn.photos + (pose to photo)))
+        return checkIn.id
+    }
+
+    override suspend fun saveMeasurements(checkInId: String, measurements: List<PhotoMeasurement>) {
+        writeError?.let { throw it }
+        replace(checkIns.value.first { it.id == checkInId }.copy(measurements = measurements))
     }
 
     override suspend fun discardCapture(capture: File) {
@@ -395,17 +411,43 @@ class FakeProgressPhotoRepository(private val capturesDirectory: File = createTe
 
     override suspend fun deletePhoto(id: String) {
         writeError?.let { throw it }
-        photos.value = photos.value.filterNot { it.id == id }
+        checkIns.value = checkIns.value
+            .map { checkIn -> checkIn.copy(photos = checkIn.photos.filterValues { it.id != id }) }
+            .filter { it.photos.isNotEmpty() }
     }
 
-    fun put(vararg taken: ProgressPhoto) {
-        photos.value += taken
+    override suspend fun deleteCheckIn(id: String) {
+        writeError?.let { throw it }
+        checkIns.value = checkIns.value.filterNot { it.id == id }
+    }
+
+    fun put(vararg taken: PhotoCheckIn) {
+        checkIns.value += taken
+    }
+
+    private fun replace(checkIn: PhotoCheckIn) {
+        checkIns.value = checkIns.value.filterNot { it.id == checkIn.id } + checkIn
     }
 
     private companion object {
         fun createTempDir(): File = java.nio.file.Files.createTempDirectory("captures").toFile()
     }
 }
+
+/** A check-in on [date] at 9:00 UTC plus [hoursLater], with a photo of each of [poses]. */
+fun photoCheckIn(
+    id: String,
+    date: LocalDate,
+    vararg poses: PhotoPose,
+    hoursLater: Long = 0,
+    measurements: List<PhotoMeasurement> = emptyList(),
+) = PhotoCheckIn(
+    id = id,
+    date = date,
+    takenAt = date.atTime(9, 0).toInstant(ZoneOffset.UTC).plus(Duration.ofHours(hoursLater)),
+    photos = poses.associateWith { ProgressPhoto("$id-$it", id, date, it, "/$id-$it.jpg") },
+    measurements = measurements,
+)
 
 class FakeCustomStatRepository : CustomStatRepository {
     val stats = MutableStateFlow<List<CustomStat>>(emptyList())

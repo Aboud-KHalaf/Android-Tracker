@@ -5,7 +5,6 @@ import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.PhotoPose
-import com.example.tracker.domain.model.ProgressPhoto
 import com.example.tracker.domain.model.StatColor
 import com.example.tracker.domain.model.StatEntry
 import com.example.tracker.domain.model.StatIcon
@@ -16,6 +15,7 @@ import com.example.tracker.testing.FakeProgressPhotoRepository
 import com.example.tracker.testing.FakeSettingsRepository
 import com.example.tracker.testing.FakeWeightRepository
 import com.example.tracker.testing.MainDispatcherRule
+import com.example.tracker.testing.photoCheckIn
 import java.io.IOException
 import java.time.Instant
 import java.time.LocalDate
@@ -116,9 +116,8 @@ class StatsViewModelTest {
     @Test
     fun latestCheckIn_isTheNewestDayWithPhotos() = runTest {
         photos.put(
-            ProgressPhoto("old", today.minusDays(7), PhotoPose.FRONT, "/old.jpg"),
-            ProgressPhoto("front", today, PhotoPose.FRONT, "/front.jpg"),
-            ProgressPhoto("back", today, PhotoPose.BACK, "/back.jpg"),
+            photoCheckIn("old", today.minusDays(7), PhotoPose.FRONT),
+            photoCheckIn("latest", today, PhotoPose.FRONT, PhotoPose.BACK),
         )
         val viewModel = createViewModel()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.latestCheckIn.collect {} }

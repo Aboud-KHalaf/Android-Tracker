@@ -2,8 +2,10 @@ package com.example.tracker.data.repository
 
 import com.example.tracker.data.local.ProgressPhotoStore
 import com.example.tracker.data.local.TrackerDatabase
+import com.example.tracker.domain.model.PhotoMeasurement
 import com.example.tracker.domain.model.PhotoPose
 import java.io.File
+import java.time.Duration
 import java.time.LocalDate
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -33,7 +35,7 @@ class LocalProgressPhotoRepositoryTest {
     private lateinit var store: ProgressPhotoStore
     private val time = FakeTimeProvider()
     private val ids = SequentialIds()
-    private val day = LocalDate.of(2026, 10, 1)
+    private val today = LocalDate.of(2026, 9, 28)
 
     @Before
     fun setUp() {
@@ -52,59 +54,112 @@ class LocalProgressPhotoRepositoryTest {
         createCaptureFile().apply { writeText(content) }
 
     @Test
-    fun savePhoto_movesTheCaptureIntoThePhotosFolder() = runTest {
+    fun savePhoto_withoutCheckIn_startsOneTodayAndMovesTheCapture() = runTest {
         val photos = repository()
         val capture = photos.capture("front")
 
-        photos.savePhoto(day, PhotoPose.FRONT, capture)
+        val checkInId = photos.savePhoto(null, PhotoPose.FRONT, capture)
 
-        val saved = photos.observePhotos().first().single()
-        assertEquals(day, saved.date)
-        assertEquals(PhotoPose.FRONT, saved.pose)
+        val checkIn = photos.observeCheckIns().first().single()
+        assertEquals(checkInId, checkIn.id)
+        assertEquals(today, checkIn.date)
+        assertEquals(time.now(), checkIn.takenAt)
+        val saved = checkIn.photos.getValue(PhotoPose.FRONT)
+        assertEquals(checkInId, saved.checkInId)
         assertEquals("front", File(saved.filePath).readText())
         assertEquals(photosDirectory, File(saved.filePath).parentFile)
         assertFalse(capture.exists())
     }
 
     @Test
-    fun savePhoto_sameDayAndPose_replacesThePhotoAndDeletesTheOldFile() = runTest {
+    fun savePhoto_samePoseInTheCheckIn_replacesThePhotoAndDeletesTheOldFile() = runTest {
         val photos = repository()
-        photos.savePhoto(day, PhotoPose.SIDE, photos.capture("first"))
-        val first = photos.observePhotos().first().single()
+        val checkInId = photos.savePhoto(null, PhotoPose.SIDE, photos.capture("first"))
+        val first = photos.observeCheckIns().first().single().photos.getValue(PhotoPose.SIDE)
 
-        photos.savePhoto(day, PhotoPose.SIDE, photos.capture("second"))
+        photos.savePhoto(checkInId, PhotoPose.SIDE, photos.capture("second"))
 
-        val second = photos.observePhotos().first().single()
+        val second = photos.observeCheckIns().first().single().photos.getValue(PhotoPose.SIDE)
         assertEquals(first.id, second.id)
         assertEquals("second", File(second.filePath).readText())
         assertFalse(File(first.filePath).exists())
     }
 
     @Test
-    fun observePhotos_newestDayFirstThenPoseOrder() = runTest {
+    fun savePhoto_newCheckInTheSameDay_keepsTheEarlierOne() = runTest {
         val photos = repository()
-        photos.savePhoto(day, PhotoPose.BACK, photos.capture("b"))
-        photos.savePhoto(day, PhotoPose.FRONT, photos.capture("f"))
-        photos.savePhoto(day.plusDays(7), PhotoPose.SIDE, photos.capture("s"))
+        photos.savePhoto(null, PhotoPose.FRONT, photos.capture("morning"))
+        time.advance(Duration.ofHours(3))
 
-        val order = photos.observePhotos().first().map { it.date to it.pose }
+        photos.savePhoto(null, PhotoPose.FRONT, photos.capture("evening"))
 
-        assertEquals(
-            listOf(day.plusDays(7) to PhotoPose.SIDE, day to PhotoPose.FRONT, day to PhotoPose.BACK),
-            order,
-        )
+        val checkIns = photos.observeCheckIns().first()
+        assertEquals(2, checkIns.size)
+        assertEquals(listOf("evening", "morning"), checkIns.map { File(it.photos.getValue(PhotoPose.FRONT).filePath).readText() })
     }
 
     @Test
-    fun deletePhoto_removesTheRowAndTheFile() = runTest {
+    fun observeCheckIns_newestFirst_photosInPoseOrder() = runTest {
         val photos = repository()
-        photos.savePhoto(day, PhotoPose.FRONT, photos.capture("front"))
-        val saved = photos.observePhotos().first().single()
+        val first = photos.savePhoto(null, PhotoPose.BACK, photos.capture("b"))
+        photos.savePhoto(first, PhotoPose.FRONT, photos.capture("f"))
+        time.advance(Duration.ofDays(7))
+        photos.savePhoto(null, PhotoPose.SIDE, photos.capture("s"))
 
-        photos.deletePhoto(saved.id)
+        val checkIns = photos.observeCheckIns().first()
 
-        assertTrue(photos.observePhotos().first().isEmpty())
-        assertFalse(File(saved.filePath).exists())
+        assertEquals(listOf(today.plusDays(7), today), checkIns.map { it.date })
+        assertEquals(listOf(PhotoPose.FRONT, PhotoPose.BACK), checkIns[1].photos.keys.toList())
+    }
+
+    @Test
+    fun saveMeasurements_replacesTheCheckInsMeasurementsInOrder() = runTest {
+        val photos = repository()
+        val checkInId = photos.savePhoto(null, PhotoPose.FRONT, photos.capture("f"))
+        photos.saveMeasurements(checkInId, listOf(PhotoMeasurement("Chest", "cm", 100.0)))
+
+        photos.saveMeasurements(checkInId, listOf(PhotoMeasurement("Waist", "cm", 84.5), PhotoMeasurement("Weight", "kg", 78.4)))
+
+        assertEquals(
+            listOf(PhotoMeasurement("Waist", "cm", 84.5), PhotoMeasurement("Weight", "kg", 78.4)),
+            photos.observeCheckIns().first().single().measurements,
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun saveMeasurements_negativeValue_isRejected() = runTest {
+        val photos = repository()
+        val checkInId = photos.savePhoto(null, PhotoPose.FRONT, photos.capture("f"))
+        photos.saveMeasurements(checkInId, listOf(PhotoMeasurement("Waist", "cm", -1.0)))
+    }
+
+    @Test
+    fun deletePhoto_removesTheRowAndTheFile_andTheEmptyCheckIn() = runTest {
+        val photos = repository()
+        val checkInId = photos.savePhoto(null, PhotoPose.FRONT, photos.capture("front"))
+        photos.savePhoto(checkInId, PhotoPose.BACK, photos.capture("back"))
+        val front = photos.observeCheckIns().first().single().photos.getValue(PhotoPose.FRONT)
+
+        photos.deletePhoto(front.id)
+
+        assertEquals(setOf(PhotoPose.BACK), photos.observeCheckIns().first().single().photos.keys)
+        assertFalse(File(front.filePath).exists())
+
+        photos.deletePhoto(photos.observeCheckIns().first().single().photos.getValue(PhotoPose.BACK).id)
+        assertTrue(photos.observeCheckIns().first().isEmpty())
+    }
+
+    @Test
+    fun deleteCheckIn_removesItsPhotosFilesAndMeasurements() = runTest {
+        val photos = repository()
+        val checkInId = photos.savePhoto(null, PhotoPose.FRONT, photos.capture("front"))
+        photos.saveMeasurements(checkInId, listOf(PhotoMeasurement("Waist", "cm", 84.5)))
+        val front = photos.observeCheckIns().first().single().photos.getValue(PhotoPose.FRONT)
+
+        photos.deleteCheckIn(checkInId)
+
+        assertTrue(photos.observeCheckIns().first().isEmpty())
+        assertFalse(File(front.filePath).exists())
     }
 
     @Test
@@ -120,6 +175,6 @@ class LocalProgressPhotoRepositoryTest {
     @Test(expected = IllegalArgumentException::class)
     fun savePhoto_emptyCapture_isRejected() = runTest {
         val photos = repository()
-        photos.savePhoto(day, PhotoPose.FRONT, photos.createCaptureFile())
+        photos.savePhoto(null, PhotoPose.FRONT, photos.createCaptureFile())
     }
 }

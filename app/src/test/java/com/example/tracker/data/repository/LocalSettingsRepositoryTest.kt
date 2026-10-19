@@ -165,12 +165,12 @@ class LocalSettingsRepositoryTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val photos = LocalProgressPhotoRepository(database, photoStore, time, ids, dispatcher)
         val capture = photos.createCaptureFile().apply { writeText("jpeg") }
-        photos.savePhoto(LocalDate.of(2026, 10, 1), PhotoPose.FRONT, capture)
-        val saved = photos.observePhotos().first().single()
+        photos.savePhoto(null, PhotoPose.FRONT, capture)
+        val saved = photos.observeCheckIns().first().single().photos.getValue(PhotoPose.FRONT)
 
         LocalSettingsRepository(preferences, database, photoStore, dispatcher).deleteAllData()
 
-        assertTrue(photos.observePhotos().first().isEmpty())
+        assertTrue(photos.observeCheckIns().first().isEmpty())
         assertFalse(java.io.File(saved.filePath).exists())
     }
 }

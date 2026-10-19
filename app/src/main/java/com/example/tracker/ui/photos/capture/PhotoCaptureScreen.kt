@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -74,6 +75,8 @@ import com.example.tracker.ui.photos.components.PHOTO_ASPECT_RATIO
 import com.example.tracker.ui.photos.components.PoseSelector
 import com.example.tracker.ui.photos.hintRes
 import com.example.tracker.ui.photos.labelRes
+import com.example.tracker.ui.photos.measurements.MeasurementsActions
+import com.example.tracker.ui.photos.measurements.MeasurementsScreen
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 import java.io.File
@@ -148,6 +151,27 @@ fun PhotoCaptureRoute(
         }
     }
 
+    val measurements = uiState.measurements
+    if (measurements != null) {
+        // Back skips the optional step; the photos are already saved.
+        BackHandler(onBack = viewModel::onSkipMeasurements)
+        MeasurementsScreen(
+            form = measurements,
+            dismissLabel = stringResource(R.string.measurements_skip),
+            actions = MeasurementsActions(
+                onToggle = viewModel::onToggleMeasurement,
+                onAdd = viewModel::onAddMeasurement,
+                onRemove = viewModel::onRemoveMeasurement,
+                onValueChange = viewModel::onMeasurementValueChange,
+                onSave = viewModel::onSaveMeasurements,
+                onDismiss = viewModel::onSkipMeasurements,
+            ),
+            snackbarHostState = snackbarHostState,
+            modifier = modifier,
+        )
+        return
+    }
+
     PhotoCaptureScreen(
         state = uiState,
         cameraStatus = when {
@@ -157,6 +181,7 @@ fun PhotoCaptureRoute(
         },
         canSwitchCamera = available?.front == true && available.back,
         onClose = onClose,
+        onFinish = viewModel::onFinishPhotos,
         onSelectPose = viewModel::onSelectPose,
         onShutter = viewModel::onShutter,
         onCycleTimer = viewModel::onCycleTimer,
@@ -229,6 +254,7 @@ fun PhotoCaptureScreen(
     cameraStatus: CameraStatus,
     canSwitchCamera: Boolean,
     onClose: () -> Unit,
+    onFinish: () -> Unit,
     onSelectPose: (PhotoPose) -> Unit,
     onShutter: () -> Unit,
     onCycleTimer: () -> Unit,
@@ -260,6 +286,12 @@ fun PhotoCaptureScreen(
                 navigationIcon = {
                     IconButton(onClick = onClose) {
                         Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.photos_close))
+                    }
+                },
+                actions = {
+                    // Ends the session with poses left; after the last pose it ends by itself.
+                    if (state.checkInId != null) {
+                        TextButton(onClick = onFinish, enabled = state.canFinish) { Text(stringResource(R.string.capture_done)) }
                     }
                 },
             )
@@ -317,7 +349,7 @@ private fun CaptureContent(
         verticalArrangement = Arrangement.spacedBy(spacing.md),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        PoseSelector(selected = state.pose, onSelect = onSelectPose, done = state.takenToday, enabled = state.canShoot)
+        PoseSelector(selected = state.pose, onSelect = onSelectPose, done = state.taken, enabled = state.canShoot)
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = stringResource(state.pose.hintRes),
