@@ -14,12 +14,16 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -55,7 +59,6 @@ import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.PeriodSelector
-import com.example.tracker.ui.common.ScreenTitle
 import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.rememberNotificationPermissionRequest
 import com.example.tracker.ui.nutrition.components.DayEditorDialog
@@ -75,6 +78,7 @@ private val FabClearance = 88.dp
 /** Daily log destination: connects [NutritionViewModel] to [NutritionScreen]. */
 @Composable
 fun NutritionRoute(
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: NutritionViewModel = viewModel(factory = NutritionViewModel.Factory),
 ) {
@@ -118,6 +122,7 @@ fun NutritionRoute(
         onSelectPeriod = viewModel::onSelectPeriod,
         onSelectMetric = viewModel::onSelectMetric,
         onRetry = viewModel::onRetry,
+        onBack = onBack,
         modifier = modifier,
         exportButton = {
             ExportButton(isExporting = isExporting, fileName = viewModel::exportFileName, onExport = viewModel::onExport)
@@ -141,9 +146,10 @@ fun NutritionRoute(
 }
 
 /**
- * Stateless Nutrition screen. [onOpenDay] with null opens today. [exportButton] sits beside the
- * title once the log has loaded.
+ * Stateless daily log screen, opened from the Stats tab. [onOpenDay] with null opens today.
+ * [exportButton] sits in the top bar once the log has loaded.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NutritionScreen(
     uiState: NutritionUiState,
@@ -152,6 +158,7 @@ fun NutritionScreen(
     onSelectPeriod: (DatePeriod) -> Unit,
     onSelectMetric: (NutritionMetric) -> Unit,
     onRetry: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     exportButton: @Composable () -> Unit = {},
@@ -159,6 +166,26 @@ fun NutritionScreen(
     var showTargetsDialog by rememberSaveable { mutableStateOf(false) }
     Scaffold(
         modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.nutrition_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                    }
+                },
+                actions = {
+                    if (uiState is NutritionUiState.Success) {
+                        TextButton(onClick = { showTargetsDialog = true }, modifier = Modifier.heightIn(min = Dimens.minTouchTarget)) {
+                            Icon(Icons.Outlined.Flag, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+                            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                            Text(stringResource(R.string.nutrition_targets))
+                        }
+                        exportButton()
+                    }
+                },
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             AnimatedFab(visible = uiState is NutritionUiState.Success) {
@@ -182,10 +209,8 @@ fun NutritionScreen(
                 is NutritionUiState.Success -> NutritionContent(
                     state = state,
                     onOpenDay = onOpenDay,
-                    onEditTargets = { showTargetsDialog = true },
                     onSelectPeriod = onSelectPeriod,
                     onSelectMetric = onSelectMetric,
-                    exportButton = exportButton,
                     contentPadding = innerPadding,
                 )
             }
@@ -208,10 +233,8 @@ fun NutritionScreen(
 private fun NutritionContent(
     state: NutritionUiState.Success,
     onOpenDay: (LocalDate?) -> Unit,
-    onEditTargets: () -> Unit,
     onSelectPeriod: (DatePeriod) -> Unit,
     onSelectMetric: (NutritionMetric) -> Unit,
-    exportButton: @Composable () -> Unit,
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
@@ -224,17 +247,10 @@ private fun NutritionContent(
                 .widthIn(max = Dimens.maxContentWidth)
                 .fillMaxSize(),
             contentPadding = PaddingValues(
-                top = contentPadding.calculateTopPadding() + spacing.xl,
+                top = contentPadding.calculateTopPadding(),
                 bottom = contentPadding.calculateBottomPadding() + FabClearance,
             ),
         ) {
-            item(key = "title") {
-                TitleRow(
-                    onEditTargets = onEditTargets,
-                    exportButton = exportButton,
-                    modifier = Modifier.padding(start = spacing.lg, end = spacing.sm, bottom = spacing.md),
-                )
-            }
             item(key = "today") {
                 TodayCard(
                     today = state.today,
@@ -286,15 +302,3 @@ private fun NutritionContent(
 }
 
 /** "Daily log" with "Targets" and export actions on the right. */
-@Composable
-private fun TitleRow(onEditTargets: () -> Unit, exportButton: @Composable () -> Unit, modifier: Modifier = Modifier) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        ScreenTitle(text = stringResource(R.string.nutrition_title), modifier = Modifier.weight(1f))
-        TextButton(onClick = onEditTargets, modifier = Modifier.heightIn(min = Dimens.minTouchTarget)) {
-            Icon(Icons.Outlined.Flag, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
-            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-            Text(stringResource(R.string.nutrition_targets))
-        }
-        exportButton()
-    }
-}

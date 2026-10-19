@@ -23,7 +23,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/** Logging today's weight from the Weight tab. */
+/** Logging today's weight from the Weight screen, opened from the Stats tab. */
 @OptIn(ExperimentalTestApi::class)
 @RunWith(RobolectricTestRunner::class)
 // Default screen: with the xxhdpi qualifier the other flow tests use, Robolectric never idles
@@ -38,6 +38,8 @@ class WeightFlowTest {
 
     @Test
     fun logTodaysWeight_showsItAsCurrent() {
+        compose.onNodeWithText("Stats").performClick()
+        waitForNode(hasText("Weight"))
         compose.onNodeWithText("Weight").performClick()
         waitForNode(hasText("No weight logged yet", substring = true))
 

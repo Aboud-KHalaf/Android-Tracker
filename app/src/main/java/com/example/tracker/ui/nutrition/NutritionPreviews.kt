@@ -40,6 +40,7 @@ private fun NutritionScreenPreview() {
             onSelectPeriod = {},
             onSelectMetric = {},
             onRetry = {},
+            onBack = {},
         )
     }
 }
@@ -55,6 +56,7 @@ private fun NutritionScreenEmptyPreview() {
             onSelectPeriod = {},
             onSelectMetric = {},
             onRetry = {},
+            onBack = {},
         )
     }
 }

@@ -44,7 +44,9 @@ class NutritionFlowTest {
 
     @Test
     fun logTodayWithStepsSetTargetsAndDeleteWithUndo() {
-        compose.onNodeWithText("Daily").performClick()
+        compose.onNodeWithText("Stats").performClick()
+        waitForNode(hasText("Daily log"))
+        compose.onNodeWithText("Daily log").performClick()
         waitForNode(hasText("Nothing logged today yet", substring = true))
 
         // Log today.

@@ -5,10 +5,7 @@ import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.export.ExportFormat
 import com.example.tracker.domain.export.ReportCell
 import com.example.tracker.domain.model.DatePeriod
-import com.example.tracker.domain.model.PhotoPose
-import com.example.tracker.domain.model.ProgressPhoto
 import com.example.tracker.domain.model.WeightEntry
-import com.example.tracker.testing.FakeProgressPhotoRepository
 import com.example.tracker.testing.FakeReportExporter
 import com.example.tracker.testing.FakeWeightRepository
 import com.example.tracker.testing.MainDispatcherRule
@@ -40,9 +37,7 @@ class WeightViewModelTest {
 
     private val exporter = FakeReportExporter()
 
-    private val photos = FakeProgressPhotoRepository()
-
-    private fun createViewModel() = WeightViewModel(weights, photos, exporter, time)
+    private fun createViewModel() = WeightViewModel(weights, exporter, time)
 
     private fun TestScope.collectState(viewModel: WeightViewModel): () -> WeightUiState.Success {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
@@ -206,30 +201,5 @@ class WeightViewModelTest {
     @Test
     fun exportFileName_namesTheSectionAndDay() {
         assertEquals("tracker-weight-2026-10-03.pdf", createViewModel().exportFileName(ExportFormat.PDF))
-    }
-
-    @Test
-    fun latestCheckIn_isTheNewestDayWithPhotos() = runTest {
-        photos.put(
-            ProgressPhoto("old", today.minusDays(7), PhotoPose.FRONT, "/old.jpg"),
-            ProgressPhoto("front", today, PhotoPose.FRONT, "/front.jpg"),
-            ProgressPhoto("back", today, PhotoPose.BACK, "/back.jpg"),
-        )
-        val viewModel = createViewModel()
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.latestCheckIn.collect {} }
-
-        val latest = viewModel.latestCheckIn.value
-
-        assertEquals(today, latest?.date)
-        assertEquals(setOf(PhotoPose.FRONT, PhotoPose.BACK), latest?.photos?.keys)
-    }
-
-    @Test
-    fun latestCheckIn_nullWhenPhotosFailToLoad() = runTest {
-        photos.observeError = IOException("disk")
-        val viewModel = createViewModel()
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.latestCheckIn.collect {} }
-
-        assertNull(viewModel.latestCheckIn.value)
     }
 }

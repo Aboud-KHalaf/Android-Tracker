@@ -1,4 +1,4 @@
-package com.example.tracker.ui.weight.components
+package com.example.tracker.ui.photos.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +27,6 @@ import com.example.tracker.R
 import com.example.tracker.domain.photos.PhotoCheckIn
 import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.common.dateWithYear
-import com.example.tracker.ui.photos.components.PhotoRow
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 
