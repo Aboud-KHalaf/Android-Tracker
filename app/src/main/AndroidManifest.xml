@@ -40,7 +40,7 @@
         </activity>
 
         <receiver
-            android:name=".reminder.NutritionReminderReceiver"
+            android:name=".reminder.DailyReminderReceiver"
             android:exported="false" />
         <receiver
             android:name=".reminder.ReminderRescheduleReceiver"

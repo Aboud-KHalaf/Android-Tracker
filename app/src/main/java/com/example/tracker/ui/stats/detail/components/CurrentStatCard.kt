@@ -73,7 +73,7 @@ fun CurrentStatCard(
                 )
                 if (latest != null) {
                     TextButton(onClick = onLogToday, modifier = Modifier.heightIn(min = Dimens.minTouchTarget)) {
-                        Text(stringResource(if (latest.date == today) R.string.weight_edit_today else R.string.weight_log_today))
+                        Text(stringResource(if (latest.date == today) R.string.stat_edit_today else R.string.stat_log_today))
                     }
                 }
             }
@@ -84,7 +84,7 @@ fun CurrentStatCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 FilledTonalButton(onClick = onLogToday, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.weight_log_today))
+                    Text(stringResource(R.string.stat_log_today))
                 }
             } else {
                 Column(modifier = Modifier.semantics(mergeDescendants = true) {}) {
@@ -94,7 +94,7 @@ fun CurrentStatCard(
                         style = MaterialTheme.typography.displaySmall.tabularNumbers(),
                     )
                     Text(
-                        text = if (latest.date == today) stringResource(R.string.weight_today) else latest.date.longDate(currentLocale()),
+                        text = if (latest.date == today) stringResource(R.string.stat_today) else latest.date.longDate(currentLocale()),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

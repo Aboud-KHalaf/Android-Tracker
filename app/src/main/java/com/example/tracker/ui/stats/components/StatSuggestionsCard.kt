@@ -23,10 +23,23 @@ import com.example.tracker.ui.stats.StatTemplate
 import com.example.tracker.ui.stats.imageVector
 import com.example.tracker.ui.theme.spacing
 
-/** Shown before the first custom stat: what stats are for, and ready-made ones to start from. */
+/**
+ * Ready-made stats to start from, leaving out those the user already has ([existingNames],
+ * compared ignoring case). Before the first stat it also explains what stats are for.
+ * Shows nothing once every suggestion is taken.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun StatSuggestionsCard(onPick: (StatTemplate) -> Unit, modifier: Modifier = Modifier) {
+fun StatSuggestionsCard(
+    existingNames: Set<String>,
+    isFirstStat: Boolean,
+    onPick: (StatTemplate) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val taken = existingNames.mapTo(mutableSetOf()) { it.trim().lowercase() }
+    val suggestions = StatTemplate.entries.map { it to stringResource(it.nameRes) }
+        .filterNot { (_, name) -> name.lowercase() in taken }
+    if (suggestions.isEmpty()) return
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
@@ -36,20 +49,22 @@ fun StatSuggestionsCard(onPick: (StatTemplate) -> Unit, modifier: Modifier = Mod
             verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm),
         ) {
             Text(
-                text = stringResource(R.string.stats_empty_title),
+                text = stringResource(if (isFirstStat) R.string.stats_empty_title else R.string.stats_suggestions),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.semantics { heading() },
             )
-            Text(
-                text = stringResource(R.string.stats_empty_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            if (isFirstStat) {
+                Text(
+                    text = stringResource(R.string.stats_empty_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)) {
-                StatTemplate.entries.forEach { template ->
+                suggestions.forEach { (template, name) ->
                     AssistChip(
                         onClick = { onPick(template) },
-                        label = { Text(stringResource(template.nameRes)) },
+                        label = { Text(name) },
                         leadingIcon = {
                             Icon(template.icon.imageVector, contentDescription = null, modifier = Modifier.size(AssistChipDefaults.IconSize))
                         },

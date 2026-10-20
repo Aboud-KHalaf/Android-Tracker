@@ -43,6 +43,7 @@ import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.ui.common.AnimatedFab
 import com.example.tracker.ui.common.EmptyState
 import com.example.tracker.ui.common.ErrorContent
+import com.example.tracker.ui.common.ExportButton
 import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.ObserveAsEvents
@@ -71,6 +72,7 @@ fun StatDetailRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val editor by viewModel.editor.collectAsStateWithLifecycle()
+    val isExporting by viewModel.isExporting.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -108,6 +110,9 @@ fun StatDetailRoute(
         onSelectPeriod = viewModel::onSelectPeriod,
         onRetry = viewModel::onRetry,
         modifier = modifier,
+        exportButton = {
+            ExportButton(isExporting = isExporting, fileName = viewModel::exportFileName, onExport = viewModel::onExport)
+        },
     )
 
     val success = state as? StatDetailUiState.Success
@@ -126,7 +131,7 @@ fun StatDetailRoute(
     }
 }
 
-/** Stateless custom stat screen. [onOpenEntry] with null opens today. */
+/** Stateless custom stat screen. [onOpenEntry] with null opens today; [exportButton] sits in the top bar. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatDetailScreen(
@@ -138,6 +143,7 @@ fun StatDetailScreen(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    exportButton: @Composable () -> Unit = {},
 ) {
     val success = uiState as? StatDetailUiState.Success
     Scaffold(
@@ -152,6 +158,7 @@ fun StatDetailScreen(
                 },
                 actions = {
                     if (success != null) {
+                        exportButton()
                         IconButton(onClick = onEdit) {
                             Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.stat_edit))
                         }

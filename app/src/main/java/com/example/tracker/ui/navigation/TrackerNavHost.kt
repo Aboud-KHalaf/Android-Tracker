@@ -13,8 +13,6 @@ import com.example.tracker.ui.history.historyScreen
 import com.example.tracker.ui.history.navigateToHistory
 import com.example.tracker.ui.home.HomeDestination
 import com.example.tracker.ui.home.homeScreen
-import com.example.tracker.ui.nutrition.navigateToNutrition
-import com.example.tracker.ui.nutrition.nutritionScreen
 import com.example.tracker.ui.photos.navigateToPhotoCapture
 import com.example.tracker.ui.photos.navigateToProgressPhotos
 import com.example.tracker.ui.photos.photoCaptureScreen
@@ -34,8 +32,6 @@ import com.example.tracker.ui.stats.editor.navigateToEditStat
 import com.example.tracker.ui.stats.editor.navigateToNewStat
 import com.example.tracker.ui.stats.editor.statEditorScreen
 import com.example.tracker.ui.stats.statsScreen
-import com.example.tracker.ui.weight.navigateToWeight
-import com.example.tracker.ui.weight.weightScreen
 import com.example.tracker.ui.workout.activeWorkoutScreen
 import com.example.tracker.ui.workout.navigateToActiveWorkout
 
@@ -70,15 +66,11 @@ fun TrackerNavHost(
             onOpenHistory = navController::navigateToHistory,
         )
         statsScreen(
-            onOpenWeight = navController::navigateToWeight,
-            onOpenDaily = navController::navigateToNutrition,
             onOpenPhotos = navController::navigateToProgressPhotos,
             onTakePhotos = navController::navigateToPhotoCapture,
             onNewStat = navController::navigateToNewStat,
             onOpenStat = navController::navigateToStatDetail,
         )
-        nutritionScreen(onBack = navController::popBackStack)
-        weightScreen(onBack = navController::popBackStack)
         statDetailScreen(onBack = navController::popBackStack, onEdit = navController::navigateToEditStat)
         statEditorScreen(
             onClose = navController::popBackStack,

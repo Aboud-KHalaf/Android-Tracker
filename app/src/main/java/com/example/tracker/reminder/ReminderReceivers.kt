@@ -9,13 +9,13 @@ import com.example.tracker.TrackerApplication
 import kotlinx.coroutines.launch
 
 /** The reminder alarm went off. */
-class NutritionReminderReceiver : BroadcastReceiver() {
+class DailyReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val container = (context.applicationContext as TrackerApplication).container
         val pending = goAsync()
         container.applicationScope.launch {
             try {
-                container.nutritionReminder.onAlarm()
+                container.dailyReminder.onAlarm()
             } finally {
                 pending.finish()
             }
@@ -31,7 +31,7 @@ class NutritionReminderReceiver : BroadcastReceiver() {
 class ReminderRescheduleReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action in RESCHEDULE_ACTIONS) {
-            (context.applicationContext as TrackerApplication).container.nutritionReminder.sync()
+            (context.applicationContext as TrackerApplication).container.dailyReminder.sync()
         }
     }
 

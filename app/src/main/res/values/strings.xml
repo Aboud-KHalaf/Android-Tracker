@@ -265,81 +265,20 @@
     <string name="action_add">Add</string>
 
     <!-- Daily log (calories, protein and steps; "nutrition" in code) -->
-    <string name="nutrition_title">Daily log</string>
-    <string name="nutrition_error_load">Couldn\'t load your daily log.</string>
-    <string name="nutrition_today">Today</string>
-    <string name="nutrition_today_empty">Nothing logged today yet. Add what you ate and your steps at the end of the day.</string>
-    <string name="nutrition_log_today">Log today</string>
-    <string name="nutrition_edit_today">Edit</string>
-    <string name="nutrition_calories">Calories</string>
-    <string name="nutrition_protein">Protein</string>
-    <string name="nutrition_kcal">%1$s kcal</string>
-    <string name="nutrition_grams">%1$s g</string>
-    <string name="nutrition_kcal_of_target">%1$s / %2$s kcal</string>
-    <string name="nutrition_grams_of_target">%1$s / %2$s g</string>
-    <string name="nutrition_day_values">%1$s kcal · %2$s g protein</string>
-    <string name="nutrition_steps">Steps</string>
-    <string name="nutrition_steps_optional">Steps (optional)</string>
-    <string name="nutrition_steps_value">%1$s steps</string>
-    <string name="nutrition_steps_of_target">%1$s / %2$s steps</string>
-    <string name="nutrition_unit_steps">steps</string>
-    <string name="nutrition_weekday_steps">%1$s · %2$s steps</string>
-    <string name="nutrition_error_steps">Enter a whole number from 0 to %1$s, or leave it empty</string>
-    <string name="nutrition_chart_no_steps">No steps logged in this period.</string>
-    <string name="nutrition_daily_average">Daily average</string>
-    <plurals name="nutrition_logged_days">
-        <item quantity="one">Logged %1$d of %2$d day</item>
-        <item quantity="other">Logged %1$d of %2$d days</item>
-    </plurals>
-    <plurals name="nutrition_calories_on_target">
-        <item quantity="one">Calories on target %1$d of %2$d logged day</item>
-        <item quantity="other">Calories on target %1$d of %2$d logged days</item>
-    </plurals>
-    <plurals name="nutrition_protein_on_target">
-        <item quantity="one">Protein target hit %1$d of %2$d logged day</item>
-        <item quantity="other">Protein target hit %1$d of %2$d logged days</item>
-    </plurals>
-    <plurals name="nutrition_steps_on_target">
-        <item quantity="one">Steps target hit %1$d of %2$d day with steps</item>
-        <item quantity="other">Steps target hit %1$d of %2$d days with steps</item>
-    </plurals>
-    <plurals name="nutrition_day_count">
-        <item quantity="one">%d day</item>
-        <item quantity="other">%d days</item>
-    </plurals>
-    <string name="nutrition_empty_title">No days logged</string>
-    <string name="nutrition_empty_body">Log your calories, protein and steps at the end of each day to see your history here.</string>
-    <string name="nutrition_log_day">Log day</string>
-    <string name="nutrition_edit_day">Edit day</string>
-    <string name="nutrition_unit_kcal">kcal</string>
-    <string name="nutrition_unit_grams">g</string>
-    <string name="nutrition_error_amount">Enter a whole number from 0 to %1$s</string>
-    <string name="nutrition_error_open_day">Couldn\'t open that day. Try again.</string>
-    <string name="nutrition_error_save">Couldn\'t save. Try again.</string>
-    <string name="nutrition_error_delete">Couldn\'t delete that day. Try again.</string>
-    <string name="nutrition_day_deleted">Day deleted</string>
-    <string name="nutrition_targets">Targets</string>
-    <string name="nutrition_targets_title">Daily targets</string>
-    <string name="nutrition_targets_body">Leave a field empty for no target.</string>
-    <string name="nutrition_error_target">Enter a whole number from 1 to %1$s, or leave it empty</string>
-    <string name="nutrition_error_targets">Couldn\'t save your targets. Try again.</string>
     <string name="period_group">Period</string>
     <string name="period_this_month">This month</string>
     <string name="period_last_30_days">Last 30 days</string>
     <string name="period_custom">Custom</string>
     <string name="period_range">%1$s – %2$s</string>
-    <string name="nutrition_chart_target">Target %1$s</string>
-    <string name="nutrition_chart_point">%1$s: %2$s</string>
-    <string name="nutrition_chart_description">Daily %1$s from %2$s to %3$s. %4$s</string>
 
     <!-- Reminders -->
     <string name="reminder_channel_name">Daily reminders</string>
-    <string name="reminder_channel_description">A reminder in the evening when today\'s log isn\'t filled in</string>
-    <string name="reminder_title">Fill in today\'s log</string>
-    <string name="reminder_text">You haven\'t added today\'s calories, protein and steps yet.</string>
+    <string name="reminder_channel_description">A reminder in the evening when a stat isn\'t logged today</string>
+    <string name="reminder_title">Log today\'s stats</string>
+    <string name="reminder_text">Some of your stats aren\'t logged yet today.</string>
     <string name="settings_notifications">Notifications</string>
-    <string name="settings_nutrition_reminder">Daily log reminder</string>
-    <string name="settings_nutrition_reminder_description">Only when today isn\'t logged</string>
+    <string name="settings_reminder">Daily stats reminder</string>
+    <string name="settings_reminder_description">Only when a stat isn\'t logged today</string>
     <string name="settings_reminder_time">Reminder time</string>
     <string name="settings_reminder_time_title">Remind me at</string>
     <string name="settings_notifications_blocked">Notifications are off for this app</string>
@@ -354,33 +293,6 @@
     <string name="settings_author_url" translatable="false">https://aboud-khalaf.github.io/My-Portfolio/</string>
 
     <!-- Weight -->
-    <string name="weight_title">Weight</string>
-    <string name="weight_today">Today</string>
-    <string name="weight_current">Current weight</string>
-    <string name="weight_none_yet">No weight logged yet. Weigh yourself and add it to start a trend.</string>
-    <string name="weight_log_today">Log today</string>
-    <string name="weight_edit_today">Edit</string>
-    <string name="weight_log">Log weight</string>
-    <string name="weight_edit">Edit weight</string>
-    <string name="weight_unit_kg">kg</string>
-    <string name="weight_kg">%1$s kg</string>
-    <string name="weight_change_up">+%1$s kg</string>
-    <string name="weight_change_down">−%1$s kg</string>
-    <string name="weight_change">Change</string>
-    <string name="weight_lowest">Lowest</string>
-    <string name="weight_highest">Highest</string>
-    <plurals name="weight_entry_count">
-        <item quantity="one">%d entry</item>
-        <item quantity="other">%d entries</item>
-    </plurals>
-    <string name="weight_empty_title">No weight in this period</string>
-    <string name="weight_empty_body">Log your weight to see how it changes over time.</string>
-    <string name="weight_error_value">Enter a weight from %1$s to %2$s kg</string>
-    <string name="weight_error_load">Couldn\'t load your weight log.</string>
-    <string name="weight_error_open">Couldn\'t open that day. Try again.</string>
-    <string name="weight_error_save">Couldn\'t save. Try again.</string>
-    <string name="weight_error_delete">Couldn\'t delete that entry. Try again.</string>
-    <string name="weight_deleted">Weight deleted</string>
     <!-- Export (PDF / Excel) -->
     <string name="export_action">Export</string>
     <string name="export_pdf">Export as PDF</string>
@@ -396,8 +308,6 @@
     <string name="export_yes">Yes</string>
     <string name="export_section_summary">Summary</string>
     <string name="export_section_sessions">Sessions</string>
-    <string name="export_section_days">Days</string>
-    <string name="export_section_entries">Entries</string>
     <string name="export_section_sets">Workout sets</string>
     <string name="export_section_exercises">Exercises</string>
     <string name="export_column_date">Date</string>
@@ -413,13 +323,6 @@
     <string name="export_column_volume_kg">Volume (kg)</string>
     <string name="export_column_longest_hold_seconds">Longest hold (s)</string>
     <string name="export_column_personal_best">Personal best</string>
-    <string name="export_column_calories">Calories (kcal)</string>
-    <string name="export_column_protein">Protein (g)</string>
-    <string name="export_column_steps">Steps</string>
-    <string name="export_column_calories_on_target">Calories on target</string>
-    <string name="export_column_protein_on_target">Protein on target</string>
-    <string name="export_column_steps_on_target">Steps on target</string>
-    <string name="export_column_change_kg">Change (kg)</string>
     <string name="export_metric">Metric</string>
     <string name="export_range">Range</string>
     <string name="export_sessions_in_range">Sessions in range</string>
@@ -433,20 +336,6 @@
     <string name="export_unit_kg">kg</string>
     <string name="export_unit_reps">reps</string>
     <string name="export_unit_seconds">s</string>
-    <string name="export_logged_days">Logged days</string>
-    <string name="export_average_calories">Average calories (kcal)</string>
-    <string name="export_average_protein">Average protein (g)</string>
-    <string name="export_average_steps">Average steps</string>
-    <string name="export_calorie_target">Calorie target (kcal)</string>
-    <string name="export_protein_target">Protein target (g)</string>
-    <string name="export_steps_target">Steps target</string>
-    <string name="export_calories_on_target_days">Days calories on target</string>
-    <string name="export_protein_on_target_days">Days protein target hit</string>
-    <string name="export_steps_on_target_days">Days steps target hit</string>
-    <string name="export_starting_weight">Starting weight (kg)</string>
-    <string name="export_latest_weight">Latest weight (kg)</string>
-    <string name="export_lowest_weight">Lowest (kg)</string>
-    <string name="export_highest_weight">Highest (kg)</string>
     <string name="export_entry_count">Entries</string>
     <string name="export_all_title">Tracker data</string>
     <string name="settings_export_all">Export all data</string>
@@ -641,13 +530,33 @@
     <string name="stats_title">Stats</string>
     <string name="stats_error_load">Couldn\'t load your stats.</string>
     <string name="stats_not_logged">Not logged yet</string>
-    <string name="stats_weight_recent_change">%1$s in 30 days</string>
-    <string name="stats_daily_none">Nothing logged today</string>
-    <string name="stats_daily_protein">%1$s g protein</string>
     <string name="stats_mine">My stats</string>
     <string name="stats_new">New stat</string>
     <string name="stats_empty_title">Track anything</string>
-    <string name="stats_empty_body">Create a stat for anything you measure, such as body fat, waist size or hours of sleep, and log it each day. Start from one of these, or tap New stat.</string>
+    <string name="stats_empty_body">Create a stat for anything you measure, such as your weight, calories or waist size, and log it each day. Start from one of these, or tap New stat.</string>
+    <string name="stats_suggestions">Suggestions</string>
+    <string name="stat_today">Today</string>
+    <string name="stat_log_today">Log today</string>
+    <string name="stat_edit_today">Edit today</string>
+    <string name="stat_change">Change</string>
+    <string name="stat_lowest">Lowest</string>
+    <string name="stat_highest">Highest</string>
+    <string name="stat_template_weight">Weight</string>
+    <string name="stat_template_calories">Calories</string>
+    <string name="stat_template_protein">Protein</string>
+    <string name="stat_template_steps">Steps</string>
+    <string name="stat_unit_kg">kg</string>
+    <string name="stat_unit_kcal">kcal</string>
+    <string name="stat_unit_grams">g</string>
+    <string name="stat_unit_steps">steps</string>
+    <string name="export_column_with_unit">%1$s (%2$s)</string>
+    <string name="export_stat_entries">%1$s entries</string>
+    <string name="export_stat_first">First</string>
+    <string name="export_stat_latest">Latest</string>
+    <string name="export_stat_change">Change</string>
+    <string name="export_stat_lowest">Lowest</string>
+    <string name="export_stat_highest">Highest</string>
+    <string name="export_stat_target">Target</string>
     <string name="stat_value_with_unit">%1$s %2$s</string>
     <string name="stat_change_up">+%1$s</string>
     <string name="stat_change_down">−%1$s</string>

@@ -1,11 +1,14 @@
 package com.example.tracker.ui.stats
 
 import com.example.tracker.data.repository.FakeTimeProvider
+import com.example.tracker.domain.export.ExportFormat
+import com.example.tracker.domain.export.ReportText
 import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.StatColor
 import com.example.tracker.domain.model.StatEntry
 import com.example.tracker.domain.model.StatIcon
 import com.example.tracker.testing.FakeCustomStatRepository
+import com.example.tracker.testing.FakeReportExporter
 import com.example.tracker.testing.MainDispatcherRule
 import com.example.tracker.ui.stats.detail.StatDetailEvent
 import com.example.tracker.ui.stats.detail.StatDetailUiState
@@ -32,6 +35,7 @@ class StatDetailViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val repository = FakeCustomStatRepository()
+    private val exporter = FakeReportExporter()
     private val time = FakeTimeProvider(Instant.parse("2026-10-03T09:00:00Z"))
     private val today = LocalDate.of(2026, 10, 3)
 
@@ -41,7 +45,7 @@ class StatDetailViewModelTest {
         repository.stats.value = listOf(bodyFat)
     }
 
-    private fun createViewModel(logToday: Boolean = false) = StatDetailViewModel("fat", logToday, repository, time)
+    private fun createViewModel(logToday: Boolean = false) = StatDetailViewModel("fat", logToday, repository, exporter, time)
 
     private fun TestScope.collectState(viewModel: StatDetailViewModel): () -> StatDetailUiState {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
@@ -132,5 +136,19 @@ class StatDetailViewModelTest {
         val event = viewModel.events.first() as StatDetailEvent.EntryDeleted
         viewModel.onUndoDelete(event.entry)
         assertEquals(StatEntry("fat", today, 18.0), repository.observeEntry("fat", today).first())
+    }
+
+    @Test
+    fun onExport_writesThePeriodsEntries() = runTest {
+        repository.put(StatEntry("fat", today.minusDays(3), 19.0), StatEntry("fat", today, 18.0))
+        val viewModel = createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+
+        viewModel.onExport(ExportFormat.PDF, "content://fat.pdf")
+
+        val report = exporter.exports.single().report
+        assertEquals(ReportText.Plain("Body fat"), report.title)
+        assertEquals(2, report.sections.last().table!!.rows.size)
+        assertEquals("tracker-body-fat-2026-10-03.pdf", viewModel.exportFileName(ExportFormat.PDF))
     }
 }

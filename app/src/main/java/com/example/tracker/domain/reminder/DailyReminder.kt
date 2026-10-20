@@ -1,7 +1,7 @@
 package com.example.tracker.domain.reminder
 
 import com.example.tracker.core.TimeProvider
-import com.example.tracker.domain.repository.NutritionRepository
+import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import java.time.Instant
 import kotlinx.coroutines.flow.first
@@ -12,38 +12,39 @@ interface ReminderScheduler {
     fun cancel()
 }
 
-/** Shows the "log today" notification. */
+/** Shows the "log your stats" notification. */
 fun interface ReminderNotifier {
-    fun showNutritionReminder()
+    fun showStatsReminder()
 }
 
 /**
- * The daily nutrition reminder: at the time the user picked, if today has no entry, the user gets a
- * notification. Only one alarm is ever pending; each one schedules the next.
+ * The daily reminder: at the time the user picked, if a stat isn't logged today, the user gets
+ * a notification. Without any stats there is nothing to remind about. Only one alarm is ever
+ * pending; each one schedules the next.
  */
-class NutritionReminder(
+class DailyReminder(
     private val settings: SettingsRepository,
-    private val nutrition: NutritionRepository,
+    private val stats: CustomStatRepository,
     private val scheduler: ReminderScheduler,
     private val notifier: ReminderNotifier,
     private val time: TimeProvider,
 ) {
     /** Schedules the next reminder if it is enabled, otherwise cancels it. Safe to call any time. */
     fun sync() {
-        if (settings.nutritionReminderEnabled.value) {
-            val next = ReminderTime.nextAfter(time.now().atZone(time.zone()), settings.nutritionReminderTime.value)
+        if (settings.reminderEnabled.value) {
+            val next = ReminderTime.nextAfter(time.now().atZone(time.zone()), settings.reminderTime.value)
             scheduler.schedule(next.toInstant())
         } else {
             scheduler.cancel()
         }
     }
 
-    /** The alarm went off: remind the user if today isn't logged, then set tomorrow's alarm. */
+    /** The alarm went off: remind the user if a stat isn't logged today, then set tomorrow's alarm. */
     suspend fun onAlarm() {
-        if (!settings.nutritionReminderEnabled.value) return
+        if (!settings.reminderEnabled.value) return
         try {
             val today = time.now().atZone(time.zone()).toLocalDate()
-            if (nutrition.observeDay(today).first() == null) notifier.showNutritionReminder()
+            if (stats.observeOverviews().first().any { it.latest?.date != today }) notifier.showStatsReminder()
         } finally {
             sync()
         }

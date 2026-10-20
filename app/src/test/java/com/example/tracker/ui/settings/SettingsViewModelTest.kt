@@ -4,18 +4,19 @@ import com.example.tracker.R
 import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.export.ExportFormat
 import com.example.tracker.domain.export.ReportText
-import com.example.tracker.domain.model.DailyNutrition
+import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.StatColor
+import com.example.tracker.domain.model.StatEntry
+import com.example.tracker.domain.model.StatIcon
 import com.example.tracker.domain.model.ThemeMode
-import com.example.tracker.domain.model.WeightEntry
 import com.example.tracker.domain.progress.benchHistory
 import com.example.tracker.domain.progress.toSessions
+import com.example.tracker.testing.FakeCustomStatRepository
 import com.example.tracker.testing.FakeExerciseRepository
-import com.example.tracker.testing.FakeNutritionRepository
 import com.example.tracker.testing.FakeReportExporter
 import com.example.tracker.testing.FakeSettingsRepository
-import com.example.tracker.testing.FakeWeightRepository
 import com.example.tracker.testing.FakeWorkoutRepository
 import com.example.tracker.testing.MainDispatcherRule
 import java.io.IOException
@@ -41,14 +42,13 @@ class SettingsViewModelTest {
     private val settings = FakeSettingsRepository()
     private val exercises = FakeExerciseRepository()
     private val workouts = FakeWorkoutRepository()
-    private val nutrition = FakeNutritionRepository()
-    private val weights = FakeWeightRepository()
+    private val stats = FakeCustomStatRepository()
     private val exporter = FakeReportExporter()
     private val time = FakeTimeProvider(Instant.parse("2026-10-03T09:00:00Z"))
 
     private fun createViewModel() = SettingsViewModel(
         settingsRepository = settings,
-        data = SettingsViewModel.ExportableData(exercises, workouts, nutrition, weights),
+        data = SettingsViewModel.ExportableData(exercises, workouts, stats),
         reportExporter = exporter,
         time = time,
     )
@@ -109,43 +109,43 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun onSetNutritionReminder_savesIt() = runTest {
+    fun onSetReminder_savesIt() = runTest {
         val viewModel = createViewModel()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
 
-        viewModel.onSetNutritionReminder(false)
+        viewModel.onSetReminder(false)
 
-        assertFalse(settings.nutritionReminderEnabled.value)
-        assertFalse(viewModel.uiState.value.nutritionReminderEnabled)
+        assertFalse(settings.reminderEnabled.value)
+        assertFalse(viewModel.uiState.value.reminderEnabled)
     }
 
     @Test
-    fun onSetNutritionReminder_failure_showsMessage() = runTest {
+    fun onSetReminder_failure_showsMessage() = runTest {
         settings.writeError = java.io.IOException("disk")
         val viewModel = createViewModel()
 
-        viewModel.onSetNutritionReminder(false)
+        viewModel.onSetReminder(false)
 
         assertEquals(SettingsEvent.ShowMessage(R.string.settings_error_reminder), viewModel.events.first())
     }
 
     @Test
-    fun onSetNutritionReminderTime_savesIt() = runTest {
+    fun onSetReminderTime_savesIt() = runTest {
         val viewModel = createViewModel()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
 
-        viewModel.onSetNutritionReminderTime(LocalTime.of(19, 15))
+        viewModel.onSetReminderTime(LocalTime.of(19, 15))
 
-        assertEquals(LocalTime.of(19, 15), settings.nutritionReminderTime.value)
-        assertEquals(LocalTime.of(19, 15), viewModel.uiState.value.nutritionReminderTime)
+        assertEquals(LocalTime.of(19, 15), settings.reminderTime.value)
+        assertEquals(LocalTime.of(19, 15), viewModel.uiState.value.reminderTime)
     }
 
     @Test
-    fun onSetNutritionReminderTime_failure_showsMessage() = runTest {
+    fun onSetReminderTime_failure_showsMessage() = runTest {
         settings.writeError = java.io.IOException("disk")
         val viewModel = createViewModel()
 
-        viewModel.onSetNutritionReminderTime(LocalTime.of(19, 15))
+        viewModel.onSetReminderTime(LocalTime.of(19, 15))
 
         assertEquals(SettingsEvent.ShowMessage(R.string.settings_error_reminder), viewModel.events.first())
     }
@@ -154,8 +154,15 @@ class SettingsViewModelTest {
     fun onExportAllData_writesEverySectionsFullHistory() = runTest {
         exercises.exercises.value = listOf(Exercise("bench", "Bench Press", ExerciseType.WEIGHT_REPS))
         workouts.sessions.value = mapOf("bench" to benchHistory.toSessions())
-        nutrition.put(DailyNutrition(LocalDate.of(2024, 1, 5), calories = 2000, proteinGrams = 150))
-        weights.put(WeightEntry(LocalDate.of(2023, 6, 1), 82.0), WeightEntry(LocalDate.of(2026, 10, 3), 78.0))
+        stats.stats.value = listOf(
+            CustomStat("calories", "Calories", "kcal", 0, 2300.0, StatIcon.FIRE, StatColor.AMBER),
+            CustomStat("weight", "Weight", "kg", 1, null, StatIcon.SCALE, StatColor.BLUE),
+        )
+        stats.put(
+            StatEntry("calories", LocalDate.of(2024, 1, 5), 2000.0),
+            StatEntry("weight", LocalDate.of(2023, 6, 1), 82.0),
+            StatEntry("weight", LocalDate.of(2026, 10, 3), 78.0),
+        )
         val viewModel = createViewModel()
 
         viewModel.onExportAllData(ExportFormat.XLSX, "content://all.xlsx")
@@ -163,15 +170,18 @@ class SettingsViewModelTest {
         assertEquals(SettingsEvent.ShowMessage(R.string.export_done), viewModel.events.first())
         val sections = exporter.exports.single().report.sections
         assertEquals(
-            listOf(
-                R.string.export_section_exercises,
-                R.string.export_section_sets,
-                R.string.nutrition_title,
-                R.string.export_section_days,
-                R.string.weight_title,
-                R.string.export_section_entries,
-            ),
-            sections.map { (it.title as ReportText.Res).id },
+            listOf("exercises", "sets", "Calories", "Calories entries", "Weight", "Weight entries"),
+            sections.map { title ->
+                when (val text = title.title) {
+                    is ReportText.Plain -> text.text
+                    is ReportText.Res -> when (text.id) {
+                        R.string.export_section_exercises -> "exercises"
+                        R.string.export_section_sets -> "sets"
+                        R.string.export_stat_entries -> "${text.args.single()} entries"
+                        else -> error("Unexpected section ${text.id}")
+                    }
+                }
+            },
         )
         assertEquals(18, sections[1].table!!.rows.size) // six sessions of three sets
         assertEquals(1, sections[3].table!!.rows.size)
