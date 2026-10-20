@@ -11,6 +11,9 @@ import androidx.navigation.toRoute
 import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
+import com.example.tracker.domain.export.ExportFormat
+import com.example.tracker.domain.export.ReportExporter
+import com.example.tracker.domain.export.exportFileName
 import com.example.tracker.domain.model.DatePeriod
 import com.example.tracker.domain.model.StatEntry
 import com.example.tracker.domain.model.StatOverview
@@ -48,6 +51,7 @@ class StatDetailViewModel(
     private val statId: String,
     logToday: Boolean,
     private val repository: CustomStatRepository,
+    private val reportExporter: ReportExporter,
     private val time: TimeProvider,
 ) : ViewModel() {
 
@@ -86,6 +90,34 @@ class StatDetailViewModel(
 
     fun onSelectPeriod(selected: DatePeriod) {
         period.value = selected
+    }
+
+    private val _isExporting = MutableStateFlow(false)
+
+    /** Whether an export is being written; the screen disables exporting meanwhile. */
+    val isExporting: StateFlow<Boolean> = _isExporting.asStateFlow()
+
+    fun exportFileName(format: ExportFormat): String =
+        exportFileName((uiState.value as? StatDetailUiState.Success)?.stat?.name.orEmpty(), today(), format)
+
+    /** Saves the selected period's entries as [format] to [destination], a file URI. */
+    fun onExport(format: ExportFormat, destination: String) {
+        if (_isExporting.value) return
+        _isExporting.value = true
+        viewModelScope.launchCatching(onError = { showMessage(R.string.export_error) }) {
+            try {
+                val stat = overview.first()?.stat ?: return@launchCatching
+                val today = today()
+                val period = period.value
+                val from = period.start(today)
+                val to = period.end(today)
+                val entries = repository.observeEntries(statId, from, to).first()
+                reportExporter.export(StatReportBuilder.build(stat, from, to, today, entries), format, destination)
+                showMessage(R.string.export_done)
+            } finally {
+                _isExporting.value = false
+            }
+        }
     }
 
     fun onRetry() {
@@ -189,7 +221,13 @@ class StatDetailViewModel(
             initializer {
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
                 val route = createSavedStateHandle().toRoute<StatDetailDestination>()
-                StatDetailViewModel(route.statId, route.logToday, container.customStatRepository, container.time)
+                StatDetailViewModel(
+                    route.statId,
+                    route.logToday,
+                    container.customStatRepository,
+                    container.reportExporter,
+                    container.time,
+                )
             }
         }
     }

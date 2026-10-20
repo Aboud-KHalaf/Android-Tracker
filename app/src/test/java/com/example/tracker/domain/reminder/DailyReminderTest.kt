@@ -1,8 +1,11 @@
 package com.example.tracker.domain.reminder
 
 import com.example.tracker.data.repository.FakeTimeProvider
-import com.example.tracker.domain.model.DailyNutrition
-import com.example.tracker.testing.FakeNutritionRepository
+import com.example.tracker.domain.model.CustomStat
+import com.example.tracker.domain.model.StatColor
+import com.example.tracker.domain.model.StatEntry
+import com.example.tracker.domain.model.StatIcon
+import com.example.tracker.testing.FakeCustomStatRepository
 import com.example.tracker.testing.FakeSettingsRepository
 import java.io.IOException
 import java.time.Instant
@@ -13,19 +16,25 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class NutritionReminderTest {
+class DailyReminderTest {
 
     private val settings = FakeSettingsRepository()
-    private val nutrition = FakeNutritionRepository()
+    private val stats = FakeCustomStatRepository().apply {
+        this.stats.value = listOf(stat("weight"), stat("waist"))
+    }
     private val scheduler = RecordingScheduler()
     private var notifications = 0
 
+    private val today = LocalDate.of(2026, 10, 3)
+
     // 21:00 UTC on 3 October; the fake time provider uses UTC.
     private val time = FakeTimeProvider(Instant.parse("2026-10-03T21:00:00Z"))
-    private val reminder = NutritionReminder(settings, nutrition, scheduler, { notifications++ }, time)
+    private val reminder = DailyReminder(settings, stats, scheduler, { notifications++ }, time)
 
     @Test
-    fun onAlarm_todayNotLogged_notifiesAndSchedulesTomorrow() = runTest {
+    fun onAlarm_aStatNotLoggedToday_notifiesAndSchedulesTomorrow() = runTest {
+        stats.put(StatEntry("weight", today, 78.4))
+
         reminder.onAlarm()
 
         assertEquals(1, notifications)
@@ -33,8 +42,18 @@ class NutritionReminderTest {
     }
 
     @Test
-    fun onAlarm_todayLogged_staysQuietButStillSchedulesTomorrow() = runTest {
-        nutrition.put(DailyNutrition(LocalDate.of(2026, 10, 3), 2300, 150))
+    fun onAlarm_everyStatLoggedToday_staysQuietButStillSchedulesTomorrow() = runTest {
+        stats.put(StatEntry("weight", today, 78.4), StatEntry("waist", today, 84.0))
+
+        reminder.onAlarm()
+
+        assertEquals(0, notifications)
+        assertEquals(listOf(Instant.parse("2026-10-04T21:00:00Z")), scheduler.scheduled)
+    }
+
+    @Test
+    fun onAlarm_withoutStats_staysQuiet() = runTest {
+        stats.stats.value = emptyList()
 
         reminder.onAlarm()
 
@@ -44,7 +63,7 @@ class NutritionReminderTest {
 
     @Test
     fun onAlarm_disabled_doesNothing() = runTest {
-        settings.nutritionReminderEnabled.value = false
+        settings.reminderEnabled.value = false
 
         reminder.onAlarm()
 
@@ -54,9 +73,9 @@ class NutritionReminderTest {
 
     @Test
     fun onAlarm_readFails_stillSchedulesTomorrow() = runTest {
-        val failing = NutritionReminder(settings, BrokenNutrition(), scheduler, { notifications++ }, time)
+        stats.observeError = IOException("disk")
 
-        runCatching { failing.onAlarm() }
+        runCatching { reminder.onAlarm() }
 
         assertEquals(listOf(Instant.parse("2026-10-04T21:00:00Z")), scheduler.scheduled)
     }
@@ -66,7 +85,7 @@ class NutritionReminderTest {
         time.current = Instant.parse("2026-10-03T08:00:00Z")
         reminder.sync()
 
-        settings.nutritionReminderEnabled.value = false
+        settings.reminderEnabled.value = false
         reminder.sync()
 
         assertEquals(listOf(Instant.parse("2026-10-03T21:00:00Z")), scheduler.scheduled)
@@ -76,7 +95,7 @@ class NutritionReminderTest {
     @Test
     fun sync_usesTheChosenTime() {
         time.current = Instant.parse("2026-10-03T08:00:00Z")
-        settings.nutritionReminderTime.value = LocalTime.of(18, 45)
+        settings.reminderTime.value = LocalTime.of(18, 45)
 
         reminder.sync()
 
@@ -94,7 +113,5 @@ class NutritionReminderTest {
         }
     }
 
-    private class BrokenNutrition : com.example.tracker.domain.repository.NutritionRepository by FakeNutritionRepository() {
-        override fun observeDay(date: LocalDate) = kotlinx.coroutines.flow.flow<DailyNutrition?> { throw IOException("disk") }
-    }
+    private fun stat(id: String) = CustomStat(id, id, "", 1, null, StatIcon.CHART, StatColor.BLUE)
 }

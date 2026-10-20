@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,11 +31,10 @@ import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.ScreenTitle
 import com.example.tracker.ui.common.SectionHeader
 import com.example.tracker.ui.common.StateCrossfade
+import com.example.tracker.ui.common.rememberNotificationPermissionRequest
 import com.example.tracker.ui.photos.components.ProgressPhotosCard
 import com.example.tracker.ui.stats.components.CustomStatCard
-import com.example.tracker.ui.stats.components.DailyStatCard
 import com.example.tracker.ui.stats.components.StatSuggestionsCard
-import com.example.tracker.ui.stats.components.WeightStatCard
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 
@@ -44,8 +44,6 @@ private val FabClearance = 88.dp
 /** Stats tab destination: connects [StatsViewModel] to [StatsScreen]. */
 @Composable
 fun StatsRoute(
-    onOpenWeight: () -> Unit,
-    onOpenDaily: () -> Unit,
     onOpenPhotos: () -> Unit,
     onTakePhotos: () -> Unit,
     onNewStat: (StatTemplate?) -> Unit,
@@ -55,11 +53,17 @@ fun StatsRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val latestCheckIn by viewModel.latestCheckIn.collectAsStateWithLifecycle()
+
+    // The daily reminder needs notification permission; ask once, here, where the reason is clear.
+    val shouldRequestPermission by viewModel.shouldRequestNotificationPermission.collectAsStateWithLifecycle()
+    val requestNotifications = rememberNotificationPermissionRequest { viewModel.onNotificationPermissionRequested() }
+    LaunchedEffect(shouldRequestPermission) {
+        if (shouldRequestPermission) requestNotifications()
+    }
+
     StatsScreen(
         uiState = uiState,
         actions = StatsActions(
-            onOpenWeight = onOpenWeight,
-            onOpenDaily = onOpenDaily,
             onNewStat = onNewStat,
             onOpenStat = onOpenStat,
             onRetry = viewModel::onRetry,
@@ -73,8 +77,6 @@ fun StatsRoute(
 
 /** What the user can do on the Stats tab. */
 data class StatsActions(
-    val onOpenWeight: () -> Unit = {},
-    val onOpenDaily: () -> Unit = {},
     /** Null starts from scratch. */
     val onNewStat: (StatTemplate?) -> Unit = {},
     /** `logToday` opens today's entry right away. */
@@ -82,7 +84,7 @@ data class StatsActions(
     val onRetry: () -> Unit = {},
 )
 
-/** Stateless Stats tab. [photosCard] goes below the built-in stats. */
+/** Stateless Stats tab. [photosCard] goes above the stats. */
 @Composable
 fun StatsScreen(
     uiState: StatsUiState,
@@ -144,8 +146,6 @@ private fun StatsContent(
                     modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, bottom = spacing.md),
                 )
             }
-            item(key = "weight") { WeightStatCard(state.weight, state.today, actions.onOpenWeight, cardModifier) }
-            item(key = "daily") { DailyStatCard(state.daily, actions.onOpenDaily, cardModifier) }
             item(key = "photos") { photosCard(cardModifier) }
             item(key = "mine") {
                 SectionHeader(
@@ -153,15 +153,20 @@ private fun StatsContent(
                     modifier = Modifier.padding(start = spacing.lg, end = spacing.sm, top = spacing.md),
                 )
             }
-            if (state.stats.isEmpty()) {
-                item(key = "suggestions") { StatSuggestionsCard(onPick = actions.onNewStat, modifier = cardModifier) }
-            }
             items(state.stats, key = { it.stat.id }) { card ->
                 CustomStatCard(
                     card = card,
                     today = state.today,
                     onClick = { actions.onOpenStat(card.stat.id, false) },
                     onLog = { actions.onOpenStat(card.stat.id, true) },
+                    modifier = cardModifier.animateItem(),
+                )
+            }
+            item(key = "suggestions") {
+                StatSuggestionsCard(
+                    existingNames = state.stats.mapTo(mutableSetOf()) { it.stat.name },
+                    isFirstStat = state.stats.isEmpty(),
+                    onPick = actions.onNewStat,
                     modifier = cardModifier.animateItem(),
                 )
             }

@@ -59,7 +59,7 @@ fun StatEntryDialog(
                     Icon(Icons.Outlined.CalendarMonth, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
                     Spacer(Modifier.width(ButtonDefaults.IconSpacing))
                     Text(
-                        text = if (state.date == today) stringResource(R.string.weight_today) else state.date.longDate(currentLocale()),
+                        text = if (state.date == today) stringResource(R.string.stat_today) else state.date.longDate(currentLocale()),
                         modifier = Modifier.weight(1f),
                     )
                 }

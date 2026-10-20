@@ -9,6 +9,6 @@ data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val isDeletingData: Boolean = false,
     val isExportingData: Boolean = false,
-    val nutritionReminderEnabled: Boolean = true,
-    val nutritionReminderTime: LocalTime = ReminderTime.DEFAULT,
+    val reminderEnabled: Boolean = true,
+    val reminderTime: LocalTime = ReminderTime.DEFAULT,
 )

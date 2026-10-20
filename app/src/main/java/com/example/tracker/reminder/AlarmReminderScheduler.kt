@@ -39,7 +39,7 @@ class AlarmReminderScheduler(private val context: Context) : ReminderScheduler {
     private fun pendingIntent(): PendingIntent = PendingIntent.getBroadcast(
         context,
         REQUEST_CODE,
-        Intent(context, NutritionReminderReceiver::class.java),
+        Intent(context, DailyReminderReceiver::class.java),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
 

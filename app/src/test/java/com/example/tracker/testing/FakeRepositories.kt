@@ -2,12 +2,10 @@ package com.example.tracker.testing
 
 import com.example.tracker.domain.model.CatalogExercise
 import com.example.tracker.domain.model.CustomStat
-import com.example.tracker.domain.model.DailyNutrition
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.ExerciseType
-import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.PersonalBest
 import com.example.tracker.domain.model.PhotoMeasurement
 import com.example.tracker.domain.model.PhotoPose
@@ -18,7 +16,6 @@ import com.example.tracker.domain.model.StatEntry
 import com.example.tracker.domain.model.StatOverview
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.model.WeekSummary
-import com.example.tracker.domain.model.WeightEntry
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSet
@@ -28,12 +25,10 @@ import com.example.tracker.domain.reminder.ReminderTime
 import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.ExerciseRepository
-import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
 import com.example.tracker.domain.repository.ProgramRepository
 import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.domain.repository.SettingsRepository
-import com.example.tracker.domain.repository.WeightRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import java.io.File
 import java.time.DayOfWeek
@@ -259,19 +254,18 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
 
 class FakeSettingsRepository : SettingsRepository {
     override val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
-    override val nutritionTargets = MutableStateFlow(NutritionTargets())
-    override val nutritionReminderEnabled = MutableStateFlow(true)
-    override val nutritionReminderTime = MutableStateFlow(ReminderTime.DEFAULT)
+    override val reminderEnabled = MutableStateFlow(true)
+    override val reminderTime = MutableStateFlow(ReminderTime.DEFAULT)
     override val notificationPermissionRequested = MutableStateFlow(false)
 
-    override suspend fun setNutritionReminderTime(time: LocalTime) {
+    override suspend fun setReminderTime(time: LocalTime) {
         writeError?.let { throw it }
-        nutritionReminderTime.value = time
+        reminderTime.value = time
     }
 
-    override suspend fun setNutritionReminderEnabled(enabled: Boolean) {
+    override suspend fun setReminderEnabled(enabled: Boolean) {
         writeError?.let { throw it }
-        nutritionReminderEnabled.value = enabled
+        reminderEnabled.value = enabled
     }
 
     override suspend fun markNotificationPermissionRequested() {
@@ -287,80 +281,9 @@ class FakeSettingsRepository : SettingsRepository {
         themeMode.value = mode
     }
 
-    override suspend fun setNutritionTargets(targets: NutritionTargets) {
-        writeError?.let { throw it }
-        nutritionTargets.value = targets
-    }
-
     override suspend fun deleteAllData() {
         writeError?.let { throw it }
         deleteAllDataCalls++
-    }
-}
-
-class FakeNutritionRepository : NutritionRepository {
-    /** Logged days by date. */
-    val days = MutableStateFlow<Map<LocalDate, DailyNutrition>>(emptyMap())
-
-    /** When set, [observeDays] fails with it, so screens can show their error state. */
-    var observeError: Exception? = null
-
-    /** When set, every write fails with it. */
-    var writeError: Exception? = null
-
-    override fun observeDays(from: LocalDate, to: LocalDate): Flow<List<DailyNutrition>> = flow {
-        observeError?.let { throw it }
-        emitAll(days.map { all -> all.values.filter { it.date in from..to }.sortedByDescending { it.date } })
-    }
-
-    override fun observeDay(date: LocalDate): Flow<DailyNutrition?> = days.map { it[date] }
-
-    override suspend fun saveDay(day: DailyNutrition) {
-        writeError?.let { throw it }
-        days.value += day.date to day
-    }
-
-    override suspend fun deleteDay(date: LocalDate) {
-        writeError?.let { throw it }
-        days.value -= date
-    }
-
-    fun put(vararg logged: DailyNutrition) {
-        days.value += logged.associateBy { it.date }
-    }
-}
-
-class FakeWeightRepository : WeightRepository {
-    /** Entries by date. */
-    val entries = MutableStateFlow<Map<LocalDate, WeightEntry>>(emptyMap())
-
-    /** When set, [observeEntries] fails with it, so screens can show their error state. */
-    var observeError: Exception? = null
-
-    /** When set, every write fails with it. */
-    var writeError: Exception? = null
-
-    override fun observeEntries(from: LocalDate, to: LocalDate): Flow<List<WeightEntry>> = flow {
-        observeError?.let { throw it }
-        emitAll(entries.map { all -> all.values.filter { it.date in from..to }.sortedByDescending { it.date } })
-    }
-
-    override fun observeLatest(): Flow<WeightEntry?> = entries.map { all -> all.values.maxByOrNull { it.date } }
-
-    override fun observeEntry(date: LocalDate): Flow<WeightEntry?> = entries.map { it[date] }
-
-    override suspend fun saveEntry(entry: WeightEntry) {
-        writeError?.let { throw it }
-        entries.value += entry.date to entry
-    }
-
-    override suspend fun deleteEntry(date: LocalDate) {
-        writeError?.let { throw it }
-        entries.value -= date
-    }
-
-    fun put(vararg logged: WeightEntry) {
-        entries.value += logged.associateBy { it.date }
     }
 }
 

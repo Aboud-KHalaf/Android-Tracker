@@ -50,9 +50,9 @@ fun StatChartCard(
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.lg)) {
-                Figure(stringResource(R.string.weight_change), statChangeText(summary.change, stat), Modifier.weight(1f))
-                Figure(stringResource(R.string.weight_lowest), statValueText(summary.lowest, stat), Modifier.weight(1f))
-                Figure(stringResource(R.string.weight_highest), statValueText(summary.highest, stat), Modifier.weight(1f))
+                Figure(stringResource(R.string.stat_change), statChangeText(summary.change, stat), Modifier.weight(1f))
+                Figure(stringResource(R.string.stat_lowest), statValueText(summary.lowest, stat), Modifier.weight(1f))
+                Figure(stringResource(R.string.stat_highest), statValueText(summary.highest, stat), Modifier.weight(1f))
             }
         }
     }

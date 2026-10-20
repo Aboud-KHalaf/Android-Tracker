@@ -247,6 +247,58 @@ class TrackerDatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun migrate8To9_turnsWeightAndTheDailyLogIntoStats() {
+        helper.createDatabase(DB_NAME, 8).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO body_weight (epoch_day, weight_kg, created_at, updated_at, deleted_at, sync_state)
+                VALUES (20000, 80.5, 1, 1, NULL, 'SYNCED'), (20001, 80.1, 2, 2, NULL, 'SYNCED'), (20002, 79.0, 3, 3, 9, 'PENDING')
+                """
+            )
+            db.execSQL(
+                """
+                INSERT INTO daily_nutrition (epoch_day, calories, protein_grams, steps, created_at, updated_at, deleted_at, sync_state)
+                VALUES (20000, 2300, 150, NULL, 1, 1, NULL, 'SYNCED')
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 9, true, LegacyLogsMigration).use { db ->
+            db.query("SELECT id, name, unit, decimals FROM custom_stats ORDER BY created_at").use { cursor ->
+                val stats = buildList {
+                    while (cursor.moveToNext()) add("${cursor.getString(0)} ${cursor.getString(1)} ${cursor.getString(2)} ${cursor.getInt(3)}")
+                }
+                // No steps were logged, so there is no Steps stat.
+                assertEquals(
+                    listOf("legacy-weight Weight kg 1", "legacy-calories Calories kcal 0", "legacy-protein Protein g 0"),
+                    stats,
+                )
+            }
+            db.query("SELECT epoch_day, value FROM custom_stat_entries WHERE stat_id = 'legacy-weight' ORDER BY epoch_day").use { cursor ->
+                assertEquals(2, cursor.count) // the deleted entry stays behind
+                cursor.moveToFirst()
+                assertEquals(80.5, cursor.getDouble(1), 1e-9)
+            }
+            db.query("SELECT value FROM custom_stat_entries WHERE stat_id = 'legacy-protein'").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals(150.0, cursor.getDouble(0), 1e-9)
+            }
+        }
+    }
+
+    @Test
+    fun migrate8To9_withoutLogs_createsNoStats() {
+        helper.createDatabase(DB_NAME, 8).close()
+
+        helper.runMigrationsAndValidate(DB_NAME, 9, true, LegacyLogsMigration).use { db ->
+            db.query("SELECT COUNT(*) FROM custom_stats").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals(0, cursor.getInt(0))
+            }
+        }
+    }
+
     private companion object {
         const val DB_NAME = "migration-test.db"
     }

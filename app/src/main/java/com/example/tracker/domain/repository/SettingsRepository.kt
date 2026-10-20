@@ -1,6 +1,5 @@
 package com.example.tracker.domain.repository
 
-import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.ThemeMode
 import java.time.LocalTime
 import kotlinx.coroutines.flow.StateFlow
@@ -11,26 +10,21 @@ interface SettingsRepository {
 
     suspend fun setThemeMode(mode: ThemeMode)
 
-    val nutritionTargets: StateFlow<NutritionTargets>
+    /** Whether to send a notification at [reminderTime] when a stat isn't logged today. On by default. */
+    val reminderEnabled: StateFlow<Boolean>
 
-    /** Throws [IllegalArgumentException] when a target is out of range. */
-    suspend fun setNutritionTargets(targets: NutritionTargets)
+    suspend fun setReminderEnabled(enabled: Boolean)
 
-    /** Whether to send a notification at [nutritionReminderTime] when the day's nutrition isn't logged. On by default. */
-    val nutritionReminderEnabled: StateFlow<Boolean>
+    /** Local time of day for the daily reminder; 9 PM by default. */
+    val reminderTime: StateFlow<LocalTime>
 
-    suspend fun setNutritionReminderEnabled(enabled: Boolean)
-
-    /** Local time of day for the nutrition reminder; 9 PM by default. */
-    val nutritionReminderTime: StateFlow<LocalTime>
-
-    suspend fun setNutritionReminderTime(time: LocalTime)
+    suspend fun setReminderTime(time: LocalTime)
 
     /** Whether the app has already asked for notification permission on its own (asked once). */
     val notificationPermissionRequested: StateFlow<Boolean>
 
     suspend fun markNotificationPermissionRequested()
 
-    /** Permanently deletes every exercise, plan, workout, nutrition and weight entry and progress photo on this device. Preferences stay. */
+    /** Permanently deletes every exercise, plan, workout, stat and progress photo on this device. Preferences stay. */
     suspend fun deleteAllData()
 }

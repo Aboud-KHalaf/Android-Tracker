@@ -10,12 +10,10 @@ import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.model.StatOverview
 import com.example.tracker.domain.photos.PhotoCheckIn
 import com.example.tracker.domain.repository.CustomStatRepository
-import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.domain.repository.SettingsRepository
-import com.example.tracker.domain.repository.WeightRepository
 import com.example.tracker.domain.stats.progressToward
-import com.example.tracker.domain.weight.WeightSummary
+import com.example.tracker.ui.common.launchCatching
 import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,14 +27,12 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
-/** Stats: weight and the daily log as built-in stats, the latest progress photos, and the user's own stats. */
+/** Stats: the user's stats with their latest values, suggestions for new ones, and the latest progress photos. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class StatsViewModel(
-    private val weightRepository: WeightRepository,
-    private val nutritionRepository: NutritionRepository,
-    private val settingsRepository: SettingsRepository,
-    photoRepository: ProgressPhotoRepository,
     private val customStatRepository: CustomStatRepository,
+    photoRepository: ProgressPhotoRepository,
+    private val settingsRepository: SettingsRepository,
     private val time: TimeProvider,
 ) : ViewModel() {
 
@@ -45,23 +41,8 @@ class StatsViewModel(
     val uiState: StateFlow<StatsUiState> = loadAttempt
         .flatMapLatest {
             val today = today()
-            combine(
-                weightRepository.observeLatest(),
-                weightRepository.observeEntries(today.minusDays(RECENT_DAYS - 1), today),
-                nutritionRepository.observeDay(today),
-                settingsRepository.nutritionTargets,
-                customStatRepository.observeOverviews(),
-            ) { latestWeight, recentWeights, todayNutrition, targets, overviews ->
-                StatsUiState.Success(
-                    today = today,
-                    weight = WeightOverviewUi(
-                        latest = latestWeight,
-                        recentChangeKg = WeightSummary.of(recentWeights)?.takeIf { it.entryCount > 1 }?.changeKg,
-                    ),
-                    daily = DailyOverviewUi(todayNutrition, targets),
-                    stats = overviews.map { it.toCardUi() },
-                ) as StatsUiState
-            }
+            customStatRepository.observeOverviews()
+                .map { overviews -> StatsUiState.Success(today, overviews.map { it.toCardUi() }) as StatsUiState }
                 .onStart { emit(StatsUiState.Loading) }
                 .catch { emit(StatsUiState.Error) }
         }
@@ -73,6 +54,22 @@ class StatsViewModel(
         .catch { emit(null) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
 
+    /**
+     * Whether to ask for notification permission now: once, while the daily reminder is on and
+     * there is a stat for it to remind about. The screen checks whether it is actually missing.
+     */
+    val shouldRequestNotificationPermission: StateFlow<Boolean> = combine(
+        settingsRepository.reminderEnabled,
+        settingsRepository.notificationPermissionRequested,
+        uiState,
+    ) { enabled, requested, state ->
+        enabled && !requested && state is StatsUiState.Success && state.stats.isNotEmpty()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), false)
+
+    fun onNotificationPermissionRequested() {
+        viewModelScope.launchCatching(onError = {}) { settingsRepository.markNotificationPermissionRequested() }
+    }
+
     fun onRetry() {
         loadAttempt.update { it + 1 }
     }
@@ -82,18 +79,13 @@ class StatsViewModel(
     companion object {
         private const val STOP_TIMEOUT_MILLIS = 5_000L
 
-        /** The weight card's change covers this many days, today included. */
-        internal const val RECENT_DAYS = 30L
-
         val Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
                 StatsViewModel(
-                    container.weightRepository,
-                    container.nutritionRepository,
-                    container.settingsRepository,
-                    container.progressPhotoRepository,
                     container.customStatRepository,
+                    container.progressPhotoRepository,
+                    container.settingsRepository,
                     container.time,
                 )
             }

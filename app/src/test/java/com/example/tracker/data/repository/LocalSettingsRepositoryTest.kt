@@ -5,12 +5,12 @@ import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
 import com.example.tracker.data.local.ProgressPhotoStore
 import com.example.tracker.data.local.TrackerDatabase
-import com.example.tracker.domain.model.DailyNutrition
+import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.ExerciseType
-import com.example.tracker.domain.model.NutritionTargets
+import com.example.tracker.domain.model.StatColor
+import com.example.tracker.domain.model.StatIcon
 import com.example.tracker.domain.model.PhotoPose
 import com.example.tracker.domain.model.ThemeMode
-import java.time.LocalDate
 import java.time.LocalTime
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -72,50 +72,25 @@ class LocalSettingsRepositoryTest {
     }
 
     @Test
-    fun nutritionTargets_defaultToNone() = runTest {
-        val settings = LocalSettingsRepository(preferences, database, photoStore, StandardTestDispatcher(testScheduler))
+    fun reminder_defaultsOnAndPersistsWhenTurnedOff() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val settings = LocalSettingsRepository(preferences, database, photoStore, dispatcher)
+        assertTrue(settings.reminderEnabled.value)
 
-        assertEquals(NutritionTargets(), settings.nutritionTargets.value)
+        settings.setReminderEnabled(false)
+
+        assertEquals(false, LocalSettingsRepository(preferences, database, photoStore, dispatcher).reminderEnabled.value)
     }
 
     @Test
-    fun setNutritionTargets_updatesStateAndPersists_andNullClearsATarget() = runTest {
+    fun reminderTime_defaultsToNinePmAndPersists() = runTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val settings = LocalSettingsRepository(preferences, database, photoStore, dispatcher)
+        assertEquals(LocalTime.of(21, 0), settings.reminderTime.value)
 
-        settings.setNutritionTargets(NutritionTargets(calories = 2400, proteinGrams = 160, steps = 8000))
-        settings.setNutritionTargets(NutritionTargets(calories = 2200, proteinGrams = null, steps = 10_000))
+        settings.setReminderTime(LocalTime.of(7, 5, 30))
 
-        assertEquals(NutritionTargets(2200, null, 10_000), settings.nutritionTargets.value)
-        assertEquals(NutritionTargets(2200, null, 10_000), LocalSettingsRepository(preferences, database, photoStore, dispatcher).nutritionTargets.value)
-    }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun setNutritionTargets_zero_isRejected() = runTest {
-        LocalSettingsRepository(preferences, database, photoStore, StandardTestDispatcher(testScheduler))
-            .setNutritionTargets(NutritionTargets(calories = 0))
-    }
-
-    @Test
-    fun nutritionReminder_defaultsOnAndPersistsWhenTurnedOff() = runTest {
-        val dispatcher = StandardTestDispatcher(testScheduler)
-        val settings = LocalSettingsRepository(preferences, database, photoStore, dispatcher)
-        assertTrue(settings.nutritionReminderEnabled.value)
-
-        settings.setNutritionReminderEnabled(false)
-
-        assertEquals(false, LocalSettingsRepository(preferences, database, photoStore, dispatcher).nutritionReminderEnabled.value)
-    }
-
-    @Test
-    fun nutritionReminderTime_defaultsToNinePmAndPersists() = runTest {
-        val dispatcher = StandardTestDispatcher(testScheduler)
-        val settings = LocalSettingsRepository(preferences, database, photoStore, dispatcher)
-        assertEquals(LocalTime.of(21, 0), settings.nutritionReminderTime.value)
-
-        settings.setNutritionReminderTime(LocalTime.of(7, 5, 30))
-
-        assertEquals(LocalTime.of(7, 5), LocalSettingsRepository(preferences, database, photoStore, dispatcher).nutritionReminderTime.value)
+        assertEquals(LocalTime.of(7, 5), LocalSettingsRepository(preferences, database, photoStore, dispatcher).reminderTime.value)
     }
 
     @Test
@@ -129,18 +104,17 @@ class LocalSettingsRepositoryTest {
     }
 
     @Test
-    fun deleteAllData_removesNutritionButKeepsTargets() = runTest {
+    fun deleteAllData_removesStatsButKeepsPreferences() = runTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val settings = LocalSettingsRepository(preferences, database, photoStore, dispatcher)
-        val nutrition = OfflineFirstNutritionRepository(database, time)
-        val day = LocalDate.of(2026, 10, 1)
-        nutrition.saveDay(DailyNutrition(day, 2300, 150))
-        settings.setNutritionTargets(NutritionTargets(2400, 160))
+        val stats = OfflineFirstCustomStatRepository(database, time, ids)
+        stats.createStat(CustomStat("", "Waist", "cm", 1, null, StatIcon.RULER, StatColor.TEAL))
+        settings.setThemeMode(ThemeMode.DARK)
 
         settings.deleteAllData()
 
-        assertNull(nutrition.observeDay(day).first())
-        assertEquals(NutritionTargets(2400, 160), settings.nutritionTargets.value)
+        assertTrue(stats.observeOverviews().first().isEmpty())
+        assertEquals(ThemeMode.DARK, settings.themeMode.value)
     }
 
     @Test

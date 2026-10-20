@@ -6,6 +6,7 @@ import com.example.tracker.core.SystemTimeProvider
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.core.UuidGenerator
 import com.example.tracker.data.export.AndroidReportExporter
+import com.example.tracker.data.local.LegacyNutritionTargets
 import com.example.tracker.data.local.ProgressPhotoStore
 import com.example.tracker.data.local.TrackerDatabase
 import com.example.tracker.data.remote.UrlConnectionHttpClient
@@ -14,23 +15,19 @@ import com.example.tracker.data.repository.LocalProgressPhotoRepository
 import com.example.tracker.data.repository.LocalSettingsRepository
 import com.example.tracker.data.repository.OfflineFirstCustomStatRepository
 import com.example.tracker.data.repository.OfflineFirstExerciseRepository
-import com.example.tracker.data.repository.OfflineFirstNutritionRepository
 import com.example.tracker.data.repository.OfflineFirstPlanRepository
 import com.example.tracker.data.repository.OfflineFirstProgramRepository
-import com.example.tracker.data.repository.OfflineFirstWeightRepository
 import com.example.tracker.data.repository.OfflineFirstWorkoutRepository
 import com.example.tracker.data.repository.WgerExerciseCatalogRepository
 import com.example.tracker.domain.export.ReportExporter
 import com.example.tracker.domain.repository.CustomStatRepository
-import com.example.tracker.domain.reminder.NutritionReminder
+import com.example.tracker.domain.reminder.DailyReminder
 import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.ExerciseRepository
-import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.PlanRepository
 import com.example.tracker.domain.repository.ProgramRepository
 import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.domain.repository.SettingsRepository
-import com.example.tracker.domain.repository.WeightRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.domain.workout.ActiveWorkoutSession
 import com.example.tracker.reminder.AlarmReminderScheduler
@@ -56,8 +53,6 @@ class AppContainer(context: Context) {
     val programRepository: ProgramRepository by lazy { OfflineFirstProgramRepository(database, time, ids) }
     val planRepository: PlanRepository by lazy { OfflineFirstPlanRepository(database, time, ids) }
     val workoutRepository: WorkoutRepository by lazy { OfflineFirstWorkoutRepository(database, time, ids) }
-    val nutritionRepository: NutritionRepository by lazy { OfflineFirstNutritionRepository(database, time) }
-    val weightRepository: WeightRepository by lazy { OfflineFirstWeightRepository(database, time) }
     val customStatRepository: CustomStatRepository by lazy { OfflineFirstCustomStatRepository(database, time, ids) }
     private val photoStore: ProgressPhotoStore by lazy {
         val appContext = context.applicationContext
@@ -69,10 +64,14 @@ class AppContainer(context: Context) {
     val progressPhotoRepository: ProgressPhotoRepository by lazy {
         LocalProgressPhotoRepository(database, photoStore, time, ids)
     }
-    val settingsRepository: SettingsRepository by lazy {
-        val preferences = context.applicationContext
-            .getSharedPreferences(LocalSettingsRepository.PREFERENCES_NAME, Context.MODE_PRIVATE)
-        LocalSettingsRepository(preferences, database, photoStore)
+    private val preferences by lazy {
+        context.applicationContext.getSharedPreferences(LocalSettingsRepository.PREFERENCES_NAME, Context.MODE_PRIVATE)
+    }
+    val settingsRepository: SettingsRepository by lazy { LocalSettingsRepository(preferences, database, photoStore) }
+
+    /** Moves the old daily log's targets onto their stats; see [LegacyNutritionTargets]. */
+    val legacyNutritionTargets: LegacyNutritionTargets by lazy {
+        LegacyNutritionTargets(preferences, database.customStatDao(), time)
     }
 
     val reportExporter: ReportExporter by lazy { AndroidReportExporter(context.applicationContext) }
@@ -84,10 +83,10 @@ class AppContainer(context: Context) {
         ActiveWorkoutSession(workoutRepository, AndroidActiveWorkoutNotifier(context.applicationContext))
     }
 
-    val nutritionReminder: NutritionReminder by lazy {
-        NutritionReminder(
+    val dailyReminder: DailyReminder by lazy {
+        DailyReminder(
             settings = settingsRepository,
-            nutrition = nutritionRepository,
+            stats = customStatRepository,
             scheduler = AlarmReminderScheduler(context.applicationContext),
             notifier = NotificationReminderNotifier(context.applicationContext),
             time = time,

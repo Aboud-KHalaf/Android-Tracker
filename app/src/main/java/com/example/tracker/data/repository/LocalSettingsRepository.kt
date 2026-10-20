@@ -4,8 +4,6 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.example.tracker.data.local.ProgressPhotoStore
 import com.example.tracker.data.local.TrackerDatabase
-import com.example.tracker.domain.model.DailyNutrition
-import com.example.tracker.domain.model.NutritionTargets
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.reminder.ReminderTime
 import com.example.tracker.domain.repository.SettingsRepository
@@ -39,42 +37,25 @@ class LocalSettingsRepository(
         _themeMode.value = mode
     }
 
-    private val _nutritionTargets = MutableStateFlow(readNutritionTargets())
-    override val nutritionTargets: StateFlow<NutritionTargets> = _nutritionTargets.asStateFlow()
+    private val _reminderEnabled = MutableStateFlow(preferences.getBoolean(KEY_REMINDER, true))
+    override val reminderEnabled: StateFlow<Boolean> = _reminderEnabled.asStateFlow()
 
-    override suspend fun setNutritionTargets(targets: NutritionTargets) {
-        targets.calories?.let { require(it in 1..DailyNutrition.MAX_CALORIES) { "Calorie target out of range: $it" } }
-        targets.proteinGrams?.let { require(it in 1..DailyNutrition.MAX_PROTEIN_GRAMS) { "Protein target out of range: $it" } }
-        targets.steps?.let { require(it in 1..DailyNutrition.MAX_STEPS) { "Steps target out of range: $it" } }
+    override suspend fun setReminderEnabled(enabled: Boolean) {
         withContext(ioDispatcher) {
-            preferences.edit(commit = true) {
-                putOrRemove(KEY_CALORIE_TARGET, targets.calories)
-                putOrRemove(KEY_PROTEIN_TARGET, targets.proteinGrams)
-                putOrRemove(KEY_STEPS_TARGET, targets.steps)
-            }
+            preferences.edit(commit = true) { putBoolean(KEY_REMINDER, enabled) }
         }
-        _nutritionTargets.value = targets
+        _reminderEnabled.value = enabled
     }
 
-    private val _nutritionReminderEnabled = MutableStateFlow(preferences.getBoolean(KEY_NUTRITION_REMINDER, true))
-    override val nutritionReminderEnabled: StateFlow<Boolean> = _nutritionReminderEnabled.asStateFlow()
+    private val _reminderTime = MutableStateFlow(readReminderTime())
+    override val reminderTime: StateFlow<LocalTime> = _reminderTime.asStateFlow()
 
-    override suspend fun setNutritionReminderEnabled(enabled: Boolean) {
-        withContext(ioDispatcher) {
-            preferences.edit(commit = true) { putBoolean(KEY_NUTRITION_REMINDER, enabled) }
-        }
-        _nutritionReminderEnabled.value = enabled
-    }
-
-    private val _nutritionReminderTime = MutableStateFlow(readNutritionReminderTime())
-    override val nutritionReminderTime: StateFlow<LocalTime> = _nutritionReminderTime.asStateFlow()
-
-    override suspend fun setNutritionReminderTime(time: LocalTime) {
+    override suspend fun setReminderTime(time: LocalTime) {
         val minuteOfDay = time.hour * MINUTES_PER_HOUR + time.minute
         withContext(ioDispatcher) {
-            preferences.edit(commit = true) { putInt(KEY_NUTRITION_REMINDER_MINUTE, minuteOfDay) }
+            preferences.edit(commit = true) { putInt(KEY_REMINDER_MINUTE, minuteOfDay) }
         }
-        _nutritionReminderTime.value = LocalTime.of(time.hour, time.minute)
+        _reminderTime.value = LocalTime.of(time.hour, time.minute)
     }
 
     private val _notificationPermissionRequested =
@@ -100,15 +81,9 @@ class LocalSettingsRepository(
         return ThemeMode.entries.firstOrNull { it.name == stored } ?: ThemeMode.SYSTEM
     }
 
-    private fun readNutritionTargets() = NutritionTargets(
-        calories = preferences.getIntOrNull(KEY_CALORIE_TARGET),
-        proteinGrams = preferences.getIntOrNull(KEY_PROTEIN_TARGET),
-        steps = preferences.getIntOrNull(KEY_STEPS_TARGET),
-    )
-
     /** Stored as minutes after midnight; anything unreadable falls back to the default. */
-    private fun readNutritionReminderTime(): LocalTime {
-        val minuteOfDay = preferences.getIntOrNull(KEY_NUTRITION_REMINDER_MINUTE)
+    private fun readReminderTime(): LocalTime {
+        val minuteOfDay = preferences.getIntOrNull(KEY_REMINDER_MINUTE)
             ?.takeIf { it in 0 until MINUTES_PER_DAY }
             ?: return ReminderTime.DEFAULT
         return LocalTime.of(minuteOfDay / MINUTES_PER_HOUR, minuteOfDay % MINUTES_PER_HOUR)
@@ -116,18 +91,12 @@ class LocalSettingsRepository(
 
     private fun SharedPreferences.getIntOrNull(key: String): Int? = if (contains(key)) getInt(key, 0) else null
 
-    private fun SharedPreferences.Editor.putOrRemove(key: String, value: Int?) {
-        if (value == null) remove(key) else putInt(key, value)
-    }
-
     companion object {
         const val PREFERENCES_NAME = "settings"
         private const val KEY_THEME_MODE = "theme_mode"
-        private const val KEY_CALORIE_TARGET = "calorie_target"
-        private const val KEY_PROTEIN_TARGET = "protein_target"
-        private const val KEY_STEPS_TARGET = "steps_target"
-        private const val KEY_NUTRITION_REMINDER = "nutrition_reminder"
-        private const val KEY_NUTRITION_REMINDER_MINUTE = "nutrition_reminder_minute"
+        // Named for the daily log the reminder started with; kept so the saved choice carries over.
+        private const val KEY_REMINDER = "nutrition_reminder"
+        private const val KEY_REMINDER_MINUTE = "nutrition_reminder_minute"
         private const val MINUTES_PER_HOUR = 60
         private const val MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR
         private const val KEY_NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested"

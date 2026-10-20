@@ -13,10 +13,9 @@ import com.example.tracker.domain.export.ExportFormat
 import com.example.tracker.domain.export.ReportExporter
 import com.example.tracker.domain.export.exportFileName
 import com.example.tracker.domain.model.ThemeMode
+import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.domain.repository.ExerciseRepository
-import com.example.tracker.domain.repository.NutritionRepository
 import com.example.tracker.domain.repository.SettingsRepository
-import com.example.tracker.domain.repository.WeightRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.ui.common.launchCatching
 import java.time.LocalDate
@@ -46,8 +45,7 @@ class SettingsViewModel(
     data class ExportableData(
         val exercises: ExerciseRepository,
         val workouts: WorkoutRepository,
-        val nutrition: NutritionRepository,
-        val weights: WeightRepository,
+        val stats: CustomStatRepository,
     )
 
     private val isDeletingData = MutableStateFlow(false)
@@ -60,23 +58,23 @@ class SettingsViewModel(
         combine(
             settingsRepository.themeMode,
             combine(isDeletingData, isExportingData, ::Pair),
-            settingsRepository.nutritionReminderEnabled,
-            settingsRepository.nutritionReminderTime,
+            settingsRepository.reminderEnabled,
+            settingsRepository.reminderTime,
         ) { themeMode, (deleting, exporting), reminder, reminderTime ->
             SettingsUiState(
                 themeMode = themeMode,
                 isDeletingData = deleting,
                 isExportingData = exporting,
-                nutritionReminderEnabled = reminder,
-                nutritionReminderTime = reminderTime,
+                reminderEnabled = reminder,
+                reminderTime = reminderTime,
             )
         }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
             SettingsUiState(
                 themeMode = settingsRepository.themeMode.value,
-                nutritionReminderEnabled = settingsRepository.nutritionReminderEnabled.value,
-                nutritionReminderTime = settingsRepository.nutritionReminderTime.value,
+                reminderEnabled = settingsRepository.reminderEnabled.value,
+                reminderTime = settingsRepository.reminderTime.value,
             ),
         )
 
@@ -86,15 +84,15 @@ class SettingsViewModel(
         }
     }
 
-    fun onSetNutritionReminder(enabled: Boolean) {
+    fun onSetReminder(enabled: Boolean) {
         viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_reminder) }) {
-            settingsRepository.setNutritionReminderEnabled(enabled)
+            settingsRepository.setReminderEnabled(enabled)
         }
     }
 
-    fun onSetNutritionReminderTime(time: LocalTime) {
+    fun onSetReminderTime(time: LocalTime) {
         viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_reminder) }) {
-            settingsRepository.setNutritionReminderTime(time)
+            settingsRepository.setReminderTime(time)
         }
     }
 
@@ -113,7 +111,7 @@ class SettingsViewModel(
 
     fun exportFileName(format: ExportFormat): String = exportFileName("all-data", today(), format)
 
-    /** Saves every exercise, workout set, logged day and weight entry as [format] to [destination], a file URI. */
+    /** Saves every exercise, workout set and stat entry as [format] to [destination], a file URI. */
     fun onExportAllData(format: ExportFormat, destination: String) {
         if (isExportingData.value) return
         isExportingData.value = true
@@ -124,9 +122,9 @@ class SettingsViewModel(
                     exportedOn = today,
                     exercises = data.exercises.observeExercises().first(),
                     sessions = data.workouts.observeAllSessions().first(),
-                    days = data.nutrition.observeDays(HISTORY_START, today).first(),
-                    targets = settingsRepository.nutritionTargets.value,
-                    weights = data.weights.observeEntries(HISTORY_START, today).first(),
+                    stats = data.stats.observeOverviews().first().map { overview ->
+                        overview.stat to data.stats.observeEntries(overview.stat.id, HISTORY_START, today).first()
+                    },
                 )
                 reportExporter.export(report, format, destination)
                 showMessage(R.string.export_done)
@@ -156,8 +154,7 @@ class SettingsViewModel(
                     data = ExportableData(
                         exercises = container.exerciseRepository,
                         workouts = container.workoutRepository,
-                        nutrition = container.nutritionRepository,
-                        weights = container.weightRepository,
+                        stats = container.customStatRepository,
                     ),
                     reportExporter = container.reportExporter,
                     time = container.time,

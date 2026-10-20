@@ -1,6 +1,6 @@
 # Tracker
 
-An offline-first Android app for tracking your **workouts**, a **daily log** of calories, protein and steps, your **body weight** and **progress photos** in one place. Built with Kotlin, Jetpack Compose and Material Design 3.
+An offline-first Android app for tracking your **workouts**, any **stats** you measure (weight, calories, body fat, waist, sleep...) and **progress photos** in one place. Built with Kotlin, Jetpack Compose and Material Design 3.
 
 All data stays on your device, and you don't need an account. When you want your numbers elsewhere, export any screen's analytics, or everything at once, as a PDF or Excel file. The only feature that uses the internet is the optional exercise catalog, which sends just your search to [wger.de](https://wger.de).
 
@@ -35,29 +35,27 @@ All data stays on your device, and you don't need an account. When you want your
 - Switch between progress metrics and time ranges
 - Export an exercise's progress for the selected metric and range as a PDF or Excel file
 
-### 🥗 Daily log
-- Log each day's calories, protein and steps, and edit any past day
-- Set your own daily targets and see today's progress at a glance
-- Charts and period averages with a period selector
-- Export the selected period as a PDF or Excel file
-- Optional daily reminder (9 PM by default, at a time you choose) if you haven't logged anything that day
-
-### ⚖️ Body Weight
-- See your current weight, a weight chart and your full history
-- Export the selected period as a PDF or Excel file
+### 📊 Stats
+- Track any number once a day: create a stat with a name, unit, decimal places, an optional target, an icon and a colour
+- Start from suggestions such as **Weight**, **Body fat**, **Waist**, **Calories**, **Protein**, **Steps**, **Water**, **Sleep** and **Resting heart rate**, or make your own
+- Each stat shows its latest value, progress toward its target (going up or down follows from your first entry), a chart with a period selector and the full history by month; edit or delete any day
+- Export a stat's selected period as a PDF or Excel file
+- Optional daily reminder (9 PM by default, at a time you choose) when a stat isn't logged that day
+- Updating from an older version turns the old weight and daily log (calories, protein, steps) into stats, targets included
 
 ### 📸 Progress photos
-- Take a front, side and back photo from the Weight screen, one pose after another
-- A body outline with head and feet lines shows where to stand, so every photo is framed the same way
+- Take a front, side and back photo from the Stats tab, one pose after another; every session is kept, even several on the same day
+- A human outline with head, feet, shoulder, waist, hip and knee marks shows where and how to stand, so every photo is framed the same way
+- Optionally note measurements with each session (weight, body fat, waist, chest, arms, thighs and more, or your own); the ones you measured last time are ready to fill in
 - Your last photo of each pose shows faintly over the camera, so you can line up in the same spot
 - A 3 or 10 second self-timer gives you time to step back from a propped-up phone; switch between the front and back camera
-- See every day's photos, and compare your first and latest photo of a pose side by side
+- See every session's photos and measurements with their change, and compare your first and latest photo of a pose side by side
 - Photos stay inside the app: they aren't added to your gallery or included in cloud backups
 
 ### ⚙️ Settings
 - Light, dark or system theme
-- Turn the daily log reminder on or off and choose when it arrives
-- Export all data (exercises, every workout set, daily log and weight) as a PDF or Excel file
+- Turn the daily stats reminder on or off and choose when it arrives
+- Export all data (exercises, every workout set and every stat) as a PDF or Excel file
 - Delete all data, progress photos included, from the device
 
 ### 🎨 Design
@@ -81,7 +79,7 @@ Get the latest APK from the [website](https://aboud-khalaf.github.io/Android-Tra
 | Camera | CameraX (`camera-view` with `LifecycleCameraController`) |
 | Images | Coil |
 | Storage | Room (with migrations and exported schemas) |
-| Background | AlarmManager for the daily nutrition reminder; an ongoing notification for the workout in progress |
+| Background | AlarmManager for the daily stats reminder; an ongoing notification for the workout in progress |
 | Dependency injection | Manual (`AppContainer`) |
 | Testing | JUnit, Robolectric, Compose UI tests |
 
@@ -101,14 +99,14 @@ app/src/main/java/com/example/tracker/
 │   ├── export/  # PDF and Excel (.xlsx) writers for exported reports
 │   └── remote/  # HTTP client and the wger exercise catalog API
 ├── domain/      # Domain models, repository interfaces and business logic
-│                #   (progress, nutrition, weight, photos, programs, plans, workout sessions,
+│                #   (progress, stats, photos, programs, plans, workout sessions,
 │                #    catalog, reminders, export)
 ├── di/          # AppContainer: manual dependency wiring
-├── reminder/    # Daily log reminder: alarms, notification, reboot receiver
+├── reminder/    # Daily stats reminder: alarms, notification, reboot receiver
 ├── workout/     # Workout-in-progress notification and its reboot/update receiver
 └── ui/          # Compose screens and ViewModels, one package per feature
     ├── home/ program/ plan/ catalog/ workout/ history/ exercise/ exercises/
-    ├── nutrition/ weight/ photos/ settings/ splash/
+    ├── stats/ photos/ settings/ splash/
     ├── navigation/ common/
     └── theme/   # Colors, typography, shapes and spacing tokens
 ```
@@ -144,7 +142,7 @@ Open the project in Android Studio and run the `app` configuration, or build fro
 
 ### Running tests
 
-Unit tests and Robolectric-based UI tests (workout, daily log, weight, settings, exercise catalog and drag-and-drop flows), plus tests for the database migrations, repositories, progress photo storage, workout notification and ViewModels:
+Unit tests and Robolectric-based UI tests (workout, stats, settings, exercise catalog and drag-and-drop flows), plus tests for the database migrations, repositories, progress photo storage, workout notification and ViewModels:
 
 ```bash
 ./gradlew :app:testDebugUnitTest

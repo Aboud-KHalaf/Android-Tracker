@@ -119,12 +119,12 @@ fun SettingsRoute(
         uiState = uiState,
         onBack = onBack,
         onSelectThemeMode = viewModel::onSelectThemeMode,
-        onSetNutritionReminder = { enabled ->
-            viewModel.onSetNutritionReminder(enabled)
+        onSetReminder = { enabled ->
+            viewModel.onSetReminder(enabled)
             if (enabled) ensureNotifications()
         },
-        onSetNutritionReminderTime = viewModel::onSetNutritionReminderTime,
-        showExactAlarmsItem = uiState.nutritionReminderEnabled && !exactAlarmsAllowed,
+        onSetReminderTime = viewModel::onSetReminderTime,
+        showExactAlarmsItem = uiState.reminderEnabled && !exactAlarmsAllowed,
         onAllowExactAlarms = context::openExactAlarmSettings,
         onDeleteAllData = viewModel::onDeleteAllData,
         exportFileName = viewModel::exportFileName,
@@ -142,8 +142,8 @@ fun SettingsScreen(
     uiState: SettingsUiState,
     onBack: () -> Unit,
     onSelectThemeMode: (ThemeMode) -> Unit,
-    onSetNutritionReminder: (Boolean) -> Unit,
-    onSetNutritionReminderTime: (LocalTime) -> Unit,
+    onSetReminder: (Boolean) -> Unit,
+    onSetReminderTime: (LocalTime) -> Unit,
     onDeleteAllData: () -> Unit,
     appVersion: String,
     modifier: Modifier = Modifier,
@@ -198,11 +198,11 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_notifications),
                     modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, top = spacing.lg),
                 )
-                ReminderItem(enabled = uiState.nutritionReminderEnabled, onToggle = onSetNutritionReminder)
+                ReminderItem(enabled = uiState.reminderEnabled, onToggle = onSetReminder)
                 ReminderTimeItem(
-                    time = uiState.nutritionReminderTime,
+                    time = uiState.reminderTime,
                     is24Hour = is24Hour,
-                    enabled = uiState.nutritionReminderEnabled,
+                    enabled = uiState.reminderEnabled,
                     onClick = { showReminderTimeDialog = true },
                 )
                 if (showExactAlarmsItem) ExactAlarmsItem(onClick = onAllowExactAlarms)
@@ -237,11 +237,11 @@ fun SettingsScreen(
 
     if (showReminderTimeDialog) {
         ReminderTimeDialog(
-            initialTime = uiState.nutritionReminderTime,
+            initialTime = uiState.reminderTime,
             is24Hour = is24Hour,
             onConfirm = { time ->
                 showReminderTimeDialog = false
-                onSetNutritionReminderTime(time)
+                onSetReminderTime(time)
             },
             onDismiss = { showReminderTimeDialog = false },
         )
@@ -261,8 +261,8 @@ fun SettingsScreen(
 @Composable
 private fun ReminderItem(enabled: Boolean, onToggle: (Boolean) -> Unit) {
     ListItem(
-        headlineContent = { Text(stringResource(R.string.settings_nutrition_reminder)) },
-        supportingContent = { Text(stringResource(R.string.settings_nutrition_reminder_description)) },
+        headlineContent = { Text(stringResource(R.string.settings_reminder)) },
+        supportingContent = { Text(stringResource(R.string.settings_reminder_description)) },
         leadingContent = { Icon(Icons.Outlined.NotificationsActive, contentDescription = null) },
         trailingContent = { Switch(checked = enabled, onCheckedChange = null) },
         modifier = Modifier.toggleable(value = enabled, role = Role.Switch, onValueChange = onToggle),

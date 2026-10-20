@@ -14,12 +14,12 @@ import androidx.core.net.toUri
 import com.example.tracker.MainActivity
 import com.example.tracker.R
 import com.example.tracker.domain.reminder.ReminderNotifier
-import com.example.tracker.ui.nutrition.NUTRITION_DEEP_LINK
+import com.example.tracker.ui.stats.STATS_DEEP_LINK
 
-/** Posts the reminder notification; tapping it opens the Nutrition tab. */
+/** Posts the reminder notification; tapping it opens the Stats tab. */
 class NotificationReminderNotifier(private val context: Context) : ReminderNotifier {
 
-    override fun showNutritionReminder() {
+    override fun showStatsReminder() {
         if (!canPostNotifications(context)) return
         val manager = NotificationManagerCompat.from(context)
         manager.createNotificationChannel(
@@ -28,10 +28,10 @@ class NotificationReminderNotifier(private val context: Context) : ReminderNotif
                 .setDescription(context.getString(R.string.reminder_channel_description))
                 .build(),
         )
-        val openNutrition = PendingIntent.getActivity(
+        val openStats = PendingIntent.getActivity(
             context,
             0,
-            Intent(Intent.ACTION_VIEW, NUTRITION_DEEP_LINK.toUri(), context, MainActivity::class.java)
+            Intent(Intent.ACTION_VIEW, STATS_DEEP_LINK.toUri(), context, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
@@ -40,7 +40,7 @@ class NotificationReminderNotifier(private val context: Context) : ReminderNotif
             .setColor(ContextCompat.getColor(context, R.color.notification_accent))
             .setContentTitle(context.getString(R.string.reminder_title))
             .setContentText(context.getString(R.string.reminder_text))
-            .setContentIntent(openNutrition)
+            .setContentIntent(openStats)
             .setAutoCancel(true)
             .build()
         try {

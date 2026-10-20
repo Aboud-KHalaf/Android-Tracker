@@ -74,7 +74,7 @@ data class MeasurementsForm(
 
 /** Common body measurements offered as one-tap fields. */
 enum class MeasurementSuggestion(@StringRes val nameRes: Int, @StringRes val unitRes: Int) {
-    WEIGHT(R.string.measurement_weight, R.string.weight_unit_kg),
+    WEIGHT(R.string.measurement_weight, R.string.stat_unit_kg),
     BODY_FAT(R.string.stat_template_body_fat, R.string.stat_unit_percent),
     WAIST(R.string.stat_template_waist, R.string.stat_unit_cm),
     CHEST(R.string.measurement_chest, R.string.stat_unit_cm),
