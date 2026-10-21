@@ -72,6 +72,16 @@ class LocalSettingsRepository(
         _restTimes.value = times
     }
 
+    private val _onboardingDone = MutableStateFlow(preferences.getBoolean(KEY_ONBOARDING_DONE, false))
+    override val onboardingDone: StateFlow<Boolean> = _onboardingDone.asStateFlow()
+
+    override suspend fun setOnboardingDone() {
+        withContext(ioDispatcher) {
+            preferences.edit(commit = true) { putBoolean(KEY_ONBOARDING_DONE, true) }
+        }
+        _onboardingDone.value = true
+    }
+
     private val _notificationPermissionRequested =
         MutableStateFlow(preferences.getBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, false))
     override val notificationPermissionRequested: StateFlow<Boolean> = _notificationPermissionRequested.asStateFlow()
@@ -124,5 +134,6 @@ class LocalSettingsRepository(
         private const val KEY_REST_BETWEEN_SETS = "rest_between_sets_seconds"
         private const val KEY_REST_BETWEEN_EXERCISES = "rest_between_exercises_seconds"
         private const val KEY_NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested"
+        private const val KEY_ONBOARDING_DONE = "onboarding_done"
     }
 }

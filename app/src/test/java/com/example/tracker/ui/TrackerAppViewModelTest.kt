@@ -63,4 +63,16 @@ class TrackerAppViewModelTest {
         viewModel.onOpenWorkout("w1")
         assertEquals("w1", viewModel.workoutToOpen.value)
     }
+
+    @Test
+    fun freshLaunch_firstTime_showsOnboardingOnce() = runTest {
+        workouts.activeWorkout.value = null
+        val viewModel = TrackerAppViewModel(workouts, needsOnboarding = { true })
+
+        viewModel.onFreshStart(requestedWorkoutId = null, restoreActiveWorkout = true)
+
+        assertEquals(true, viewModel.showOnboarding.value)
+        viewModel.onOnboardingShown()
+        assertEquals(false, viewModel.showOnboarding.value)
+    }
 }

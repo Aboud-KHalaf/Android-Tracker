@@ -2,6 +2,7 @@ package com.example.tracker.ui.program
 
 import androidx.annotation.StringRes
 import com.example.tracker.R
+import com.example.tracker.domain.program.nameTrainingDays
 import java.time.DayOfWeek
 import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.MONDAY
@@ -9,6 +10,8 @@ import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.THURSDAY
 import java.time.DayOfWeek.TUESDAY
 import java.time.DayOfWeek.WEDNESDAY
+import java.time.format.TextStyle
+import java.util.Locale
 
 /**
  * Starting points for a new program. A template only suggests a name, day names and weekdays;
@@ -40,3 +43,7 @@ data class ProgramSetup(
     val dayLabels: List<String>,
     val days: Set<DayOfWeek>,
 )
+
+/** The program's weekdays, each named after the split's days in turn (or its weekday in [locale]). */
+fun ProgramSetup.schedule(locale: Locale): Map<DayOfWeek, String> =
+    nameTrainingDays(dayLabels, days) { it.getDisplayName(TextStyle.FULL, locale) }

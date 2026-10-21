@@ -8,12 +8,11 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
-import com.example.tracker.domain.program.nameTrainingDays
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.ProgramRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.ui.program.ProgramSetup
-import java.time.format.TextStyle
+import com.example.tracker.ui.program.schedule
 import java.util.Locale
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -87,7 +86,7 @@ class HomeViewModel(
     fun onCreateProgram(setup: ProgramSetup) {
         val name = setup.name.trim()
         if (name.isEmpty()) return
-        val schedule = nameTrainingDays(setup.dayLabels, setup.days) { it.getDisplayName(TextStyle.FULL, locale()) }
+        val schedule = setup.schedule(locale())
         viewModelScope.launch {
             try {
                 val programId = programRepository.createProgram(name, schedule)

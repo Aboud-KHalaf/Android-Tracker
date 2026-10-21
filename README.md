@@ -59,6 +59,7 @@ All data stays on your device, and you don't need an account. When you want your
 - Delete all data, progress photos included, from the device
 
 ### 🎨 Design
+- **Onboarding** on first launch: a short welcome, an optional first program from a split template, and the stats you want to track (every step can be skipped)
 - Material Design 3 with a blue brand theme, plus light and dark modes
 - Animated splash screen, screen transitions and list animations
 - Layouts adapt to larger screens

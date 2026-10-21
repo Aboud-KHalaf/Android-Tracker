@@ -48,7 +48,13 @@ class MainActivity : ComponentActivity() {
 
             TrackerTheme(darkTheme = darkTheme) {
                 val workoutToOpen by appViewModel.workoutToOpen.collectAsStateWithLifecycle()
-                TrackerApp(workoutToOpen = workoutToOpen, onWorkoutOpened = appViewModel::onWorkoutOpened)
+                val showOnboarding by appViewModel.showOnboarding.collectAsStateWithLifecycle()
+                TrackerApp(
+                    workoutToOpen = workoutToOpen,
+                    onWorkoutOpened = appViewModel::onWorkoutOpened,
+                    showOnboarding = showOnboarding,
+                    onOnboardingShown = appViewModel::onOnboardingShown,
+                )
             }
         }
     }

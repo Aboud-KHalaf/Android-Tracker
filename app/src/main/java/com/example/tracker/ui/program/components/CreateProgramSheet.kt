@@ -41,12 +41,36 @@ import java.time.DayOfWeek
  * "New program": pick a split template, a name and the training days. Choosing a template
  * fills in its name and suggested days, which the user can then change.
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateProgramSheet(
     onCreate: (ProgramSetup) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(start = MaterialTheme.spacing.lg, end = MaterialTheme.spacing.lg, bottom = MaterialTheme.spacing.xl),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.lg),
+        ) {
+            Text(
+                text = stringResource(R.string.create_program_title),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.semantics { heading() },
+            )
+            ProgramSetupForm(submitLabel = stringResource(R.string.create_program_confirm), onSubmit = onCreate)
+        }
+    }
+}
+
+/**
+ * The split, name and training days of a new program, and a button that submits them. Shared
+ * by the "New program" sheet and onboarding.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ProgramSetupForm(submitLabel: String, onSubmit: (ProgramSetup) -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var template by rememberSaveable { mutableStateOf(ProgramTemplate.FULL_BODY) }
     var name by rememberSaveable { mutableStateOf(context.getString(ProgramTemplate.FULL_BODY.nameRes)) }
@@ -59,65 +83,53 @@ fun CreateProgramSheet(
         days = choice.suggestedDays.map { it.value }
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(start = spacing.lg, end = spacing.lg, bottom = spacing.xl),
-            verticalArrangement = Arrangement.spacedBy(spacing.lg),
-        ) {
-            Text(
-                text = stringResource(R.string.create_program_title),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.semantics { heading() },
-            )
-            Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
-                Text(stringResource(R.string.create_program_split), style = MaterialTheme.typography.labelLarge)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
-                    ProgramTemplate.entries.forEach { option ->
-                        FilterChip(
-                            selected = option == template,
-                            onClick = { choose(option) },
-                            label = { Text(stringResource(option.nameRes)) },
-                        )
-                    }
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(spacing.lg)) {
+        Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+            Text(stringResource(R.string.create_program_split), style = MaterialTheme.typography.labelLarge)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                ProgramTemplate.entries.forEach { option ->
+                    FilterChip(
+                        selected = option == template,
+                        onClick = { choose(option) },
+                        label = { Text(stringResource(option.nameRes)) },
+                    )
                 }
             }
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text(stringResource(R.string.program_name_label)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
-                Text(stringResource(R.string.create_program_days), style = MaterialTheme.typography.labelLarge)
-                WeekdaySelector(
-                    selected = days.mapTo(mutableSetOf()) { DayOfWeek.of(it) },
-                    onToggle = { day -> days = if (day.value in days) days - day.value else days + day.value },
-                )
-                Text(
-                    text = stringResource(R.string.create_program_days_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Button(
-                onClick = {
-                    onCreate(
-                        ProgramSetup(
-                            name = name,
-                            dayLabels = template.dayLabelRes.map(context::getString),
-                            days = days.mapTo(mutableSetOf()) { DayOfWeek.of(it) },
-                        ),
-                    )
-                },
-                enabled = name.isNotBlank(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = Dimens.minTouchTarget),
-            ) { Text(stringResource(R.string.create_program_confirm)) }
         }
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text(stringResource(R.string.program_name_label)) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+            Text(stringResource(R.string.create_program_days), style = MaterialTheme.typography.labelLarge)
+            WeekdaySelector(
+                selected = days.mapTo(mutableSetOf()) { DayOfWeek.of(it) },
+                onToggle = { day -> days = if (day.value in days) days - day.value else days + day.value },
+            )
+            Text(
+                text = stringResource(R.string.create_program_days_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Button(
+            onClick = {
+                onSubmit(
+                    ProgramSetup(
+                        name = name,
+                        dayLabels = template.dayLabelRes.map(context::getString),
+                        days = days.mapTo(mutableSetOf()) { DayOfWeek.of(it) },
+                    ),
+                )
+            },
+            enabled = name.isNotBlank(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = Dimens.minTouchTarget),
+        ) { Text(submitLabel) }
     }
 }

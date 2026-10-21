@@ -256,6 +256,13 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
 }
 
 class FakeSettingsRepository : SettingsRepository {
+    override val onboardingDone = MutableStateFlow(false)
+
+    override suspend fun setOnboardingDone() {
+        writeError?.let { throw it }
+        onboardingDone.value = true
+    }
+
     override val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
     override val reminderEnabled = MutableStateFlow(true)
     override val reminderTime = MutableStateFlow(ReminderTime.DEFAULT)
