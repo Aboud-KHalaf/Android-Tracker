@@ -91,6 +91,10 @@ class FakePlanRepository : PlanRepository {
     override suspend fun moveExercise(planId: String, fromIndex: Int, toIndex: Int) =
         write("move $planId $fromIndex->$toIndex")
 
+    override suspend fun supersetWithNext(planExerciseId: String) = write("superset $planExerciseId")
+
+    override suspend fun removeFromSuperset(planExerciseId: String) = write("unsuperset $planExerciseId")
+
     private fun write(description: String) {
         writeError?.let { throw it }
         writes += description

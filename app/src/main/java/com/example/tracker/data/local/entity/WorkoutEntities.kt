@@ -62,6 +62,7 @@ data class WorkoutExerciseEntity(
     @ColumnInfo(name = "exercise_id") val exerciseId: String,
     @ColumnInfo(name = "position") val position: Int,
     @ColumnInfo(name = "note") val note: String? = null,
+    @ColumnInfo(name = "superset_group") val supersetGroup: String? = null,
     @Embedded val sync: SyncMetadata,
 )
 

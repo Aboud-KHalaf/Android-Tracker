@@ -36,7 +36,7 @@ interface PlanDao {
     @Query(
         """
         SELECT pe.id, pe.plan_id, pe.position, pe.target_sets, pe.target_reps,
-            pe.target_weight_kg, pe.target_duration_seconds,
+            pe.target_weight_kg, pe.target_duration_seconds, pe.superset_group,
             e.id AS exercise_id, e.name AS exercise_name, e.type AS exercise_type
         FROM plan_exercises pe
         JOIN exercises e ON e.id = pe.exercise_id

@@ -45,3 +45,29 @@ fun Workout.restAfterCompleting(setId: String, times: RestTimes): RestPeriod? {
     val seconds = times.secondsFor(kind)
     return if (seconds > 0) RestPeriod(kind, seconds) else null
 }
+
+/** What follows a completed set: the exercise to show (null to stay put) and the rest, if any. */
+data class AfterSet(val exerciseIndex: Int?, val rest: RestPeriod?)
+
+/**
+ * What follows completing [setId], taking supersets into account. Within a superset the next
+ * exercise of the round follows at once, without rest; after the round's last exercise comes
+ * the rest between sets and the first exercise with sets left. Once the superset is done, or
+ * outside one, this is [restAfterCompleting] on the same exercise. Indices are in exercise
+ * order.
+ */
+fun Workout.afterCompleting(setId: String, times: RestTimes): AfterSet {
+    val ordered = exercises.sortedBy { it.position }
+    val index = ordered.indexOfFirst { exercise -> exercise.sets.any { it.id == setId } }
+    if (index < 0) return AfterSet(null, null)
+    val run = Supersets.runOf(ordered.map { it.supersetGroup }, index)
+    if (run.count() > 1) {
+        fun hasSetsLeft(i: Int) = ordered[i].sets.any { it.id != setId && !it.isCompleted }
+        (index + 1..run.last).firstOrNull(::hasSetsLeft)?.let { return AfterSet(it, null) }
+        (run.first..index).firstOrNull(::hasSetsLeft)?.let { next ->
+            val seconds = times.secondsFor(RestKind.BETWEEN_SETS)
+            return AfterSet(next, if (seconds > 0) RestPeriod(RestKind.BETWEEN_SETS, seconds) else null)
+        }
+    }
+    return AfterSet(null, restAfterCompleting(setId, times))
+}

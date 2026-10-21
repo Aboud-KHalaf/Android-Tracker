@@ -30,6 +30,8 @@ data class PlanExercise(
     val exercise: Exercise,
     val position: Int,
     val config: ExerciseConfig,
+    /** Shared by the exercises of a superset; see [com.example.tracker.domain.workout.Supersets]. */
+    val supersetGroup: String? = null,
 )
 
 /**

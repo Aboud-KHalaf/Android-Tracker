@@ -28,6 +28,8 @@ data class WorkoutExercise(
     val sets: List<WorkoutSet>,
     /** Something to remember about this exercise in this workout, e.g. "left shoulder hurt". */
     val note: String? = null,
+    /** Shared by the exercises of a superset; see [com.example.tracker.domain.workout.Supersets]. */
+    val supersetGroup: String? = null,
 )
 
 /** Rules for workout and exercise notes. */

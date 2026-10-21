@@ -11,6 +11,7 @@ import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.repository.PlanRepository
+import com.example.tracker.domain.workout.Supersets
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -104,6 +105,47 @@ class OfflineFirstPlanRepository(
         val row = requirePlanExercise(planExerciseId)
         if (row.sync.deletedAt == null) return
         planDao.upsertPlanExercises(listOf(row.copy(sync = row.sync.restored(now()))))
+    }
+
+    override suspend fun supersetWithNext(planExerciseId: String) {
+        database.withTransaction {
+            val row = requireActivePlanExercise(planExerciseId)
+            val ordered = planDao.getPlanExercises(row.planId)
+            val index = ordered.indexOfFirst { it.id == planExerciseId }
+            val next = ordered.getOrNull(index + 1) ?: return@withTransaction
+            val groups = ordered.map { it.supersetGroup }
+            val group = row.supersetGroup ?: next.supersetGroup ?: ids.newId()
+            // Both runs (this exercise's and the next one's) become one superset.
+            val members = Supersets.runOf(groups, index) + Supersets.runOf(groups, index + 1)
+            val now = now()
+            planDao.upsertPlanExercises(
+                members.map { ordered[it] }
+                    .filter { it.supersetGroup != group }
+                    .map { it.copy(supersetGroup = group, sync = it.sync.touched(now)) },
+            )
+        }
+    }
+
+    override suspend fun removeFromSuperset(planExerciseId: String) {
+        database.withTransaction {
+            val row = requireActivePlanExercise(planExerciseId)
+            if (row.supersetGroup == null) return@withTransaction
+            val ordered = planDao.getPlanExercises(row.planId)
+            val index = ordered.indexOfFirst { it.id == planExerciseId }
+            val run = Supersets.runOf(ordered.map { it.supersetGroup }, index)
+            val now = now()
+            // Taking out a middle exercise splits the rest in two, so the later part gets its
+            // own group; any part left with one exercise leaves the superset too.
+            val before = (run.first until index).map { ordered[it] }
+            val after = (index + 1..run.last).map { ordered[it] }
+            val afterGroup = if (after.size > 1) ids.newId() else null
+            val changed = buildList {
+                add(row.copy(supersetGroup = null, sync = row.sync.touched(now)))
+                if (before.size == 1) add(before.single().let { it.copy(supersetGroup = null, sync = it.sync.touched(now)) })
+                after.forEach { add(it.copy(supersetGroup = afterGroup, sync = it.sync.touched(now))) }
+            }
+            planDao.upsertPlanExercises(changed)
+        }
     }
 
     override suspend fun moveExercise(planId: String, fromIndex: Int, toIndex: Int) {
