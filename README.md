@@ -62,6 +62,7 @@ All data stays on your device, and you don't need an account. When you want your
 - Material Design 3 with a blue brand theme, plus light and dark modes
 - Animated splash screen, screen transitions and list animations
 - Layouts adapt to larger screens
+- **Arabic** translation with a right-to-left layout; numbers typed with Arabic digits (٠–٩) are understood everywhere
 
 ## 📦 Download
 
