@@ -254,6 +254,8 @@
     <string name="settings_appearance">Appearance</string>
     <string name="settings_theme_system">System default</string>
     <string name="settings_theme_light">Light</string>
+    <string name="settings_dynamic_color">Use wallpaper colors</string>
+    <string name="settings_dynamic_color_description">Color the app from your wallpaper instead of blue</string>
     <string name="settings_theme_dark">Dark</string>
     <string name="settings_error_theme">Couldn\'t change the theme. Try again.</string>
     <string name="settings_data">Data</string>

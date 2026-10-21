@@ -54,6 +54,7 @@ All data stays on your device, and you don't need an account. When you want your
 
 ### ⚙️ Settings
 - Light, dark or system theme
+- **Wallpaper colors** (Android 12+): color the app from your wallpaper instead of the blue brand theme
 - Turn the daily stats reminder on or off and choose when it arrives
 - Export all data (exercises, every workout set and every stat) as a PDF or Excel file
 - Delete all data, progress photos included, from the device

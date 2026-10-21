@@ -11,6 +11,11 @@ interface SettingsRepository {
 
     suspend fun setThemeMode(mode: ThemeMode)
 
+    /** Whether colors come from the wallpaper (Android 12+) instead of the blue brand theme. Off by default. */
+    val dynamicColor: StateFlow<Boolean>
+
+    suspend fun setDynamicColor(enabled: Boolean)
+
     /** Whether to send a notification at [reminderTime] when a stat isn't logged today. On by default. */
     val reminderEnabled: StateFlow<Boolean>
 

@@ -64,4 +64,24 @@ class SettingsScreenTest {
 
         compose.onNodeWithText(restItem).assertDoesNotExist()
     }
+
+    @Test
+    fun dynamicColor_onlyWhereTheSystemSupportsIt() {
+        compose.setContent {
+            TrackerTheme {
+                SettingsScreen(
+                    uiState = SettingsUiState(),
+                    onBack = {},
+                    onSelectThemeMode = {},
+                    onSetReminder = {},
+                    onSetReminderTime = {},
+                    onDeleteAllData = {},
+                    appVersion = "1.0",
+                    supportsDynamicColor = false,
+                )
+            }
+        }
+
+        compose.onNodeWithText("Use wallpaper colors").assertDoesNotExist()
+    }
 }

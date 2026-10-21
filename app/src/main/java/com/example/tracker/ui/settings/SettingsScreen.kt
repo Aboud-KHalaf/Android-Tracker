@@ -1,5 +1,6 @@
 package com.example.tracker.ui.settings
 
+import android.os.Build
 import android.text.format.DateFormat
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.TimerOff
 import androidx.compose.material.icons.outlined.NotificationsActive
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -124,6 +126,7 @@ fun SettingsRoute(
         uiState = uiState,
         onBack = onBack,
         onSelectThemeMode = viewModel::onSelectThemeMode,
+        onSetDynamicColor = viewModel::onSetDynamicColor,
         onSetReminder = { enabled ->
             viewModel.onSetReminder(enabled)
             if (enabled) ensureNotifications()
@@ -156,6 +159,9 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     exactAlarmsAllowed: Boolean = true,
     onAllowExactAlarms: () -> Unit = {},
+    onSetDynamicColor: (Boolean) -> Unit = {},
+    // Wallpaper colors exist from Android 12; a parameter so previews and tests can show both.
+    supportsDynamicColor: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
     onSetRestBetweenSets: (seconds: Int) -> Unit = {},
     onSetRestBetweenExercises: (seconds: Int) -> Unit = {},
     exportFileName: (ExportFormat) -> String = { "" },
@@ -203,6 +209,9 @@ fun SettingsScreen(
                     modifier = Modifier.padding(horizontal = spacing.lg),
                 )
                 ThemeModeOptions(selected = uiState.themeMode, onSelect = onSelectThemeMode)
+                if (supportsDynamicColor) {
+                    DynamicColorItem(enabled = uiState.dynamicColor, onToggle = onSetDynamicColor)
+                }
 
                 SectionHeader(
                     title = stringResource(R.string.settings_notifications),
@@ -307,6 +316,18 @@ fun SettingsScreen(
             onDismiss = { showDeleteDialog = false },
         )
     }
+}
+
+/** "Use wallpaper colors" instead of the blue brand theme. */
+@Composable
+private fun DynamicColorItem(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.settings_dynamic_color)) },
+        supportingContent = { Text(stringResource(R.string.settings_dynamic_color_description)) },
+        leadingContent = { Icon(Icons.Outlined.Palette, contentDescription = null) },
+        trailingContent = { Switch(checked = enabled, onCheckedChange = null) },
+        modifier = Modifier.toggleable(value = enabled, role = Role.Switch, onValueChange = onToggle),
+    )
 }
 
 @Composable

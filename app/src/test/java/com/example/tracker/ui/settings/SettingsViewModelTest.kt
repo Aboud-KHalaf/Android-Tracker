@@ -226,4 +226,15 @@ class SettingsViewModelTest {
     fun exportFileName_isDated() {
         assertEquals("tracker-all-data-2026-10-03.pdf", createViewModel().exportFileName(ExportFormat.PDF))
     }
+
+    @Test
+    fun onSetDynamicColor_savesItAndShowsIt() = runTest {
+        val viewModel = createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+
+        viewModel.onSetDynamicColor(true)
+
+        assertEquals(true, settings.dynamicColor.value)
+        assertEquals(true, viewModel.uiState.value.dynamicColor)
+    }
 }

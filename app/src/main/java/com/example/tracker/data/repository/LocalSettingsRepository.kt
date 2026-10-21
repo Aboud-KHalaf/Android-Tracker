@@ -38,6 +38,16 @@ class LocalSettingsRepository(
         _themeMode.value = mode
     }
 
+    private val _dynamicColor = MutableStateFlow(preferences.getBoolean(KEY_DYNAMIC_COLOR, false))
+    override val dynamicColor: StateFlow<Boolean> = _dynamicColor.asStateFlow()
+
+    override suspend fun setDynamicColor(enabled: Boolean) {
+        withContext(ioDispatcher) {
+            preferences.edit(commit = true) { putBoolean(KEY_DYNAMIC_COLOR, enabled) }
+        }
+        _dynamicColor.value = enabled
+    }
+
     private val _reminderEnabled = MutableStateFlow(preferences.getBoolean(KEY_REMINDER, true))
     override val reminderEnabled: StateFlow<Boolean> = _reminderEnabled.asStateFlow()
 
@@ -116,6 +126,7 @@ class LocalSettingsRepository(
     companion object {
         const val PREFERENCES_NAME = "settings"
         private const val KEY_THEME_MODE = "theme_mode"
+        private const val KEY_DYNAMIC_COLOR = "dynamic_color"
         // Named for the daily log the reminder started with; kept so the saved choice carries over.
         private const val KEY_REMINDER = "nutrition_reminder"
         private const val KEY_REMINDER_MINUTE = "nutrition_reminder_minute"

@@ -257,6 +257,12 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
 
 class FakeSettingsRepository : SettingsRepository {
     override val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
+    override val dynamicColor = MutableStateFlow(false)
+
+    override suspend fun setDynamicColor(enabled: Boolean) {
+        writeError?.let { throw it }
+        dynamicColor.value = enabled
+    }
     override val reminderEnabled = MutableStateFlow(true)
     override val reminderTime = MutableStateFlow(ReminderTime.DEFAULT)
     override val notificationPermissionRequested = MutableStateFlow(false)

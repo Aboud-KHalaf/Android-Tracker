@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
         val settings = (application as TrackerApplication).container.settingsRepository
         setContent {
             val themeMode by settings.themeMode.collectAsStateWithLifecycle()
+            val dynamicColor by settings.dynamicColor.collectAsStateWithLifecycle()
             val darkTheme = themeMode.isDark(systemIsDark = isSystemInDarkTheme())
 
             // Match the status and navigation bar icons to the app's theme, not the device's.
@@ -46,7 +47,7 @@ class MainActivity : ComponentActivity() {
                 onDispose {}
             }
 
-            TrackerTheme(darkTheme = darkTheme) {
+            TrackerTheme(darkTheme = darkTheme, dynamicColor = dynamicColor) {
                 val workoutToOpen by appViewModel.workoutToOpen.collectAsStateWithLifecycle()
                 TrackerApp(workoutToOpen = workoutToOpen, onWorkoutOpened = appViewModel::onWorkoutOpened)
             }
