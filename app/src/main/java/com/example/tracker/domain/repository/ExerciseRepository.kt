@@ -2,6 +2,7 @@ package com.example.tracker.domain.repository
 
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -13,7 +14,10 @@ interface ExerciseRepository {
     fun observeExercise(id: String): Flow<Exercise?>
 
     /** Returns the new exercise's id. */
-    suspend fun createExercise(name: String, type: ExerciseType): String
+    suspend fun createExercise(name: String, type: ExerciseType, muscleGroup: MuscleGroup? = null): String
+
+    /** Sets the body part the exercise mainly trains; null clears it. */
+    suspend fun setMuscleGroup(id: String, muscleGroup: MuscleGroup?)
     suspend fun renameExercise(id: String, name: String)
 
     /** Removes the exercise from the library and from all plans. Workout history keeps it. */

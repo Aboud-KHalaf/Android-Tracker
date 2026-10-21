@@ -6,6 +6,7 @@ import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.domain.model.PersonalBest
 import com.example.tracker.domain.model.PhotoMeasurement
 import com.example.tracker.domain.model.PhotoPose
@@ -146,9 +147,17 @@ class FakeExerciseRepository : ExerciseRepository {
     override fun observeExercise(id: String): Flow<Exercise?> = exercises.map { all -> all.firstOrNull { it.id == id } }
     val createdExercises = mutableListOf<Pair<String, ExerciseType>>()
 
-    override suspend fun createExercise(name: String, type: ExerciseType): String {
+    /** The muscle group each created exercise was given, in order. */
+    val createdMuscleGroups = mutableListOf<MuscleGroup?>()
+
+    override suspend fun createExercise(name: String, type: ExerciseType, muscleGroup: MuscleGroup?): String {
         createdExercises += name to type
+        createdMuscleGroups += muscleGroup
         return "exercise-${createdExercises.size}"
+    }
+
+    override suspend fun setMuscleGroup(id: String, muscleGroup: MuscleGroup?) {
+        exercises.value = exercises.value.map { if (it.id == id) it.copy(muscleGroup = muscleGroup) else it }
     }
     var renameError: Exception? = null
 

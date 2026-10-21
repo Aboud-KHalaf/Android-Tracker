@@ -3,6 +3,7 @@ package com.example.tracker.data.repository
 import com.example.tracker.data.local.SyncState
 import com.example.tracker.data.local.TrackerDatabase
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import java.time.Duration
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -97,5 +98,15 @@ class OfflineFirstExerciseRepositoryTest {
 
         assertTrue(plans.observePlan(planId).first()!!.exercises.isEmpty())
         assertEquals(0, plans.observePlans().first().single().exerciseCount)
+    }
+
+    @Test
+    fun muscleGroup_isStoredOnCreateAndCanBeChanged() = runTest {
+        val id = repository.createExercise("Bench Press", ExerciseType.WEIGHT_REPS, MuscleGroup.CHEST)
+        assertEquals(MuscleGroup.CHEST, repository.observeExercise(id).first()?.muscleGroup)
+
+        repository.setMuscleGroup(id, null)
+
+        assertEquals(null, repository.observeExercise(id).first()?.muscleGroup)
     }
 }

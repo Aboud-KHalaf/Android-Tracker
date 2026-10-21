@@ -8,6 +8,7 @@ import com.example.tracker.data.local.TrackerDatabase
 import com.example.tracker.data.local.entity.ExerciseEntity
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.domain.repository.ExerciseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -28,11 +29,18 @@ class OfflineFirstExerciseRepository(
     override fun observeExercise(id: String): Flow<Exercise?> =
         exerciseDao.observe(id).map { it?.toDomain() }
 
-    override suspend fun createExercise(name: String, type: ExerciseType): String {
+    override suspend fun createExercise(name: String, type: ExerciseType, muscleGroup: MuscleGroup?): String {
         val id = ids.newId()
         val now = time.now().toEpochMilli()
-        exerciseDao.upsert(listOf(ExerciseEntity(id, requireName(name), type, SyncMetadata.created(now))))
+        exerciseDao.upsert(listOf(ExerciseEntity(id, requireName(name), type, SyncMetadata.created(now), muscleGroup)))
         return id
+    }
+
+    override suspend fun setMuscleGroup(id: String, muscleGroup: MuscleGroup?) {
+        val exercise = requireExercise(id)
+        if (exercise.muscleGroup == muscleGroup) return
+        val now = time.now().toEpochMilli()
+        exerciseDao.upsert(listOf(exercise.copy(muscleGroup = muscleGroup, sync = exercise.sync.touched(now))))
     }
 
     override suspend fun renameExercise(id: String, name: String) {
