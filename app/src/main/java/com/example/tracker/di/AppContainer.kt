@@ -5,6 +5,7 @@ import com.example.tracker.core.IdGenerator
 import com.example.tracker.core.SystemTimeProvider
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.core.UuidGenerator
+import com.example.tracker.data.backup.LocalBackupRepository
 import com.example.tracker.data.export.AndroidReportExporter
 import com.example.tracker.data.local.LegacyNutritionTargets
 import com.example.tracker.data.local.ProgressPhotoStore
@@ -20,6 +21,7 @@ import com.example.tracker.data.repository.OfflineFirstProgramRepository
 import com.example.tracker.data.repository.OfflineFirstWorkoutRepository
 import com.example.tracker.data.repository.WgerExerciseCatalogRepository
 import com.example.tracker.domain.export.ReportExporter
+import com.example.tracker.domain.repository.BackupRepository
 import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.domain.reminder.DailyReminder
 import com.example.tracker.domain.repository.ExerciseCatalogRepository
@@ -70,6 +72,15 @@ class AppContainer(context: Context) {
         context.applicationContext.getSharedPreferences(LocalSettingsRepository.PREFERENCES_NAME, Context.MODE_PRIVATE)
     }
     val settingsRepository: SettingsRepository by lazy { LocalSettingsRepository(preferences, database, photoStore) }
+    val backupRepository: BackupRepository by lazy {
+        val appContext = context.applicationContext
+        LocalBackupRepository(
+            context = appContext,
+            database = database,
+            photoStore = photoStore,
+            workDirectory = File(appContext.cacheDir, LocalBackupRepository.WORK_FOLDER),
+        )
+    }
 
     /** Moves the old daily log's targets onto their stats; see [LegacyNutritionTargets]. */
     val legacyNutritionTargets: LegacyNutritionTargets by lazy {
