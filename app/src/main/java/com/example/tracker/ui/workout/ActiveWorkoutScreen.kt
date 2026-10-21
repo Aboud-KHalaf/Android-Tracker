@@ -4,9 +4,11 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
@@ -18,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -44,6 +47,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
+import com.example.tracker.domain.model.SetType
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MessageContent
@@ -98,7 +102,10 @@ fun ActiveWorkoutRoute(
             // Launched so completing the next set replaces this snackbar instead of waiting.
             is ActiveWorkoutEvent.SetCompleted -> scope.launch {
                 val result = snackbarHostState.showSnackbar(
-                    message = context.getString(R.string.workout_set_saved, event.setNumber),
+                    message = context.getString(
+                        R.string.workout_set_saved,
+                        context.getString(setNameRes(event.setType), event.setNumber),
+                    ),
                     actionLabel = context.getString(R.string.action_undo),
                     duration = SnackbarDuration.Short,
                 )
@@ -129,6 +136,8 @@ fun ActiveWorkoutRoute(
             onRemoveActiveSet = viewModel::onRemoveActiveSet,
             onSelectSet = viewModel::onSelectSet,
             onAddSet = viewModel::onAddSet,
+            onAddWarmUpSet = viewModel::onAddWarmUpSet,
+            onSetActiveSetType = viewModel::onSetActiveSetType,
             rest = RestTimerActions(onAdjust = viewModel::onAdjustRest, onEnd = viewModel::onEndRest),
             onPreviousExercise = viewModel::onPreviousExercise,
             onNextExercise = viewModel::onNextExercise,
@@ -150,6 +159,8 @@ data class ActiveWorkoutActions(
     val onRemoveActiveSet: () -> Unit = {},
     val onSelectSet: (setId: String) -> Unit = {},
     val onAddSet: () -> Unit = {},
+    val onAddWarmUpSet: () -> Unit = {},
+    val onSetActiveSetType: (SetType) -> Unit = {},
     val rest: RestTimerActions = RestTimerActions(),
     val onPreviousExercise: () -> Unit = {},
     val onNextExercise: () -> Unit = {},
@@ -302,6 +313,7 @@ private fun WorkoutContent(
                         durationActions = actions.duration,
                         onComplete = actions.onCompleteSet,
                         onRemove = actions.onRemoveActiveSet,
+                        onSelectType = actions.onSetActiveSetType,
                         modifier = rowModifier,
                     )
                 }
@@ -310,10 +322,17 @@ private fun WorkoutContent(
                 item(key = "all-done") { AllSetsDoneBanner(Modifier.padding(bottom = spacing.sm)) }
             }
             item(key = "add-set") {
-                TextButton(onClick = actions.onAddSet) {
-                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
-                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                    Text(stringResource(R.string.workout_add_set))
+                Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                    TextButton(onClick = actions.onAddSet) {
+                        Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                        Text(stringResource(R.string.workout_add_set))
+                    }
+                    TextButton(onClick = actions.onAddWarmUpSet) {
+                        Icon(Icons.Outlined.Whatshot, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                        Text(stringResource(R.string.workout_add_warm_up))
+                    }
                 }
             }
         }

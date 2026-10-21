@@ -12,6 +12,7 @@ import androidx.navigation.toRoute
 import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
+import com.example.tracker.domain.model.SetType
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.domain.workout.RestAlarm
@@ -134,7 +135,7 @@ class ActiveWorkoutViewModel(
             draft.value = null
             selection.update { it.copy(setId = null) }
             startRestAfter(active.id)
-            _events.send(ActiveWorkoutEvent.SetCompleted(active.id, active.number))
+            _events.send(ActiveWorkoutEvent.SetCompleted(active.id, active.number, active.type))
         }
     }
 
@@ -167,10 +168,24 @@ class ActiveWorkoutViewModel(
         }
     }
 
-    fun onAddSet() {
+    fun onAddSet() = addSet(SetType.NORMAL)
+
+    /** Adds a warm-up before the working sets. */
+    fun onAddWarmUpSet() = addSet(SetType.WARM_UP)
+
+    /** Marks the active set as a warm-up, drop set, set to failure or a normal set. */
+    fun onSetActiveSetType(type: SetType) {
+        val active = activeSet() ?: return
+        if (active.type == type) return
+        viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
+            workoutRepository.setSetType(active.id, type)
+        }
+    }
+
+    private fun addSet(type: SetType) {
         val state = uiState.value as? ActiveWorkoutUiState.Success ?: return
         viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
-            workoutRepository.addSet(state.exercise.workoutExerciseId)
+            workoutRepository.addSet(state.exercise.workoutExerciseId, type)
         }
     }
 
