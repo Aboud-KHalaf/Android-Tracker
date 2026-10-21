@@ -21,6 +21,7 @@ All data stays on your device, and you don't need an account. When you want your
 - **Drag and drop** exercises into a new order with the handle or a long press; the order is saved and restored (Move up/down stay available in the menu and to TalkBack)
 - **Targets per exercise**: sets, reps and weight, or hold time, edited on their own without starting a workout. They prefill each new workout; what you actually lift is recorded separately and shown next to them as "Recorded last workout"
 - Log weight-and-reps sets during an active workout
+- **Plate calculator**: see which plates go on each side of a 20, 15 or 10 kg bar for the weight you typed
 - Built-in hold timer for timed sets (planks, holds, etc.)
 - Workout history grouped by month, with a filter by training day
 
