@@ -2,6 +2,7 @@ package com.example.tracker.ui.workout
 
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.SetImprovement
+import com.example.tracker.domain.workout.RestKind
 import com.example.tracker.ui.common.SetValueUi
 import java.time.Instant
 
@@ -26,9 +27,31 @@ sealed interface ActiveWorkoutUiState {
         val completedSetCount: Int,
         val openSetCount: Int,
         val isFinishing: Boolean = false,
+        /** The rest after the last completed set, while it runs. */
+        val rest: RestUi? = null,
     ) : ActiveWorkoutUiState {
         /** Every set of the current exercise is completed. */
         val allSetsDone: Boolean get() = sets.none { it is SetRowUi.Active || it is SetRowUi.Upcoming }
+    }
+}
+
+/**
+ * A rest countdown that ends at [endsAt]; the UI ticks it, so this state only changes on user
+ * actions. [totalSeconds] is the whole rest, for showing how much is left.
+ */
+data class RestUi(val kind: RestKind, val endsAt: Instant, val totalSeconds: Int) {
+    /** Whole seconds left, rounded up so the countdown shows 0:00 only once it is over. */
+    fun remainingSecondsAt(now: Instant): Int {
+        val millis = java.time.Duration.between(now, endsAt).toMillis()
+        return if (millis <= 0) 0 else ((millis + MILLIS_PER_SECOND - 1) / MILLIS_PER_SECOND).toInt()
+    }
+
+    /** The share of the rest still left, 1 at the start and 0 at the end. */
+    fun fractionLeftAt(now: Instant): Float =
+        if (totalSeconds <= 0) 0f else (remainingSecondsAt(now).toFloat() / totalSeconds).coerceIn(0f, 1f)
+
+    private companion object {
+        const val MILLIS_PER_SECOND = 1_000L
     }
 }
 

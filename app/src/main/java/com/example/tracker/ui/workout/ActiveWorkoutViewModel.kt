@@ -12,7 +12,9 @@ import androidx.navigation.toRoute
 import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
+import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
+import com.example.tracker.domain.workout.restAfterCompleting
 import com.example.tracker.domain.workout.resumeExerciseIndex
 import com.example.tracker.ui.common.SetValueUi
 import com.example.tracker.ui.common.launchCatching
@@ -43,13 +45,15 @@ import kotlinx.coroutines.flow.update
  * Saved sets come from the repository; what the user is choosing, typing or timing lives
  * here as [WorkoutSelection] and [SetDraft] until it is saved, backed by [savedState] so it
  * survives Android ending the app in the background. The open exercise is also stored with
- * the workout, so the session reopens on it even after a restart. State is exposed as
- * [uiState]; navigation and messages are sent once through [events].
+ * the workout, so the session reopens on it even after a restart. Completing a set starts a
+ * rest countdown as long as Settings' rest times say. State is exposed as [uiState];
+ * navigation and messages are sent once through [events].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ActiveWorkoutViewModel(
     private val workoutId: String,
     private val workoutRepository: WorkoutRepository,
+    private val settingsRepository: SettingsRepository,
     private val time: TimeProvider,
     private val savedState: SavedStateHandle = SavedStateHandle(),
 ) : ViewModel() {
@@ -58,6 +62,7 @@ class ActiveWorkoutViewModel(
     private val selection = MutableStateFlow(savedState.readSelection())
     private val draft = MutableStateFlow(savedState.readDraft())
     private val isFinishing = MutableStateFlow(false)
+    private val rest = MutableStateFlow(savedState.readRest())
 
     private val _events = Channel<ActiveWorkoutEvent>(Channel.BUFFERED)
     val events: Flow<ActiveWorkoutEvent> = _events.receiveAsFlow()
@@ -69,10 +74,10 @@ class ActiveWorkoutViewModel(
                 observeLastTimes(),
                 selection,
                 draft,
-                isFinishing,
-            ) { workout, lastTimes, selection, draft, finishing ->
+                combine(isFinishing, rest, ::Pair),
+            ) { workout, lastTimes, selection, draft, (finishing, rest) ->
                 val state = ActiveWorkoutStateMapper.map(workout, lastTimes, selection, draft)
-                if (state is ActiveWorkoutUiState.Success) state.copy(isFinishing = finishing) else state
+                if (state is ActiveWorkoutUiState.Success) state.copy(isFinishing = finishing, rest = rest) else state
             }
                 .onStart { emit(ActiveWorkoutUiState.Loading) }
                 .catch { emit(ActiveWorkoutUiState.Error) }
@@ -82,6 +87,7 @@ class ActiveWorkoutViewModel(
     init {
         selection.onEach(savedState::writeSelection).launchIn(viewModelScope)
         draft.onEach(savedState::writeDraft).launchIn(viewModelScope)
+        rest.onEach(savedState::writeRest).launchIn(viewModelScope)
         // Pin the starting exercise, so completing its last set doesn't jump to the next one.
         viewModelScope.launchCatching(onError = {}) {
             val start = workoutRepository.observeWorkout(workoutId).filterNotNull().first().resumeExerciseIndex()
@@ -124,13 +130,15 @@ class ActiveWorkoutViewModel(
             workoutRepository.completeSet(active.id)
             draft.value = null
             selection.update { it.copy(setId = null) }
+            startRestAfter(active.id)
             _events.send(ActiveWorkoutEvent.SetCompleted(active.id, active.number))
         }
     }
 
-    /** Undoes [onCompleteSet]: the set becomes active again. */
+    /** Undoes [onCompleteSet]: the set becomes active again, and its rest is dropped. */
     fun onUndoCompleteSet(setId: String) {
         val row = currentSets().firstOrNull { it.id == setId } as? SetRowUi.Done
+        rest.value = null
         viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
             saveDraft()
             reopen(setId, row)
@@ -161,6 +169,24 @@ class ActiveWorkoutViewModel(
         viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
             workoutRepository.addSet(state.exercise.workoutExerciseId)
         }
+    }
+
+    /** Lengthens (or with a negative value, shortens) the rest; shortening it past zero ends it. */
+    fun onAdjustRest(seconds: Int) {
+        val now = time.now()
+        rest.update { current ->
+            val endsAt = current?.endsAt?.plusSeconds(seconds.toLong())
+            if (endsAt == null || !endsAt.isAfter(now)) {
+                null
+            } else {
+                current.copy(endsAt = endsAt, totalSeconds = current.totalSeconds + seconds)
+            }
+        }
+    }
+
+    /** The rest was skipped or has run out. */
+    fun onEndRest() {
+        rest.value = null
     }
 
     fun onPreviousExercise() = goToExercise(offset = -1)
@@ -211,6 +237,13 @@ class ActiveWorkoutViewModel(
                 isFinishing.value = false
             }
         }
+    }
+
+    /** Starts the rest that follows completing [setId], or clears the last one if none follows. */
+    private suspend fun startRestAfter(setId: String) {
+        val workout = workoutRepository.observeWorkout(workoutId).first()
+        val period = workout?.restAfterCompleting(setId, settingsRepository.restTimes.value)
+        rest.value = period?.let { RestUi(it.kind, time.now().plusSeconds(it.seconds.toLong()), it.seconds) }
     }
 
     /** Makes a completed set active again; a hold continues from its recorded time. */
@@ -284,6 +317,7 @@ class ActiveWorkoutViewModel(
                 ActiveWorkoutViewModel(
                     workoutId = savedState.toRoute<ActiveWorkoutDestination>().workoutId,
                     workoutRepository = container.workoutRepository,
+                    settingsRepository = container.settingsRepository,
                     time = container.time,
                     savedState = savedState,
                 )
