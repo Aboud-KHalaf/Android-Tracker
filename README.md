@@ -2,7 +2,7 @@
 
 An offline-first Android app for tracking your **workouts**, any **stats** you measure (weight, calories, body fat, waist, sleep...) and **progress photos** in one place. Built with Kotlin, Jetpack Compose and Material Design 3.
 
-All data stays on your device, and you don't need an account. When you want your numbers elsewhere, export any screen's analytics, or everything at once, as a PDF or Excel file. The only feature that uses the internet is the optional exercise catalog, which sends just your search to [wger.de](https://wger.de).
+All data stays on your device, and you don't need an account. When you want your numbers elsewhere, export any screen's analytics, or everything at once, as a PDF or Excel file. To move to a new phone, back up everything to one file and restore it there. The only feature that uses the internet is the optional exercise catalog, which sends just your search to [wger.de](https://wger.de).
 
 🌐 **Website:** [aboud-khalaf.github.io/Android-Tracker](https://aboud-khalaf.github.io/Android-Tracker/)
 
@@ -56,6 +56,7 @@ All data stays on your device, and you don't need an account. When you want your
 - Light, dark or system theme
 - Turn the daily stats reminder on or off and choose when it arrives
 - Export all data (exercises, every workout set and every stat) as a PDF or Excel file
+- **Back up** everything, progress photos included, to one `.zip` file, and **restore** it on this or another phone (it replaces the data there; backups from older versions are migrated)
 - Delete all data, progress photos included, from the device
 
 ### 🎨 Design
