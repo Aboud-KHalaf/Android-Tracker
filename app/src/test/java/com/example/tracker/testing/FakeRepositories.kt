@@ -256,6 +256,18 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
 }
 
 class FakeSettingsRepository : SettingsRepository {
+    override val healthSyncEnabled = MutableStateFlow(false)
+    override val lastHealthSync = MutableStateFlow<Instant?>(null)
+
+    override suspend fun setHealthSyncEnabled(enabled: Boolean) {
+        writeError?.let { throw it }
+        healthSyncEnabled.value = enabled
+    }
+
+    override suspend fun setLastHealthSync(at: Instant) {
+        lastHealthSync.value = at
+    }
+
     override val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
     override val reminderEnabled = MutableStateFlow(true)
     override val reminderTime = MutableStateFlow(ReminderTime.DEFAULT)

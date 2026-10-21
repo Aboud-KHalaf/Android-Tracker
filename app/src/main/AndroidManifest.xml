@@ -16,6 +16,19 @@
     <!-- Lets the reminder and the end of a rest arrive on time; without it the system may deliver it up to an hour late. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
+    <!-- Health Connect's client needs Android 8; the app only uses it on Android 9+, where Health
+         Connect exists (see data/health/HealthConnectDataSource.kt), so older phones are kept. -->
+    <uses-sdk tools:overrideLibrary="androidx.health.connect.client" />
+    <!-- Optional sync: steps, weight and sleep are read (never written) into stats. -->
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_WEIGHT" />
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
+
+    <queries>
+        <!-- The Health Connect app on Android 9 to 13. -->
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
+
     <application
         android:name=".TrackerApplication"
         android:allowBackup="true"
@@ -38,6 +51,27 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Health Connect shows this to explain why the app reads health data. -->
+        <activity
+            android:name=".ui.health.HealthPrivacyActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Tracker">
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+        </activity>
+        <!-- The same, from Android 14's Health Connect settings. -->
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
+            android:targetActivity=".ui.health.HealthPrivacyActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
 
         <receiver
             android:name=".reminder.DailyReminderReceiver"

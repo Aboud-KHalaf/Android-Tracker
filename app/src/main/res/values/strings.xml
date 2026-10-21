@@ -257,6 +257,19 @@
     <string name="settings_theme_dark">Dark</string>
     <string name="settings_error_theme">Couldn\'t change the theme. Try again.</string>
     <string name="settings_data">Data</string>
+    <string name="settings_health">Health Connect</string>
+    <string name="settings_health_sync">Sync with Health Connect</string>
+    <string name="settings_health_sync_description">Fill your Steps, Weight and Sleep stats with the last 30 days from Health Connect</string>
+    <string name="settings_health_install">Get Health Connect</string>
+    <string name="settings_health_install_description">Install or update Health Connect to sync steps, weight and sleep</string>
+    <string name="settings_health_sync_now">Sync now</string>
+    <string name="settings_health_last_sync">Last synced %1$s</string>
+    <string name="settings_health_never_synced">Not synced yet</string>
+    <string name="settings_health_synced">Health Connect synced</string>
+    <string name="settings_health_denied">Allow access in Health Connect to sync.</string>
+    <string name="settings_error_health_sync">Couldn\'t read Health Connect. Try again.</string>
+    <string name="health_privacy_title">Your health data</string>
+    <string name="health_privacy_body">Tracker reads your steps, weight and sleep from Health Connect, only when you turn on sync in Settings. It copies the last 30 days into your Steps, Weight and Sleep stats on this phone, so you see them with everything else you track.\n\nTracker never writes to Health Connect, never sends your health data anywhere, and has no account or server. Turn sync off in Settings or remove access in Health Connect at any time; stats already copied stay until you delete them.</string>
     <string name="settings_delete_data">Delete all data</string>
     <string name="settings_delete_data_description">Remove every exercise, plan, workout, daily log, weight entry and progress photo from this device</string>
     <string name="settings_delete_data_title">Delete all data?</string>
@@ -272,6 +285,7 @@
     <string name="plan_name_label">Day name</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_save">Save</string>
+    <string name="action_close">Close</string>
     <string name="action_delete">Delete</string>
     <string name="action_ok">OK</string>
     <string name="action_add">Add</string>

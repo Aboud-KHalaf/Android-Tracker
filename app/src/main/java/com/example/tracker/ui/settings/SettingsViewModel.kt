@@ -9,7 +9,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
+import com.example.tracker.data.health.HealthConnectDataSource
 import com.example.tracker.domain.export.ExportFormat
+import com.example.tracker.domain.health.HealthAvailability
 import com.example.tracker.domain.export.ReportExporter
 import com.example.tracker.domain.export.exportFileName
 import com.example.tracker.domain.model.ThemeMode
@@ -21,6 +23,7 @@ import com.example.tracker.domain.workout.RestTimes
 import com.example.tracker.ui.common.launchCatching
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +43,22 @@ class SettingsViewModel(
     private val data: ExportableData,
     private val reportExporter: ReportExporter,
     private val time: TimeProvider,
+    private val health: Health = Health.None,
 ) : ViewModel() {
+
+    /** Health Connect: whether it's there, the permissions to ask for, and the sync itself. */
+    data class Health(
+        val availability: () -> HealthAvailability,
+        val permissions: Set<String>,
+        val sync: suspend () -> Int,
+    ) {
+        companion object {
+            val None = Health(availability = { HealthAvailability.UNSUPPORTED }, permissions = emptySet(), sync = { 0 })
+        }
+    }
+
+    /** The read permissions to ask Health Connect for when sync is turned on. */
+    val healthPermissions: Set<String> get() = health.permissions
 
     /** The repositories "Export all data" reads from. */
     data class ExportableData(
@@ -51,6 +69,15 @@ class SettingsViewModel(
 
     private val isDeletingData = MutableStateFlow(false)
     private val isExportingData = MutableStateFlow(false)
+    private val healthAvailability = MutableStateFlow(health.availability())
+    private val isSyncingHealth = MutableStateFlow(false)
+
+    private val healthUi = combine(
+        healthAvailability,
+        settingsRepository.healthSyncEnabled,
+        settingsRepository.lastHealthSync,
+        isSyncingHealth,
+    ) { availability, enabled, lastSync, syncing -> HealthUi(availability, enabled, lastSync, syncing) }
 
     private val _events = Channel<SettingsEvent>(Channel.BUFFERED)
     val events: Flow<SettingsEvent> = _events.receiveAsFlow()
@@ -58,11 +85,11 @@ class SettingsViewModel(
     val uiState: StateFlow<SettingsUiState> =
         combine(
             settingsRepository.themeMode,
-            combine(isDeletingData, isExportingData, ::Pair),
+            combine(isDeletingData, isExportingData, healthUi, ::Triple),
             settingsRepository.reminderEnabled,
             settingsRepository.reminderTime,
             settingsRepository.restTimes,
-        ) { themeMode, (deleting, exporting), reminder, reminderTime, restTimes ->
+        ) { themeMode, (deleting, exporting, health), reminder, reminderTime, restTimes ->
             SettingsUiState(
                 themeMode = themeMode,
                 isDeletingData = deleting,
@@ -70,6 +97,7 @@ class SettingsViewModel(
                 reminderEnabled = reminder,
                 reminderTime = reminderTime,
                 restTimes = restTimes,
+                health = health,
             )
         }.stateIn(
             viewModelScope,
@@ -79,6 +107,11 @@ class SettingsViewModel(
                 reminderEnabled = settingsRepository.reminderEnabled.value,
                 reminderTime = settingsRepository.reminderTime.value,
                 restTimes = settingsRepository.restTimes.value,
+                health = HealthUi(
+                    availability = healthAvailability.value,
+                    isEnabled = settingsRepository.healthSyncEnabled.value,
+                    lastSync = settingsRepository.lastHealthSync.value,
+                ),
             ),
         )
 
@@ -107,6 +140,51 @@ class SettingsViewModel(
     private fun updateRestTimes(change: (RestTimes) -> RestTimes) {
         viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_rest) }) {
             settingsRepository.setRestTimes(change(settingsRepository.restTimes.value))
+        }
+    }
+
+    /** Back on screen: Health Connect may have been installed meanwhile. */
+    fun onResume() {
+        healthAvailability.value = health.availability()
+    }
+
+    /**
+     * Health Connect answered the request for [healthPermissions] with [granted]. Any of them
+     * turns sync on and syncs at once; none leaves it off.
+     */
+    fun onHealthPermissionsResult(granted: Set<String>) {
+        if (granted.none { it in health.permissions }) {
+            viewModelScope.launchCatching(onError = {}) { showMessage(R.string.settings_health_denied) }
+            return
+        }
+        viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_health_sync) }) {
+            settingsRepository.setHealthSyncEnabled(true)
+            syncHealth()
+        }
+    }
+
+    fun onDisableHealthSync() {
+        viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_health_sync) }) {
+            settingsRepository.setHealthSyncEnabled(false)
+        }
+    }
+
+    fun onSyncHealthNow() {
+        viewModelScope.launchCatching(onError = {}) { syncHealth() }
+    }
+
+    private suspend fun syncHealth() {
+        if (isSyncingHealth.value) return
+        isSyncingHealth.value = true
+        try {
+            health.sync()
+            showMessage(R.string.settings_health_synced)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            showMessage(R.string.settings_error_health_sync)
+        } finally {
+            isSyncingHealth.value = false
         }
     }
 
@@ -172,6 +250,11 @@ class SettingsViewModel(
                     ),
                     reportExporter = container.reportExporter,
                     time = container.time,
+                    health = Health(
+                        availability = container.healthDataSource::availability,
+                        permissions = HealthConnectDataSource.PERMISSIONS.values.toSet(),
+                        sync = container.healthSync::sync,
+                    ),
                 )
             }
         }

@@ -17,7 +17,10 @@ import kotlinx.coroutines.flow.first
  * App-level navigation that doesn't start from a screen: reopening the workout in progress when
  * the app starts afresh (e.g. after Android ended it), or when its notification is tapped.
  */
-class TrackerAppViewModel(private val workoutRepository: WorkoutRepository) : ViewModel() {
+class TrackerAppViewModel(
+    private val workoutRepository: WorkoutRepository,
+    private val syncHealthIfDue: suspend () -> Unit = {},
+) : ViewModel() {
 
     private val _workoutToOpen = MutableStateFlow<String?>(null)
 
@@ -49,11 +52,17 @@ class TrackerAppViewModel(private val workoutRepository: WorkoutRepository) : Vi
         _workoutToOpen.value = null
     }
 
+    /** The app came to the foreground: refresh steps, weight and sleep if that's turned on. */
+    fun onAppStarted() {
+        // Failing is fine: Settings shows when it last worked and offers to sync again.
+        viewModelScope.launchCatching(onError = {}) { syncHealthIfDue() }
+    }
+
     companion object {
         val Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
-                TrackerAppViewModel(container.workoutRepository)
+                TrackerAppViewModel(container.workoutRepository, syncHealthIfDue = { container.healthSync.syncIfDue() })
             }
         }
     }

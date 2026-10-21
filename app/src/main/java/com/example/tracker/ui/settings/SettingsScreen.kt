@@ -73,7 +73,10 @@ import com.example.tracker.reminder.canScheduleExactAlarms
 import com.example.tracker.ui.common.openAppNotificationSettings
 import com.example.tracker.ui.common.openExactAlarmSettings
 import com.example.tracker.ui.common.rememberNotificationPermissionRequest
+import com.example.tracker.domain.health.HealthAvailability
 import com.example.tracker.ui.settings.components.DeleteDataDialog
+import com.example.tracker.ui.settings.components.HealthConnectActions
+import com.example.tracker.ui.settings.components.HealthConnectSection
 import com.example.tracker.ui.settings.components.ReminderTimeDialog
 import com.example.tracker.ui.settings.components.RestTimeDialog
 import com.example.tracker.ui.settings.components.ThemeModeOptions
@@ -117,6 +120,7 @@ fun SettingsRoute(
     var exactAlarmsAllowed by remember { mutableStateOf(canScheduleExactAlarms(context)) }
     LifecycleResumeEffect(Unit) {
         exactAlarmsAllowed = canScheduleExactAlarms(context)
+        viewModel.onResume()
         onPauseOrDispose {}
     }
 
@@ -133,6 +137,12 @@ fun SettingsRoute(
         onSetRestBetweenExercises = viewModel::onSetRestBetweenExercises,
         exactAlarmsAllowed = exactAlarmsAllowed,
         onAllowExactAlarms = context::openExactAlarmSettings,
+        healthActions = HealthConnectActions(
+            permissions = viewModel.healthPermissions,
+            onPermissionsResult = viewModel::onHealthPermissionsResult,
+            onDisable = viewModel::onDisableHealthSync,
+            onSyncNow = viewModel::onSyncHealthNow,
+        ),
         onDeleteAllData = viewModel::onDeleteAllData,
         exportFileName = viewModel::exportFileName,
         onExportAllData = viewModel::onExportAllData,
@@ -156,6 +166,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     exactAlarmsAllowed: Boolean = true,
     onAllowExactAlarms: () -> Unit = {},
+    healthActions: HealthConnectActions = HealthConnectActions(),
     onSetRestBetweenSets: (seconds: Int) -> Unit = {},
     onSetRestBetweenExercises: (seconds: Int) -> Unit = {},
     exportFileName: (ExportFormat) -> String = { "" },
@@ -241,6 +252,14 @@ fun SettingsScreen(
                         title = stringResource(R.string.settings_rest_exact_alarms),
                         onClick = onAllowExactAlarms,
                     )
+                }
+
+                if (uiState.health.availability != HealthAvailability.UNSUPPORTED) {
+                    SectionHeader(
+                        title = stringResource(R.string.settings_health),
+                        modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, top = spacing.lg),
+                    )
+                    HealthConnectSection(uiState.health, healthActions)
                 }
 
                 SectionHeader(
