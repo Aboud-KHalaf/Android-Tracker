@@ -1,5 +1,7 @@
 package com.example.tracker.ui.settings
 
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -64,4 +66,20 @@ class SettingsScreenTest {
 
         compose.onNodeWithText(restItem).assertDoesNotExist()
     }
+
+    @Test
+    fun dataItems_canBeUsedWhenIdle() {
+        show(SettingsUiState(), exactAlarmsAllowed = true)
+
+        dataItems.forEach { compose.onNodeWithText(it).performScrollTo().assertIsEnabled() }
+    }
+
+    @Test
+    fun whileRestoring_everyDataItemWaits() {
+        show(SettingsUiState(isRestoring = true), exactAlarmsAllowed = true)
+
+        dataItems.forEach { compose.onNodeWithText(it).performScrollTo().assertIsNotEnabled() }
+    }
+
+    private val dataItems = listOf("Export all data", "Back up data", "Restore from backup", "Delete all data")
 }

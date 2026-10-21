@@ -1,6 +1,11 @@
 package com.example.tracker.ui.settings
 
+import android.content.ActivityNotFoundException
+import android.net.Uri
 import android.text.format.DateFormat
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,9 +19,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Alarm
+import androidx.compose.material.icons.outlined.Backup
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.TimerOff
 import androidx.compose.material.icons.outlined.NotificationsActive
@@ -40,10 +47,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -64,6 +73,7 @@ import com.example.tracker.R
 import com.example.tracker.domain.export.ExportFormat
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.workout.RestKind
+import com.example.tracker.ui.common.DestructiveConfirmDialog
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.ExportFormatMenu
 import com.example.tracker.ui.common.SectionHeader
@@ -136,6 +146,9 @@ fun SettingsRoute(
         onDeleteAllData = viewModel::onDeleteAllData,
         exportFileName = viewModel::exportFileName,
         onExportAllData = viewModel::onExportAllData,
+        backupFileName = viewModel::backupFileName,
+        onBackUp = viewModel::onBackUp,
+        onRestore = viewModel::onRestore,
         appVersion = BuildConfig.VERSION_NAME,
         snackbarHostState = snackbarHostState,
         modifier = modifier,
@@ -160,9 +173,18 @@ fun SettingsScreen(
     onSetRestBetweenExercises: (seconds: Int) -> Unit = {},
     exportFileName: (ExportFormat) -> String = { "" },
     onExportAllData: (ExportFormat, destination: String) -> Unit = { _, _ -> },
+    backupFileName: () -> String = { "" },
+    onBackUp: (destination: String) -> Unit = {},
+    onRestore: (source: String) -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    // The backup file picked to restore, waiting for confirmation.
+    var restoreSource by rememberSaveable { mutableStateOf<String?>(null) }
+    val pickBackupDestination = rememberDocumentLauncher(ActivityResultContracts.CreateDocument(BACKUP_MIME_TYPE)) {
+        onBackUp(it)
+    }
+    val pickRestoreSource = rememberDocumentLauncher(ActivityResultContracts.OpenDocument()) { restoreSource = it }
     var showReminderTimeDialog by rememberSaveable { mutableStateOf(false) }
     var restDialog by rememberSaveable { mutableStateOf<RestKind?>(null) }
     val is24Hour = DateFormat.is24HourFormat(LocalContext.current)
@@ -249,11 +271,29 @@ fun SettingsScreen(
                 )
                 ExportDataItem(
                     isExporting = uiState.isExportingData,
+                    enabled = !uiState.isDataBusy,
                     fileName = exportFileName,
                     onExport = onExportAllData,
                 )
+                DataActionItem(
+                    title = stringResource(R.string.settings_backup),
+                    description = stringResource(R.string.settings_backup_description),
+                    icon = Icons.Outlined.Backup,
+                    inProgress = uiState.isBackingUp,
+                    enabled = !uiState.isDataBusy,
+                    onClick = { pickBackupDestination(backupFileName()) },
+                )
+                DataActionItem(
+                    title = stringResource(R.string.settings_restore),
+                    description = stringResource(R.string.settings_restore_description),
+                    icon = Icons.Outlined.Restore,
+                    inProgress = uiState.isRestoring,
+                    enabled = !uiState.isDataBusy,
+                    onClick = { pickRestoreSource(BACKUP_PICKER_TYPES) },
+                )
                 DeleteDataItem(
                     isDeleting = uiState.isDeletingData,
+                    enabled = !uiState.isDataBusy,
                     onClick = { showDeleteDialog = true },
                 )
 
@@ -295,6 +335,19 @@ fun SettingsScreen(
                 if (isSets) onSetRestBetweenSets(seconds) else onSetRestBetweenExercises(seconds)
             },
             onDismiss = { restDialog = null },
+        )
+    }
+
+    restoreSource?.let { source ->
+        DestructiveConfirmDialog(
+            title = stringResource(R.string.settings_restore_title),
+            body = stringResource(R.string.settings_restore_body),
+            confirmLabel = stringResource(R.string.settings_restore_confirm),
+            onConfirm = {
+                restoreSource = null
+                onRestore(source)
+            },
+            onDismiss = { restoreSource = null },
         )
     }
 
@@ -360,6 +413,11 @@ private fun RestTimeItem(title: String, seconds: Int, onClick: () -> Unit) {
     )
 }
 
+private const val BACKUP_MIME_TYPE = "application/zip"
+
+/** File managers label zip files differently, so the restore picker accepts each. */
+private val BACKUP_PICKER_TYPES = arrayOf(BACKUP_MIME_TYPE, "application/x-zip-compressed", "application/octet-stream")
+
 /** Material's opacity for disabled content. */
 private const val DISABLED_ALPHA = 0.38f
 
@@ -374,10 +432,54 @@ private fun ExactAlarmsItem(title: String, onClick: () -> Unit) {
     )
 }
 
+/**
+ * Returns a function that opens a system file picker with [contract]; [onPicked] gets the
+ * chosen file's URI. Cancelling, or a device without a file picker, does nothing.
+ */
+@Composable
+private fun <I> rememberDocumentLauncher(
+    contract: ActivityResultContract<I, Uri?>,
+    onPicked: (String) -> Unit,
+): (I) -> Unit {
+    val currentOnPicked by rememberUpdatedState(onPicked)
+    val launcher = rememberLauncherForActivityResult(contract) { uri -> if (uri != null) currentOnPicked(uri.toString()) }
+    return { input ->
+        try {
+            launcher.launch(input)
+        } catch (_: ActivityNotFoundException) {
+            // No file picker on this device.
+        }
+    }
+}
+
+/** A whole-data action such as backing up; shows progress instead while [inProgress]. */
+@Composable
+private fun DataActionItem(
+    title: String,
+    description: String,
+    icon: ImageVector,
+    inProgress: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    ListItem(
+        headlineContent = { Text(title) },
+        supportingContent = { Text(description) },
+        leadingContent = { Icon(icon, contentDescription = null) },
+        trailingContent = if (inProgress) {
+            { CircularProgressIndicator(modifier = Modifier.size(MaterialTheme.spacing.xl)) }
+        } else {
+            null
+        },
+        modifier = Modifier.clickable(enabled = enabled, onClick = onClick),
+    )
+}
+
 /** "Export all data": tapping offers PDF or Excel, then asks where to save. */
 @Composable
 private fun ExportDataItem(
     isExporting: Boolean,
+    enabled: Boolean,
     fileName: (ExportFormat) -> String,
     onExport: (ExportFormat, String) -> Unit,
 ) {
@@ -393,14 +495,14 @@ private fun ExportDataItem(
             } else {
                 null
             },
-            modifier = Modifier.clickable(enabled = !isExporting) { showFormats = true },
+            modifier = Modifier.clickable(enabled = enabled) { showFormats = true },
         )
         ExportFormatMenu(expanded = showFormats, onDismiss = { showFormats = false }, onSelect = launch)
     }
 }
 
 @Composable
-private fun DeleteDataItem(isDeleting: Boolean, onClick: () -> Unit) {
+private fun DeleteDataItem(isDeleting: Boolean, enabled: Boolean, onClick: () -> Unit) {
     val error = MaterialTheme.colorScheme.error
     ListItem(
         headlineContent = { Text(stringResource(R.string.settings_delete_data)) },
@@ -412,7 +514,7 @@ private fun DeleteDataItem(isDeleting: Boolean, onClick: () -> Unit) {
             null
         },
         colors = ListItemDefaults.colors(headlineColor = error, leadingIconColor = error),
-        modifier = Modifier.clickable(enabled = !isDeleting, onClick = onClick),
+        modifier = Modifier.clickable(enabled = enabled, onClick = onClick),
     )
 }
 

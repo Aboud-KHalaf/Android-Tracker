@@ -361,6 +361,19 @@
     <string name="export_all_title">Tracker data</string>
     <string name="settings_export_all">Export all data</string>
     <string name="settings_export_all_description">Save every workout, daily log and weight entry as a PDF or Excel file</string>
+    <string name="settings_backup">Back up data</string>
+    <string name="settings_backup_description">Save everything, progress photos included, to one file you can restore here or on another phone</string>
+    <string name="settings_restore">Restore from backup</string>
+    <string name="settings_restore_description">Replace the data on this device with a backup file</string>
+    <string name="settings_restore_title">Restore this backup?</string>
+    <string name="settings_restore_body">All exercises, programs, workout history, stats and progress photos on this device are replaced with the ones in the backup. This can\'t be undone.</string>
+    <string name="settings_restore_confirm">Restore</string>
+    <string name="settings_backup_done">Backup saved</string>
+    <string name="settings_restore_done">Backup restored</string>
+    <string name="settings_error_backup">Couldn\'t save the backup. Try again.</string>
+    <string name="settings_error_restore">Couldn\'t restore the backup. Your data wasn\'t changed.</string>
+    <string name="settings_error_restore_invalid">This file isn\'t a Tracker backup, or it\'s damaged. Your data wasn\'t changed.</string>
+    <string name="settings_error_restore_newer">This backup is from a newer version of Tracker. Update the app and try again.</string>
 
     <!-- Progress photos -->
     <string name="photos_title">Progress photos</string>
