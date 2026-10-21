@@ -17,6 +17,8 @@ import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.TimerOff
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.CircularProgressIndicator
@@ -61,9 +63,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.domain.export.ExportFormat
 import com.example.tracker.domain.model.ThemeMode
+import com.example.tracker.domain.workout.RestKind
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.ExportFormatMenu
 import com.example.tracker.ui.common.SectionHeader
+import com.example.tracker.ui.common.formatRestTime
 import com.example.tracker.ui.common.rememberExportLauncher
 import com.example.tracker.reminder.canScheduleExactAlarms
 import com.example.tracker.ui.common.openAppNotificationSettings
@@ -71,6 +75,7 @@ import com.example.tracker.ui.common.openExactAlarmSettings
 import com.example.tracker.ui.common.rememberNotificationPermissionRequest
 import com.example.tracker.ui.settings.components.DeleteDataDialog
 import com.example.tracker.ui.settings.components.ReminderTimeDialog
+import com.example.tracker.ui.settings.components.RestTimeDialog
 import com.example.tracker.ui.settings.components.ThemeModeOptions
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
@@ -124,6 +129,8 @@ fun SettingsRoute(
             if (enabled) ensureNotifications()
         },
         onSetReminderTime = viewModel::onSetReminderTime,
+        onSetRestBetweenSets = viewModel::onSetRestBetweenSets,
+        onSetRestBetweenExercises = viewModel::onSetRestBetweenExercises,
         showExactAlarmsItem = uiState.reminderEnabled && !exactAlarmsAllowed,
         onAllowExactAlarms = context::openExactAlarmSettings,
         onDeleteAllData = viewModel::onDeleteAllData,
@@ -149,12 +156,15 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     showExactAlarmsItem: Boolean = false,
     onAllowExactAlarms: () -> Unit = {},
+    onSetRestBetweenSets: (seconds: Int) -> Unit = {},
+    onSetRestBetweenExercises: (seconds: Int) -> Unit = {},
     exportFileName: (ExportFormat) -> String = { "" },
     onExportAllData: (ExportFormat, destination: String) -> Unit = { _, _ -> },
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     var showReminderTimeDialog by rememberSaveable { mutableStateOf(false) }
+    var restDialog by rememberSaveable { mutableStateOf<RestKind?>(null) }
     val is24Hour = DateFormat.is24HourFormat(LocalContext.current)
     val spacing = MaterialTheme.spacing
 
@@ -208,6 +218,21 @@ fun SettingsScreen(
                 if (showExactAlarmsItem) ExactAlarmsItem(onClick = onAllowExactAlarms)
 
                 SectionHeader(
+                    title = stringResource(R.string.settings_workout),
+                    modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, top = spacing.lg),
+                )
+                RestTimeItem(
+                    title = stringResource(R.string.settings_rest_between_sets),
+                    seconds = uiState.restTimes.betweenSetsSeconds,
+                    onClick = { restDialog = RestKind.BETWEEN_SETS },
+                )
+                RestTimeItem(
+                    title = stringResource(R.string.settings_rest_between_exercises),
+                    seconds = uiState.restTimes.betweenExercisesSeconds,
+                    onClick = { restDialog = RestKind.BETWEEN_EXERCISES },
+                )
+
+                SectionHeader(
                     title = stringResource(R.string.settings_data),
                     modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, top = spacing.lg),
                 )
@@ -244,6 +269,21 @@ fun SettingsScreen(
                 onSetReminderTime(time)
             },
             onDismiss = { showReminderTimeDialog = false },
+        )
+    }
+
+    restDialog?.let { kind ->
+        val isSets = kind == RestKind.BETWEEN_SETS
+        RestTimeDialog(
+            title = stringResource(
+                if (isSets) R.string.settings_rest_between_sets else R.string.settings_rest_between_exercises,
+            ),
+            selectedSeconds = uiState.restTimes.secondsFor(kind),
+            onSelect = { seconds ->
+                restDialog = null
+                if (isSets) onSetRestBetweenSets(seconds) else onSetRestBetweenExercises(seconds)
+            },
+            onDismiss = { restDialog = null },
         )
     }
 
@@ -293,6 +333,19 @@ private fun ReminderTimeItem(time: LocalTime, is24Hour: Boolean, enabled: Boolea
         leadingContent = { Icon(Icons.Outlined.Schedule, contentDescription = null) },
         colors = colors,
         modifier = Modifier.clickable(enabled = enabled, onClick = onClick),
+    )
+}
+
+/** A rest time and its current value ("1 min 30 sec" or "Off"); tapping changes it. */
+@Composable
+private fun RestTimeItem(title: String, seconds: Int, onClick: () -> Unit) {
+    ListItem(
+        headlineContent = { Text(title) },
+        supportingContent = { Text(formatRestTime(seconds)) },
+        leadingContent = {
+            Icon(if (seconds > 0) Icons.Outlined.Timer else Icons.Outlined.TimerOff, contentDescription = null)
+        },
+        modifier = Modifier.clickable(onClick = onClick),
     )
 }
 

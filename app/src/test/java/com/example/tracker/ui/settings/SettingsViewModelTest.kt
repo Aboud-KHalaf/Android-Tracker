@@ -13,6 +13,7 @@ import com.example.tracker.domain.model.StatIcon
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.progress.benchHistory
 import com.example.tracker.domain.progress.toSessions
+import com.example.tracker.domain.workout.RestTimes
 import com.example.tracker.testing.FakeCustomStatRepository
 import com.example.tracker.testing.FakeExerciseRepository
 import com.example.tracker.testing.FakeReportExporter
@@ -148,6 +149,28 @@ class SettingsViewModelTest {
         viewModel.onSetReminderTime(LocalTime.of(19, 15))
 
         assertEquals(SettingsEvent.ShowMessage(R.string.settings_error_reminder), viewModel.events.first())
+    }
+
+    @Test
+    fun onSetRestTimes_savesEachOne() = runTest {
+        val viewModel = createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+
+        viewModel.onSetRestBetweenSets(60)
+        viewModel.onSetRestBetweenExercises(0)
+
+        assertEquals(RestTimes(betweenSetsSeconds = 60, betweenExercisesSeconds = 0), settings.restTimes.value)
+        assertEquals(settings.restTimes.value, viewModel.uiState.value.restTimes)
+    }
+
+    @Test
+    fun onSetRestTime_failure_showsMessage() = runTest {
+        settings.writeError = IllegalStateException("disk full")
+        val viewModel = createViewModel()
+
+        viewModel.onSetRestBetweenSets(60)
+
+        assertEquals(SettingsEvent.ShowMessage(R.string.settings_error_rest), viewModel.events.first())
     }
 
     @Test

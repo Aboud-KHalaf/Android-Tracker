@@ -17,6 +17,7 @@ import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
+import com.example.tracker.domain.workout.RestTimes
 import com.example.tracker.ui.common.launchCatching
 import java.time.LocalDate
 import java.time.LocalTime
@@ -31,8 +32,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 
 /**
- * Settings screen: the app theme, the daily reminder and its time, and exporting or deleting all
- * local data. State is exposed as [uiState]; messages are sent once through [events].
+ * Settings screen: the app theme, the daily reminder and its time, workout rest times, and
+ * exporting or deleting all local data. State is exposed as [uiState]; messages are sent once through [events].
  */
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,
@@ -60,13 +61,15 @@ class SettingsViewModel(
             combine(isDeletingData, isExportingData, ::Pair),
             settingsRepository.reminderEnabled,
             settingsRepository.reminderTime,
-        ) { themeMode, (deleting, exporting), reminder, reminderTime ->
+            settingsRepository.restTimes,
+        ) { themeMode, (deleting, exporting), reminder, reminderTime, restTimes ->
             SettingsUiState(
                 themeMode = themeMode,
                 isDeletingData = deleting,
                 isExportingData = exporting,
                 reminderEnabled = reminder,
                 reminderTime = reminderTime,
+                restTimes = restTimes,
             )
         }.stateIn(
             viewModelScope,
@@ -75,6 +78,7 @@ class SettingsViewModel(
                 themeMode = settingsRepository.themeMode.value,
                 reminderEnabled = settingsRepository.reminderEnabled.value,
                 reminderTime = settingsRepository.reminderTime.value,
+                restTimes = settingsRepository.restTimes.value,
             ),
         )
 
@@ -93,6 +97,16 @@ class SettingsViewModel(
     fun onSetReminderTime(time: LocalTime) {
         viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_reminder) }) {
             settingsRepository.setReminderTime(time)
+        }
+    }
+
+    fun onSetRestBetweenSets(seconds: Int) = updateRestTimes { it.copy(betweenSetsSeconds = seconds) }
+
+    fun onSetRestBetweenExercises(seconds: Int) = updateRestTimes { it.copy(betweenExercisesSeconds = seconds) }
+
+    private fun updateRestTimes(change: (RestTimes) -> RestTimes) {
+        viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_rest) }) {
+            settingsRepository.setRestTimes(change(settingsRepository.restTimes.value))
         }
     }
 

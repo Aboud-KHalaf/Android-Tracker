@@ -10,6 +10,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
 import com.example.tracker.MainActivity
 import com.example.tracker.TrackerApplication
@@ -53,7 +54,7 @@ class SettingsFlowTest {
         assertEquals(ThemeMode.DARK, container.settingsRepository.themeMode.value)
 
         // Deleting asks first.
-        compose.onNodeWithText("Delete all data").performClick()
+        compose.onNodeWithText("Delete all data").performScrollTo().performClick()
         compose.onNode(hasText("Delete all") and hasAnyAncestor(isDialog())).performClick()
         waitForNode(hasText("All data deleted"))
 

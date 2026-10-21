@@ -2,6 +2,7 @@ package com.example.tracker.ui.settings
 
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.reminder.ReminderTime
+import com.example.tracker.domain.workout.RestTimes
 import java.time.LocalTime
 
 /** Settings are read synchronously, so the screen has no loading or error state. */
@@ -11,4 +12,5 @@ data class SettingsUiState(
     val isExportingData: Boolean = false,
     val reminderEnabled: Boolean = true,
     val reminderTime: LocalTime = ReminderTime.DEFAULT,
+    val restTimes: RestTimes = RestTimes(),
 )
