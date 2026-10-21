@@ -245,7 +245,6 @@
     <string name="summary_exercises">Exercises</string>
     <string name="summary_not_found">This workout isn\'t available.</string>
     <string name="summary_error">Couldn\'t load this workout.</string>
-    <string name="summary_open_progress">Open %1$s progress</string>
     <string name="action_done">Done</string>
     <string name="history_open">Workout history</string>
     <string name="history_error_load">Couldn\'t load your history.</string>
