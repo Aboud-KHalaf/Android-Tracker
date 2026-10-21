@@ -13,37 +13,41 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
 
+/** Everything Home shows, as the repositories report it. */
+internal data class HomeSources(
+    val activeWorkout: Workout?,
+    val programs: List<Program>,
+    val week: WeekSummary,
+    val personalBests: List<PersonalBest>,
+    val exercises: List<Exercise>,
+    val history: List<WorkoutSummary>,
+)
+
 /** Maps domain data to [HomeUiState.Success]. Pure, so it can be tested without a ViewModel. */
 internal class HomeStateMapper(private val zone: ZoneId) {
 
-    fun map(
-        today: LocalDate,
-        activeWorkout: Workout?,
-        programs: List<Program>,
-        week: WeekSummary,
-        personalBests: List<PersonalBest>,
-        exercises: List<Exercise>,
-        history: List<WorkoutSummary>,
-    ): HomeUiState.Success = HomeUiState.Success(
-        today = today,
-        upNext = upNext(today, activeWorkout, programs),
-        week = WeekUi(
-            days = weekDays(today, week),
-            workoutCount = week.workoutCount,
-            totalDuration = week.totalDuration,
-            personalBest = latestPersonalBestThisWeek(today, personalBests, exercises),
-        ),
-        programs = programs.map { program ->
-            ProgramItemUi(
-                id = program.id,
-                name = program.name,
-                isActive = program.isActive,
-                trainingDays = program.trainingDays.sorted(),
-                dayCount = program.days.size,
-            )
-        },
-        recentWorkouts = history.take(RECENT_WORKOUT_LIMIT).map { it.toWorkoutSummaryUi(zone) },
-    )
+    fun map(today: LocalDate, sources: HomeSources): HomeUiState.Success = with(sources) {
+        HomeUiState.Success(
+            today = today,
+            upNext = upNext(today, activeWorkout, programs),
+            week = WeekUi(
+                days = weekDays(today, week),
+                workoutCount = week.workoutCount,
+                totalDuration = week.totalDuration,
+                personalBest = latestPersonalBestThisWeek(today, personalBests, exercises),
+            ),
+            programs = programs.map { program ->
+                ProgramItemUi(
+                    id = program.id,
+                    name = program.name,
+                    isActive = program.isActive,
+                    trainingDays = program.trainingDays.sorted(),
+                    dayCount = program.days.size,
+                )
+            },
+            recentWorkouts = history.take(RECENT_WORKOUT_LIMIT).map { it.toWorkoutSummaryUi(zone) },
+        )
+    }
 
     private fun upNext(today: LocalDate, activeWorkout: Workout?, programs: List<Program>): UpNextUi {
         if (activeWorkout != null) {

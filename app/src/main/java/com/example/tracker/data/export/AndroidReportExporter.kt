@@ -37,6 +37,8 @@ class AndroidReportExporter(context: Context) : ReportExporter {
         }
     }
 
+    // getString takes its format arguments as a vararg, so the list has to be spread.
+    @Suppress("SpreadOperator")
     private fun resolve(text: ReportText): String = when (text) {
         is ReportText.Plain -> text.text
         is ReportText.Res -> context.getString(text.id, *text.args.map(::formatArg).toTypedArray())

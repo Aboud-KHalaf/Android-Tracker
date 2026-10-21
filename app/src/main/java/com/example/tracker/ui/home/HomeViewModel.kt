@@ -100,7 +100,7 @@ class HomeViewModel(
             personalBestsWithNames,
             workoutRepository.observeHistory(),
         ) { active, programs, week, (bests, exercises), history ->
-            mapper.map(today, active, programs, week, bests, exercises, history)
+            mapper.map(today, HomeSources(active, programs, week, bests, exercises, history))
         }
     }
 
