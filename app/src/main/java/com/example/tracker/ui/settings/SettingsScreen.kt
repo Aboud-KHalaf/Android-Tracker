@@ -131,7 +131,7 @@ fun SettingsRoute(
         onSetReminderTime = viewModel::onSetReminderTime,
         onSetRestBetweenSets = viewModel::onSetRestBetweenSets,
         onSetRestBetweenExercises = viewModel::onSetRestBetweenExercises,
-        showExactAlarmsItem = uiState.reminderEnabled && !exactAlarmsAllowed,
+        exactAlarmsAllowed = exactAlarmsAllowed,
         onAllowExactAlarms = context::openExactAlarmSettings,
         onDeleteAllData = viewModel::onDeleteAllData,
         exportFileName = viewModel::exportFileName,
@@ -154,7 +154,7 @@ fun SettingsScreen(
     onDeleteAllData: () -> Unit,
     appVersion: String,
     modifier: Modifier = Modifier,
-    showExactAlarmsItem: Boolean = false,
+    exactAlarmsAllowed: Boolean = true,
     onAllowExactAlarms: () -> Unit = {},
     onSetRestBetweenSets: (seconds: Int) -> Unit = {},
     onSetRestBetweenExercises: (seconds: Int) -> Unit = {},
@@ -215,7 +215,12 @@ fun SettingsScreen(
                     enabled = uiState.reminderEnabled,
                     onClick = { showReminderTimeDialog = true },
                 )
-                if (showExactAlarmsItem) ExactAlarmsItem(onClick = onAllowExactAlarms)
+                if (uiState.reminderEnabled && !exactAlarmsAllowed) {
+                    ExactAlarmsItem(
+                        title = stringResource(R.string.settings_exact_alarms),
+                        onClick = onAllowExactAlarms,
+                    )
+                }
 
                 SectionHeader(
                     title = stringResource(R.string.settings_workout),
@@ -231,6 +236,12 @@ fun SettingsScreen(
                     seconds = uiState.restTimes.betweenExercisesSeconds,
                     onClick = { restDialog = RestKind.BETWEEN_EXERCISES },
                 )
+                if (uiState.restTimes.isAnyOn && !exactAlarmsAllowed) {
+                    ExactAlarmsItem(
+                        title = stringResource(R.string.settings_rest_exact_alarms),
+                        onClick = onAllowExactAlarms,
+                    )
+                }
 
                 SectionHeader(
                     title = stringResource(R.string.settings_data),
@@ -352,10 +363,11 @@ private fun RestTimeItem(title: String, seconds: Int, onClick: () -> Unit) {
 /** Material's opacity for disabled content. */
 private const val DISABLED_ALPHA = 0.38f
 
+/** Asks for "Alarms & reminders" access, so [title]'s alert isn't delayed. */
 @Composable
-private fun ExactAlarmsItem(onClick: () -> Unit) {
+private fun ExactAlarmsItem(title: String, onClick: () -> Unit) {
     ListItem(
-        headlineContent = { Text(stringResource(R.string.settings_exact_alarms)) },
+        headlineContent = { Text(title) },
         supportingContent = { Text(stringResource(R.string.settings_exact_alarms_description)) },
         leadingContent = { Icon(Icons.Outlined.Alarm, contentDescription = null) },
         modifier = Modifier.clickable(onClick = onClick),
