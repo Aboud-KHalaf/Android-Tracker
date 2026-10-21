@@ -14,6 +14,7 @@ import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
+import com.example.tracker.domain.workout.RestAlarm
 import com.example.tracker.domain.workout.restAfterCompleting
 import com.example.tracker.domain.workout.resumeExerciseIndex
 import com.example.tracker.ui.common.SetValueUi
@@ -46,7 +47,8 @@ import kotlinx.coroutines.flow.update
  * here as [WorkoutSelection] and [SetDraft] until it is saved, backed by [savedState] so it
  * survives Android ending the app in the background. The open exercise is also stored with
  * the workout, so the session reopens on it even after a restart. Completing a set starts a
- * rest countdown as long as Settings' rest times say. State is exposed as [uiState];
+ * rest countdown as long as Settings' rest times say; [restAlarm] tells the user when it is
+ * over while the app is in the background. State is exposed as [uiState];
  * navigation and messages are sent once through [events].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -54,6 +56,7 @@ class ActiveWorkoutViewModel(
     private val workoutId: String,
     private val workoutRepository: WorkoutRepository,
     private val settingsRepository: SettingsRepository,
+    private val restAlarm: RestAlarm,
     private val time: TimeProvider,
     private val savedState: SavedStateHandle = SavedStateHandle(),
 ) : ViewModel() {
@@ -203,16 +206,25 @@ class ActiveWorkoutViewModel(
     }
 
     /**
-     * The app went to the background. Typed weight and reps are stored with their set, so
-     * they are kept even if the saved state is lost too, e.g. when the app is swiped away.
-     * The draft stays, so nothing changes on screen.
+     * The app went to the background, or the workout was minimized. A running rest sets an
+     * alarm for its end. Typed weight and reps are stored with their set, so they are kept
+     * even if the saved state is lost too, e.g. when the app is swiped away. The draft stays,
+     * so nothing changes on screen.
      */
     fun onAppBackgrounded() {
+        rest.value
+            ?.takeIf { it.endsAt.isAfter(time.now()) }
+            ?.let { restAlarm.schedule(workoutId, it.kind, it.endsAt) }
         val pending = draft.value as? SetDraft.WeightReps ?: return
         val values = completedValues(SetEditorUi.WeightReps(pending.weightText, pending.repsText)) ?: return
         viewModelScope.launchCatching(onError = {}) {
             workoutRepository.updateSet(pending.setId, values.weightKg, values.reps, values.durationSeconds)
         }
+    }
+
+    /** Back on screen: the countdown shows again, so its alarm and notification go. */
+    fun onAppForegrounded() {
+        restAlarm.cancel()
     }
 
     private fun goToExercise(offset: Int) {
@@ -318,6 +330,7 @@ class ActiveWorkoutViewModel(
                     workoutId = savedState.toRoute<ActiveWorkoutDestination>().workoutId,
                     workoutRepository = container.workoutRepository,
                     settingsRepository = container.settingsRepository,
+                    restAlarm = container.restAlarm,
                     time = container.time,
                     savedState = savedState,
                 )

@@ -85,6 +85,7 @@ fun ActiveWorkoutRoute(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.onAppForegrounded() }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.onAppBackgrounded() }
 
     ObserveAsEvents(viewModel.events) { event ->
