@@ -82,6 +82,7 @@ Get the latest APK from the [website](https://aboud-khalaf.github.io/Android-Tra
 | Background | AlarmManager for the daily stats reminder; an ongoing notification for the workout in progress |
 | Dependency injection | Manual (`AppContainer`) |
 | Testing | JUnit, Robolectric, Compose UI tests |
+| Code checks | Android lint and detekt, run in CI (`./gradlew lintDebug detekt`) |
 
 ## 🏗️ Architecture
 

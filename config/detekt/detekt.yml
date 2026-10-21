@@ -1,0 +1,47 @@
+# Changes to detekt's default rules for a Jetpack Compose app. Everything else is the default
+# (buildUponDefaultConfig in app/build.gradle.kts).
+
+naming:
+  FunctionNaming:
+    # Composables are named like types: HomeScreen, WeekCard.
+    ignoreAnnotated: ["Composable"]
+  TopLevelPropertyNaming:
+    # SCREAMING_CASE constants, and Compose style ones like private val ProgressSegmentHeight = 4.dp.
+    constantPattern: "[A-Z][_A-Za-z0-9]*"
+    propertyPattern: "[A-Za-z][_A-Za-z0-9]*"
+  MatchingDeclarationName:
+    # A screen's file holds its Route and Screen composables, e.g. HomeScreen.kt.
+    active: false
+
+complexity:
+  LongParameterList:
+    # Composables take state and callbacks as parameters by design.
+    ignoreAnnotated: ["Composable"]
+    ignoreDefaultParameters: true
+  LongMethod:
+    ignoreAnnotated: ["Composable"]
+  TooManyFunctions:
+    # ViewModels expose one function per user action.
+    ignoreAnnotatedFunctions: ["Test"]
+    thresholdInClasses: 20
+    thresholdInFiles: 25
+
+style:
+  MaxLineLength:
+    # The code wraps at about 140 columns; longer lines are long strings or URLs.
+    maxLineLength: 140
+    excludeCommentStatements: true
+  MagicNumber:
+    # Compose dimensions, colours and test data are clearer inline.
+    ignoreAnnotated: ["Composable", "Preview"]
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    excludes: ["**/test/**", "**/androidTest/**", "**/ui/theme/**"]
+  UnusedPrivateMember:
+    # Previews are only used by the IDE.
+    ignoreAnnotated: ["Preview"]
+  ReturnCount:
+    max: 4
+    excludeGuardClauses: true
+  WildcardImport:
+    active: true

@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+    alias(libs.plugins.detekt)
 }
 
 // Release signing credentials live in the git-ignored keystore.properties at the project root.
@@ -69,6 +70,12 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+    lint {
+        // CI fails on lint errors; warnings stay visible in the report without failing.
+        abortOnError = true
+        // Dependency updates are chosen on purpose, not whenever a newer version appears.
+        disable += setOf("GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion")
+    }
     sourceSets {
         // Exported Room schemas for migration tests. Robolectric only reads the merged debug
         // assets, so they ship in debug builds (never release).
@@ -78,6 +85,15 @@ android {
 
 room {
     schemaDirectory("$projectDir/schemas")
+}
+
+// Kotlin static analysis. Findings already in the code are recorded in the baseline, so CI fails
+// only on new ones; regenerate it with ./gradlew detektBaseline after fixing old findings.
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+    baseline = rootProject.file("config/detekt/baseline.xml")
+    source.setFrom("src/main/java", "src/test/java", "src/androidTest/java")
 }
 
 // Lets CI read the version without parsing this file.
