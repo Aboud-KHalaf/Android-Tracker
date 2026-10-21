@@ -30,6 +30,7 @@ import com.example.tracker.domain.repository.ProgramRepository
 import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
+import com.example.tracker.domain.workout.RestTimes
 import java.io.File
 import java.time.DayOfWeek
 import java.time.Duration
@@ -257,6 +258,12 @@ class FakeSettingsRepository : SettingsRepository {
     override val reminderEnabled = MutableStateFlow(true)
     override val reminderTime = MutableStateFlow(ReminderTime.DEFAULT)
     override val notificationPermissionRequested = MutableStateFlow(false)
+    override val restTimes = MutableStateFlow(RestTimes())
+
+    override suspend fun setRestTimes(times: RestTimes) {
+        writeError?.let { throw it }
+        restTimes.value = times
+    }
 
     override suspend fun setReminderTime(time: LocalTime) {
         writeError?.let { throw it }

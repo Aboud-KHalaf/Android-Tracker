@@ -1,6 +1,7 @@
 package com.example.tracker.domain.repository
 
 import com.example.tracker.domain.model.ThemeMode
+import com.example.tracker.domain.workout.RestTimes
 import java.time.LocalTime
 import kotlinx.coroutines.flow.StateFlow
 
@@ -19,6 +20,11 @@ interface SettingsRepository {
     val reminderTime: StateFlow<LocalTime>
 
     suspend fun setReminderTime(time: LocalTime)
+
+    /** How long to rest between sets and between exercises during a workout. */
+    val restTimes: StateFlow<RestTimes>
+
+    suspend fun setRestTimes(times: RestTimes)
 
     /** Whether the app has already asked for notification permission on its own (asked once). */
     val notificationPermissionRequested: StateFlow<Boolean>

@@ -11,6 +11,7 @@ import com.example.tracker.domain.model.StatColor
 import com.example.tracker.domain.model.StatIcon
 import com.example.tracker.domain.model.PhotoPose
 import com.example.tracker.domain.model.ThemeMode
+import com.example.tracker.domain.workout.RestTimes
 import java.time.LocalTime
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -91,6 +92,20 @@ class LocalSettingsRepositoryTest {
         settings.setReminderTime(LocalTime.of(7, 5, 30))
 
         assertEquals(LocalTime.of(7, 5), LocalSettingsRepository(preferences, database, photoStore, dispatcher).reminderTime.value)
+    }
+
+    @Test
+    fun restTimes_defaultAndPersist() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val settings = LocalSettingsRepository(preferences, database, photoStore, dispatcher)
+        assertEquals(RestTimes(betweenSetsSeconds = 90, betweenExercisesSeconds = 120), settings.restTimes.value)
+
+        settings.setRestTimes(RestTimes(betweenSetsSeconds = 0, betweenExercisesSeconds = 180))
+
+        assertEquals(
+            RestTimes(betweenSetsSeconds = 0, betweenExercisesSeconds = 180),
+            LocalSettingsRepository(preferences, database, photoStore, dispatcher).restTimes.value,
+        )
     }
 
     @Test
