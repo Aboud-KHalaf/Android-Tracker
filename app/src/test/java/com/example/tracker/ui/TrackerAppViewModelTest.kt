@@ -17,13 +17,16 @@ class TrackerAppViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
+    /** What "start the next workout" gives; null when there is no training day to start. */
+    private var nextWorkout: String? = "w2"
+
     private val workouts = FakeWorkoutRepository().apply {
         activeWorkout.value = Workout("w1", "push", "Push", Instant.parse("2026-10-03T08:30:00Z"), null, emptyList())
     }
 
     @Test
     fun freshLaunch_reopensTheWorkoutInProgress() = runTest {
-        val viewModel = TrackerAppViewModel(workouts)
+        val viewModel = TrackerAppViewModel(workouts, startNextWorkout = { nextWorkout })
 
         viewModel.onFreshStart(requestedWorkoutId = null, restoreActiveWorkout = true)
 
@@ -35,7 +38,7 @@ class TrackerAppViewModelTest {
     @Test
     fun freshLaunch_withoutWorkoutInProgress_staysOnHome() = runTest {
         workouts.activeWorkout.value = null
-        val viewModel = TrackerAppViewModel(workouts)
+        val viewModel = TrackerAppViewModel(workouts, startNextWorkout = { nextWorkout })
 
         viewModel.onFreshStart(requestedWorkoutId = null, restoreActiveWorkout = true)
 
@@ -44,7 +47,7 @@ class TrackerAppViewModelTest {
 
     @Test
     fun otherEntryPoints_leaveNavigationToThem() = runTest {
-        val viewModel = TrackerAppViewModel(workouts)
+        val viewModel = TrackerAppViewModel(workouts, startNextWorkout = { nextWorkout })
 
         // E.g. the nutrition reminder's deep link.
         viewModel.onFreshStart(requestedWorkoutId = null, restoreActiveWorkout = false)
@@ -54,7 +57,7 @@ class TrackerAppViewModelTest {
 
     @Test
     fun notificationTap_opensItsWorkout() = runTest {
-        val viewModel = TrackerAppViewModel(workouts)
+        val viewModel = TrackerAppViewModel(workouts, startNextWorkout = { nextWorkout })
 
         viewModel.onFreshStart(requestedWorkoutId = "w1", restoreActiveWorkout = false)
         assertEquals("w1", viewModel.workoutToOpen.value)
@@ -62,5 +65,37 @@ class TrackerAppViewModelTest {
         viewModel.onWorkoutOpened()
         viewModel.onOpenWorkout("w1")
         assertEquals("w1", viewModel.workoutToOpen.value)
+    }
+
+    @Test
+    fun startWorkoutShortcut_opensTheWorkoutItStarts() = runTest {
+        val viewModel = TrackerAppViewModel(workouts, startNextWorkout = { nextWorkout })
+
+        viewModel.onShortcut(AppShortcuts.ACTION_START_WORKOUT)
+
+        assertEquals("w2", viewModel.workoutToOpen.value)
+    }
+
+    @Test
+    fun startWorkoutShortcut_nothingToStart_staysOnHome() = runTest {
+        nextWorkout = null
+        val viewModel = TrackerAppViewModel(workouts, startNextWorkout = { nextWorkout })
+
+        viewModel.onShortcut(AppShortcuts.ACTION_START_WORKOUT)
+
+        assertNull(viewModel.workoutToOpen.value)
+    }
+
+    @Test
+    fun screenShortcuts_openTheirScreenOnce() = runTest {
+        val viewModel = TrackerAppViewModel(workouts, startNextWorkout = { nextWorkout })
+
+        viewModel.onShortcut(AppShortcuts.ACTION_TAKE_PHOTOS)
+        assertEquals(AppScreen.PHOTO_CAPTURE, viewModel.screenToOpen.value)
+        viewModel.onScreenOpened()
+        assertNull(viewModel.screenToOpen.value)
+
+        viewModel.onShortcut(AppShortcuts.ACTION_LOG_STAT)
+        assertEquals(AppScreen.STATS, viewModel.screenToOpen.value)
     }
 }

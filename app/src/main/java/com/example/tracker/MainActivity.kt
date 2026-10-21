@@ -12,6 +12,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.tracker.ui.AppShortcuts
 import com.example.tracker.ui.TrackerApp
 import com.example.tracker.ui.TrackerAppViewModel
 import com.example.tracker.ui.splash.installAnimatedSplashScreen
@@ -31,6 +32,7 @@ class MainActivity : ComponentActivity() {
                 requestedWorkoutId = intent.workoutToOpen(),
                 restoreActiveWorkout = intent.action == Intent.ACTION_MAIN,
             )
+            intent.shortcutAction()?.let(appViewModel::onShortcut)
         }
         val settings = (application as TrackerApplication).container.settingsRepository
         setContent {
@@ -48,17 +50,28 @@ class MainActivity : ComponentActivity() {
 
             TrackerTheme(darkTheme = darkTheme) {
                 val workoutToOpen by appViewModel.workoutToOpen.collectAsStateWithLifecycle()
-                TrackerApp(workoutToOpen = workoutToOpen, onWorkoutOpened = appViewModel::onWorkoutOpened)
+                val screenToOpen by appViewModel.screenToOpen.collectAsStateWithLifecycle()
+                TrackerApp(
+                    workoutToOpen = workoutToOpen,
+                    onWorkoutOpened = appViewModel::onWorkoutOpened,
+                    screenToOpen = screenToOpen,
+                    onScreenOpened = appViewModel::onScreenOpened,
+                )
             }
         }
     }
 
-    /** The workout notification was tapped while the app was already open. */
+    /** The workout notification or a launcher shortcut was tapped while the app was already open. */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         intent.workoutToOpen()?.let(appViewModel::onOpenWorkout)
+        intent.shortcutAction()?.let(appViewModel::onShortcut)
     }
+
+    /** The launcher shortcut this intent is, unless Recents is replaying an old one. */
+    private fun Intent.shortcutAction(): String? =
+        action?.takeIf { AppShortcuts.isShortcut(it) && flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == 0 }
 
     /**
      * The workout a notification tap asks for. Reopening from Recents can replay an old tap

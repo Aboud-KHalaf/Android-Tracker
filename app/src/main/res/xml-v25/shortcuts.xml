@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Long-press the app icon (Android 7.1 and newer, hence -v25). Actions are handled in
+     MainActivity; see ui/AppShortcuts.kt. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_workout"
+        android:shortcutId="start_workout"
+        android:shortcutLongLabel="@string/shortcut_start_workout_long"
+        android:shortcutShortLabel="@string/shortcut_start_workout">
+        <intent
+            android:action="com.example.tracker.action.START_WORKOUT"
+            android:targetClass="com.example.tracker.MainActivity"
+            android:targetPackage="com.example.tracker" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_stat"
+        android:shortcutId="log_stat"
+        android:shortcutLongLabel="@string/shortcut_log_stat_long"
+        android:shortcutShortLabel="@string/shortcut_log_stat">
+        <intent
+            android:action="com.example.tracker.action.LOG_STAT"
+            android:targetClass="com.example.tracker.MainActivity"
+            android:targetPackage="com.example.tracker" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_photos"
+        android:shortcutId="take_photos"
+        android:shortcutLongLabel="@string/shortcut_take_photos_long"
+        android:shortcutShortLabel="@string/shortcut_take_photos">
+        <intent
+            android:action="com.example.tracker.action.TAKE_PHOTOS"
+            android:targetClass="com.example.tracker.MainActivity"
+            android:targetPackage="com.example.tracker" />
+    </shortcut>
+</shortcuts>

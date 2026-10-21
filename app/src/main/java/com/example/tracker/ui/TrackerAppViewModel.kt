@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.tracker.TrackerApplication
+import com.example.tracker.domain.program.StartNextWorkout
 import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.ui.common.launchCatching
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,9 +16,13 @@ import kotlinx.coroutines.flow.first
 
 /**
  * App-level navigation that doesn't start from a screen: reopening the workout in progress when
- * the app starts afresh (e.g. after Android ended it), or when its notification is tapped.
+ * the app starts afresh (e.g. after Android ended it), when its notification is tapped, or when
+ * a launcher shortcut asks for a workout or a screen.
  */
-class TrackerAppViewModel(private val workoutRepository: WorkoutRepository) : ViewModel() {
+class TrackerAppViewModel(
+    private val workoutRepository: WorkoutRepository,
+    private val startNextWorkout: suspend () -> String?,
+) : ViewModel() {
 
     private val _workoutToOpen = MutableStateFlow<String?>(null)
 
@@ -49,11 +54,36 @@ class TrackerAppViewModel(private val workoutRepository: WorkoutRepository) : Vi
         _workoutToOpen.value = null
     }
 
+    private val _screenToOpen = MutableStateFlow<AppScreen?>(null)
+
+    /** A screen the app should navigate to, until [onScreenOpened]. */
+    val screenToOpen: StateFlow<AppScreen?> = _screenToOpen.asStateFlow()
+
+    /**
+     * A launcher shortcut was used; [action] is one of [AppShortcuts]. "Start workout" resumes
+     * the workout in progress or starts the next one, like Home's button; without a training
+     * day to start, the app simply opens on Home, which says what's missing.
+     */
+    fun onShortcut(action: String) {
+        when (action) {
+            AppShortcuts.ACTION_START_WORKOUT -> viewModelScope.launchCatching(onError = {}) {
+                startNextWorkout()?.let { _workoutToOpen.value = it }
+            }
+            AppShortcuts.ACTION_LOG_STAT -> _screenToOpen.value = AppScreen.STATS
+            AppShortcuts.ACTION_TAKE_PHOTOS -> _screenToOpen.value = AppScreen.PHOTO_CAPTURE
+        }
+    }
+
+    fun onScreenOpened() {
+        _screenToOpen.value = null
+    }
+
     companion object {
         val Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
-                TrackerAppViewModel(container.workoutRepository)
+                val startNextWorkout = StartNextWorkout(container.programRepository, container.workoutRepository, container.time)
+                TrackerAppViewModel(container.workoutRepository, startNextWorkout = { startNextWorkout() })
             }
         }
     }

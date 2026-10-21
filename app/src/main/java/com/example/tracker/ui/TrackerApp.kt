@@ -23,15 +23,22 @@ import com.example.tracker.ui.navigation.TrackerNavHost
 import com.example.tracker.ui.navigation.TrackerNavigationBar
 import com.example.tracker.ui.navigation.navigateToTopLevel
 import com.example.tracker.ui.theme.Motion
+import com.example.tracker.ui.photos.navigateToPhotoCapture
 import com.example.tracker.ui.workout.navigateToActiveWorkout
 
 /**
  * App root: the navigation graph, with the bottom bar on the top-level screens only.
  * Screens below the bar see its height as already-consumed insets, so they don't pad twice.
- * When [workoutToOpen] is set, the app opens that workout and calls [onWorkoutOpened].
+ * When [workoutToOpen] is set, the app opens that workout and calls [onWorkoutOpened]; likewise
+ * [screenToOpen] and [onScreenOpened].
  */
 @Composable
-fun TrackerApp(workoutToOpen: String? = null, onWorkoutOpened: () -> Unit = {}) {
+fun TrackerApp(
+    workoutToOpen: String? = null,
+    onWorkoutOpened: () -> Unit = {},
+    screenToOpen: AppScreen? = null,
+    onScreenOpened: () -> Unit = {},
+) {
     val navController = rememberNavController()
 
     LaunchedEffect(workoutToOpen) {
@@ -39,6 +46,18 @@ fun TrackerApp(workoutToOpen: String? = null, onWorkoutOpened: () -> Unit = {}) 
             navController.navigateToActiveWorkout(workoutToOpen)
             onWorkoutOpened()
         }
+    }
+    LaunchedEffect(screenToOpen) {
+        when (screenToOpen) {
+            AppScreen.STATS -> navController.navigateToTopLevel(TopLevelDestination.STATS)
+            // Over the Stats tab, so closing the camera lands where photos live.
+            AppScreen.PHOTO_CAPTURE -> {
+                navController.navigateToTopLevel(TopLevelDestination.STATS)
+                navController.navigateToPhotoCapture()
+            }
+            null -> return@LaunchedEffect
+        }
+        onScreenOpened()
     }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentTab = TopLevelDestination.of(backStackEntry?.destination)

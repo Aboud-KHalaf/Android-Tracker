@@ -1,5 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">tracker</string>
+    <string name="shortcut_start_workout">Workout</string>
+    <string name="shortcut_start_workout_long">Start today\'s workout</string>
+    <string name="shortcut_log_stat">Log stat</string>
+    <string name="shortcut_log_stat_long">Log today\'s stats</string>
+    <string name="shortcut_take_photos">Photos</string>
+    <string name="shortcut_take_photos_long">Take progress photos</string>
 
     <!-- Common -->
     <string name="action_retry">Retry</string>
