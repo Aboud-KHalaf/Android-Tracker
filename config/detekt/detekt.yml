@@ -21,9 +21,14 @@ complexity:
   LongMethod:
     ignoreAnnotated: ["Composable"]
   TooManyFunctions:
-    # ViewModels expose one function per user action.
+    # ViewModels expose one function per user action, and Room DAOs one per query.
+    ignoreAnnotated: ["Dao"]
     ignoreAnnotatedFunctions: ["Test"]
+    # Private helpers split the work up; they don't widen what a class offers.
+    ignorePrivate: true
     thresholdInClasses: 20
+    # Repository interfaces mirror their implementations.
+    thresholdInInterfaces: 20
     thresholdInFiles: 25
 
 style:
