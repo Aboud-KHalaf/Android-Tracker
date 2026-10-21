@@ -301,6 +301,7 @@
     <string name="settings_workout">Workout</string>
     <string name="settings_rest_between_sets">Rest between sets</string>
     <string name="settings_rest_between_exercises">Rest between exercises</string>
+    <string name="settings_rest_exact_alarms">Tell me on time when a rest ends</string>
     <string name="settings_error_rest">Couldn\'t change the rest time. Try again.</string>
     <string name="rest_time_off">Off</string>
     <string name="rest_time_seconds">%1$d sec</string>

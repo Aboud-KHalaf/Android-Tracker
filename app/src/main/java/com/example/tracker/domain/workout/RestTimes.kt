@@ -7,6 +7,9 @@ data class RestTimes(
     val betweenSetsSeconds: Int = DEFAULT_BETWEEN_SETS_SECONDS,
     val betweenExercisesSeconds: Int = DEFAULT_BETWEEN_EXERCISES_SECONDS,
 ) {
+    /** Whether any rest is timed, so its end may need an alert. */
+    val isAnyOn: Boolean get() = betweenSetsSeconds > 0 || betweenExercisesSeconds > 0
+
     fun secondsFor(kind: RestKind): Int = when (kind) {
         RestKind.BETWEEN_SETS -> betweenSetsSeconds
         RestKind.BETWEEN_EXERCISES -> betweenExercisesSeconds
