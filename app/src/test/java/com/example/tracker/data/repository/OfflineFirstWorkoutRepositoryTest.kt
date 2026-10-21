@@ -296,4 +296,24 @@ class OfflineFirstWorkoutRepositoryTest {
 
         assertEquals(listOf(60.0), workouts.lastTimeSets(benchId).map { it.weightKg })
     }
+
+    @Test
+    fun setSetRpe_storesAndClearsTheRating() = runTest {
+        val id = workouts.startWorkout(planId)
+        val set = workouts.observeWorkout(id).first()!!.exercises.first().sets.first()
+
+        workouts.setSetRpe(set.id, 8.5)
+        assertEquals(8.5, workouts.observeWorkout(id).first()!!.exercises.first().sets.first().rpe)
+
+        workouts.setSetRpe(set.id, null)
+        assertNull(workouts.observeWorkout(id).first()!!.exercises.first().sets.first().rpe)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun setSetRpe_outOfRange_isRejected() = runTest {
+        val id = workouts.startWorkout(planId)
+        val set = workouts.observeWorkout(id).first()!!.exercises.first().sets.first()
+
+        workouts.setSetRpe(set.id, 11.0)
+    }
 }

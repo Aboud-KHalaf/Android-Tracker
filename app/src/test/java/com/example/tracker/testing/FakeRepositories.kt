@@ -243,6 +243,8 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
 
     override suspend fun setSetType(setId: String, type: SetType) = writeSet(setId) { it.copy(type = type) }
 
+    override suspend fun setSetRpe(setId: String, rpe: Double?) = writeSet(setId) { it.copy(rpe = rpe) }
+
     override suspend fun updateSet(setId: String, weightKg: Double?, reps: Int?, durationSeconds: Int?) =
         writeSet(setId) { it.copy(weightKg = weightKg, reps = reps, durationSeconds = durationSeconds) }
 

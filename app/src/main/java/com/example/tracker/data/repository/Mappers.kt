@@ -56,6 +56,7 @@ internal fun WorkoutSetEntity.toDomain() = WorkoutSet(
     durationSeconds = durationSeconds,
     completedAt = completedAt?.toInstant(),
     type = type,
+    rpe = rpe,
 )
 
 internal fun WorkoutEntity.toDomain(

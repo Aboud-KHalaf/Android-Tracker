@@ -10,6 +10,7 @@ import com.example.tracker.data.local.entity.WorkoutExerciseEntity
 import com.example.tracker.data.local.entity.WorkoutSetEntity
 import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.PersonalBest
+import com.example.tracker.domain.model.Rpe
 import com.example.tracker.domain.model.SetType
 import com.example.tracker.domain.model.WeekSummary
 import com.example.tracker.domain.model.Workout
@@ -188,6 +189,13 @@ class OfflineFirstWorkoutRepository(
         val set = requireSet(setId)
         if (set.type == type) return
         workoutDao.upsertSets(listOf(set.copy(type = type, sync = set.sync.touched(now()))))
+    }
+
+    override suspend fun setSetRpe(setId: String, rpe: Double?) {
+        require(rpe == null || rpe in Rpe.MIN..Rpe.MAX) { "RPE must be between ${Rpe.MIN} and ${Rpe.MAX}" }
+        val set = requireSet(setId)
+        if (set.rpe == rpe) return
+        workoutDao.upsertSets(listOf(set.copy(rpe = rpe, sync = set.sync.touched(now()))))
     }
 
     override suspend fun updateSet(setId: String, weightKg: Double?, reps: Int?, durationSeconds: Int?) {
