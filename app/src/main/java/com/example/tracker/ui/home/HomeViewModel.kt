@@ -12,10 +12,10 @@ import com.example.tracker.domain.program.nameTrainingDays
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.ProgramRepository
 import com.example.tracker.domain.repository.WorkoutRepository
+import com.example.tracker.ui.common.launchCatching
 import com.example.tracker.ui.program.ProgramSetup
 import java.time.format.TextStyle
 import java.util.Locale
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 /**
  * Home screen: the next workout from the active program, this week's training, programs and
