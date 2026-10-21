@@ -71,8 +71,9 @@ android {
     }
     sourceSets {
         // Exported Room schemas for migration tests. Robolectric only reads the merged debug
-        // assets, so they ship in debug builds (never release).
+        // assets, so they ship in debug builds (never release); device tests read their own.
         getByName("debug").assets.srcDir("$projectDir/schemas")
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
     }
 }
 
@@ -121,6 +122,9 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.room.testing)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

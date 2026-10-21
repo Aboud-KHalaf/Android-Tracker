@@ -15,6 +15,7 @@ desugarJdkLibs = "2.1.5"
 coroutines = "1.9.0"
 robolectric = "4.16"
 androidxTestCore = "1.7.0"
+androidxTestRules = "1.7.0"
 navigationCompose = "2.9.5"
 kotlinxSerialization = "1.7.3"
 coil = "2.7.0"
@@ -53,6 +54,7 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
 androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidxTestRules" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 
 [plugins]
