@@ -43,6 +43,20 @@ fun formatDuration(duration: Duration): String {
     }
 }
 
+/** A rest time for Settings: "Off", "45 sec", "2 min" or "1 min 30 sec". */
+@Composable
+@ReadOnlyComposable
+fun formatRestTime(totalSeconds: Int): String {
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return when {
+        totalSeconds <= 0 -> stringResource(R.string.rest_time_off)
+        minutes == 0 -> stringResource(R.string.rest_time_seconds, seconds)
+        seconds == 0 -> stringResource(R.string.rest_time_minutes, minutes)
+        else -> stringResource(R.string.rest_time_minutes_seconds, minutes, seconds)
+    }
+}
+
 /** "Mon". */
 fun DayOfWeek.shortName(locale: Locale): String = getDisplayName(TextStyle.SHORT, locale)
 

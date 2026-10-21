@@ -7,6 +7,7 @@ import com.example.tracker.data.local.TrackerDatabase
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.reminder.ReminderTime
 import com.example.tracker.domain.repository.SettingsRepository
+import com.example.tracker.domain.workout.RestTimes
 import java.time.LocalTime
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +59,19 @@ class LocalSettingsRepository(
         _reminderTime.value = LocalTime.of(time.hour, time.minute)
     }
 
+    private val _restTimes = MutableStateFlow(readRestTimes())
+    override val restTimes: StateFlow<RestTimes> = _restTimes.asStateFlow()
+
+    override suspend fun setRestTimes(times: RestTimes) {
+        withContext(ioDispatcher) {
+            preferences.edit(commit = true) {
+                putInt(KEY_REST_BETWEEN_SETS, times.betweenSetsSeconds)
+                putInt(KEY_REST_BETWEEN_EXERCISES, times.betweenExercisesSeconds)
+            }
+        }
+        _restTimes.value = times
+    }
+
     private val _notificationPermissionRequested =
         MutableStateFlow(preferences.getBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, false))
     override val notificationPermissionRequested: StateFlow<Boolean> = _notificationPermissionRequested.asStateFlow()
@@ -89,6 +103,14 @@ class LocalSettingsRepository(
         return LocalTime.of(minuteOfDay / MINUTES_PER_HOUR, minuteOfDay % MINUTES_PER_HOUR)
     }
 
+    /** Anything unreadable (e.g. negative) falls back to the default. */
+    private fun readRestTimes() = RestTimes(
+        betweenSetsSeconds = preferences.getIntOrNull(KEY_REST_BETWEEN_SETS)?.takeIf { it >= 0 }
+            ?: RestTimes.DEFAULT_BETWEEN_SETS_SECONDS,
+        betweenExercisesSeconds = preferences.getIntOrNull(KEY_REST_BETWEEN_EXERCISES)?.takeIf { it >= 0 }
+            ?: RestTimes.DEFAULT_BETWEEN_EXERCISES_SECONDS,
+    )
+
     private fun SharedPreferences.getIntOrNull(key: String): Int? = if (contains(key)) getInt(key, 0) else null
 
     companion object {
@@ -99,6 +121,8 @@ class LocalSettingsRepository(
         private const val KEY_REMINDER_MINUTE = "nutrition_reminder_minute"
         private const val MINUTES_PER_HOUR = 60
         private const val MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR
+        private const val KEY_REST_BETWEEN_SETS = "rest_between_sets_seconds"
+        private const val KEY_REST_BETWEEN_EXERCISES = "rest_between_exercises_seconds"
         private const val KEY_NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested"
     }
 }

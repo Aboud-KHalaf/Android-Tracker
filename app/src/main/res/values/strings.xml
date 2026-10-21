@@ -150,6 +150,18 @@
     <string name="hold_status_past">+%1$d s past last time</string>
     <string name="workout_all_sets_done">All sets done. Add another set or move on.</string>
     <string name="workout_add_set">Add set</string>
+    <string name="rest_between_sets">Next set in</string>
+    <string name="rest_before_exercise">Next exercise in</string>
+    <string name="rest_skip">Skip</string>
+    <plurals name="rest_subtract_description">
+        <item quantity="one">Shorten rest by %1$d second</item>
+        <item quantity="other">Shorten rest by %1$d seconds</item>
+    </plurals>
+    <plurals name="rest_add_description">
+        <item quantity="one">Extend rest by %1$d second</item>
+        <item quantity="other">Extend rest by %1$d seconds</item>
+    </plurals>
+    <string name="rest_remaining_description">Resting. %1$s %2$s</string>
     <string name="workout_set_saved" tools:ignore="PluralsCandidate">Set %1$d saved</string>
     <string name="workout_previous_exercise">Previous exercise</string>
     <string name="workout_next_exercise">Next: %1$s</string>
@@ -286,6 +298,14 @@
     <string name="settings_error_reminder">Couldn\'t change the reminder. Try again.</string>
     <string name="settings_exact_alarms">Send the reminder on time</string>
     <string name="settings_exact_alarms_description">Allow \"Alarms &amp; reminders\" so it isn\'t delayed</string>
+    <string name="settings_workout">Workout</string>
+    <string name="settings_rest_between_sets">Rest between sets</string>
+    <string name="settings_rest_between_exercises">Rest between exercises</string>
+    <string name="settings_error_rest">Couldn\'t change the rest time. Try again.</string>
+    <string name="rest_time_off">Off</string>
+    <string name="rest_time_seconds">%1$d sec</string>
+    <string name="rest_time_minutes">%1$d min</string>
+    <string name="rest_time_minutes_seconds">%1$d min %2$d sec</string>
     <string name="settings_about">About</string>
     <string name="settings_version">Version</string>
     <string name="settings_built_by">Built by %1$s</string>
