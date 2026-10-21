@@ -13,11 +13,15 @@ import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.export.ExportFormat
 import com.example.tracker.domain.export.ReportExporter
 import com.example.tracker.domain.export.exportFileName
+import com.example.tracker.domain.progress.BodyweightLog
 import com.example.tracker.domain.progress.ProgressMetric
 import com.example.tracker.domain.progress.TimeRange
+import com.example.tracker.domain.progress.bodyweightStat
+import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.ui.common.launchCatching
+import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -27,8 +31,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -45,6 +52,7 @@ class ExerciseDetailsViewModel(
     private val workoutRepository: WorkoutRepository,
     private val reportExporter: ReportExporter,
     private val time: TimeProvider,
+    private val statRepository: CustomStatRepository,
 ) : ViewModel() {
 
     private val mapper = ExerciseDetailsStateMapper(time.zone())
@@ -64,8 +72,9 @@ class ExerciseDetailsViewModel(
                 workoutRepository.observeExerciseSessions(exerciseId),
                 metric,
                 range,
-            ) { exercise, sessions, metric, range ->
-                mapper.map(exercise, sessions, metric, range, time.now())
+                observeBodyweight(),
+            ) { exercise, sessions, metric, range, bodyweight ->
+                mapper.map(exercise, sessions, metric, range, time.now(), bodyweight)
             }
                 .onStart { emit(ExerciseDetailsUiState.Loading) }
                 .catch { emit(ExerciseDetailsUiState.Error) }
@@ -108,13 +117,25 @@ class ExerciseDetailsViewModel(
             try {
                 val exercise = checkNotNull(exerciseRepository.observeExercise(exerciseId).first()) { "Exercise $exerciseId is gone" }
                 val sessions = workoutRepository.observeExerciseSessions(exerciseId).first()
-                val report = ExerciseReportBuilder(time.zone()).build(exercise, sessions, metric.value, range.value, time.now())
+                val report = ExerciseReportBuilder(time.zone())
+                    .build(exercise, sessions, metric.value, range.value, time.now(), observeBodyweight().first())
                 reportExporter.export(report, format, destination)
                 _events.send(ExerciseDetailsEvent.ShowMessage(R.string.export_done))
             } finally {
                 _isExporting.value = false
             }
         }
+    }
+
+    /** The user's bodyweight log, if they track bodyweight; it unlocks relative strength. */
+    private fun observeBodyweight(): Flow<BodyweightLog?> {
+        val today = time.now().atZone(time.zone()).toLocalDate()
+        return statRepository.observeOverviews()
+            .map { overviews -> overviews.map { it.stat }.bodyweightStat()?.id }
+            .distinctUntilChanged()
+            .flatMapLatest { id ->
+                if (id == null) flowOf(null) else statRepository.observeEntries(id, HISTORY_START, today).map(::BodyweightLog)
+            }
     }
 
     fun onRetry() {
@@ -125,6 +146,9 @@ class ExerciseDetailsViewModel(
         private const val STOP_TIMEOUT_MILLIS = 5_000L
         val DEFAULT_RANGE = TimeRange.THREE_MONTHS
 
+        /** Before anything could have been logged, so "from here to today" is all history. */
+        private val HISTORY_START: LocalDate = LocalDate.of(1900, 1, 1)
+
         val Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
@@ -134,6 +158,7 @@ class ExerciseDetailsViewModel(
                     workoutRepository = container.workoutRepository,
                     reportExporter = container.reportExporter,
                     time = container.time,
+                    statRepository = container.customStatRepository,
                 )
             }
         }

@@ -12,6 +12,11 @@ import com.example.tracker.domain.progress.TimeRange
 import com.example.tracker.domain.progress.benchHistory
 import com.example.tracker.domain.progress.holdSet
 import com.example.tracker.domain.progress.toSessions
+import com.example.tracker.domain.model.CustomStat
+import com.example.tracker.domain.model.StatColor
+import com.example.tracker.domain.model.StatEntry
+import com.example.tracker.domain.model.StatIcon
+import com.example.tracker.testing.FakeCustomStatRepository
 import com.example.tracker.testing.FakeExerciseRepository
 import com.example.tracker.testing.FakeReportExporter
 import com.example.tracker.testing.FakeWorkoutRepository
@@ -44,6 +49,7 @@ class ExerciseDetailsViewModelTest {
     private val workouts = FakeWorkoutRepository()
     private val time = FakeTimeProvider(Instant.parse("2026-10-03T09:00:00Z"))
     private val exporter = FakeReportExporter()
+    private val stats = FakeCustomStatRepository()
 
     @Before
     fun setUp() {
@@ -53,7 +59,7 @@ class ExerciseDetailsViewModelTest {
     }
 
     private fun createViewModel(exerciseId: String = "bench") =
-        ExerciseDetailsViewModel(exerciseId, exercises, workouts, exporter, time)
+        ExerciseDetailsViewModel(exerciseId, exercises, workouts, exporter, time, stats)
 
     private fun TestScope.collectState(viewModel: ExerciseDetailsViewModel): () -> ExerciseDetailsUiState {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
@@ -210,5 +216,44 @@ class ExerciseDetailsViewModelTest {
         collectState(viewModel)
 
         assertEquals("tracker-bench-press-2026-10-03.xlsx", viewModel.exportFileName(ExportFormat.XLSX))
+    }
+
+    private fun logBodyweight(vararg entries: Pair<LocalDate, Double>) {
+        stats.stats.value = listOf(CustomStat("weight", "Weight", "kg", 1, null, StatIcon.SCALE, StatColor.BLUE))
+        stats.entries.value = entries.associate { (date, kg) -> ("weight" to date) to StatEntry("weight", date, kg) }
+    }
+
+    @Test
+    fun relativeStrength_isOfferedOnceBodyweightIsLogged() = runTest {
+        val state = collectState(createViewModel())
+        assertFalse(ProgressMetric.RELATIVE_STRENGTH in state().success().metrics)
+
+        logBodyweight(LocalDate.of(2026, 8, 1) to 80.0)
+
+        assertEquals(ProgressMetric.RELATIVE_STRENGTH, state().success().metrics.last())
+    }
+
+    @Test
+    fun relativeStrength_dividesEachTopSetByThatDaysBodyweight() = runTest {
+        logBodyweight(LocalDate.of(2026, 8, 1) to 80.0, LocalDate.of(2026, 8, 22) to 82.0)
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onSelectMetric(ProgressMetric.RELATIVE_STRENGTH)
+
+        assertEquals(
+            listOf(40.0 / 80, 40.0 / 80, 42.5 / 80, 42.5 / 82, 45.0 / 82, 50.0 / 82),
+            state().success().progress!!.chart.points.map { it.value },
+        )
+    }
+
+    @Test
+    fun aStatThatIsntBodyweight_doesNotCount() = runTest {
+        stats.stats.value = listOf(CustomStat("waist", "Waist", "cm", 1, null, StatIcon.RULER, StatColor.BLUE))
+        stats.entries.value = mapOf(("waist" to LocalDate.of(2026, 8, 1)) to StatEntry("waist", LocalDate.of(2026, 8, 1), 80.0))
+
+        val state = collectState(createViewModel())()
+
+        assertFalse(ProgressMetric.RELATIVE_STRENGTH in state.success().metrics)
     }
 }

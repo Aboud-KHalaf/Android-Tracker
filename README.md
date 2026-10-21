@@ -32,7 +32,7 @@ All data stays on your device, and you don't need an account. When you want your
 
 ### 📈 Progress
 - A details screen for each exercise, with a progress chart and full history
-- Switch between progress metrics and time ranges
+- Switch between progress metrics and time ranges; once you log your **Weight** stat, **× BW** charts each top set as a multiple of your bodyweight that day
 - Export an exercise's progress for the selected metric and range as a PDF or Excel file
 
 ### 📊 Stats

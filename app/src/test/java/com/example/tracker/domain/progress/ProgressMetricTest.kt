@@ -54,4 +54,13 @@ class ProgressMetricTest {
         assertFalse(TimeRange.ONE_YEAR.contains(Instant.parse("2025-10-01T00:00:00Z"), now, zone))
         assertTrue(TimeRange.ALL.contains(Instant.parse("2001-01-01T00:00:00Z"), now, zone))
     }
+
+    @Test
+    fun forType_relativeStrengthOnlyWithBodyweight() {
+        assertEquals(false, ProgressMetric.RELATIVE_STRENGTH in ProgressMetric.forType(ExerciseType.WEIGHT_REPS))
+        assertEquals(
+            ProgressMetric.RELATIVE_STRENGTH,
+            ProgressMetric.forType(ExerciseType.WEIGHT_REPS, withBodyweight = true).last(),
+        )
+    }
 }

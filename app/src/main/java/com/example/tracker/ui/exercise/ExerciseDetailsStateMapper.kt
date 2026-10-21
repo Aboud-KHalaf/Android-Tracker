@@ -4,6 +4,7 @@ import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.LoggedSet
 import com.example.tracker.domain.model.PersonalBest
+import com.example.tracker.domain.progress.BodyweightLog
 import com.example.tracker.domain.progress.ProgressMetric
 import com.example.tracker.domain.progress.TimeRange
 import com.example.tracker.domain.progress.currentPersonalBest
@@ -24,9 +25,10 @@ internal class ExerciseDetailsStateMapper(private val zone: ZoneId) {
         selectedMetric: ProgressMetric?,
         range: TimeRange,
         now: Instant,
+        bodyweight: BodyweightLog? = null,
     ): ExerciseDetailsUiState {
         if (exercise == null) return ExerciseDetailsUiState.NotFound
-        val metrics = ProgressMetric.forType(exercise.type)
+        val metrics = ProgressMetric.forType(exercise.type, withBodyweight = bodyweight?.isEmpty == false)
         val metric = selectedMetric?.takeIf { it in metrics } ?: metrics.first()
         val ordered = sessions.sortedBy { it.finishedAt }
         val bestWorkoutIds = findPersonalBests(ordered).map { it.workoutId }.toSet()
@@ -37,7 +39,7 @@ internal class ExerciseDetailsStateMapper(private val zone: ZoneId) {
             metrics = metrics,
             metric = metric,
             range = range,
-            progress = progress(ordered.filter { range.contains(it.finishedAt, now, zone) }, metric),
+            progress = progress(ordered.filter { range.contains(it.finishedAt, now, zone) }, metric, bodyweight),
             personalBest = currentPersonalBest(ordered)?.toSummary(),
             sessionCount = ordered.size,
             firstSessionOn = ordered.firstOrNull()?.finishedAt?.toDate(),
@@ -45,9 +47,10 @@ internal class ExerciseDetailsStateMapper(private val zone: ZoneId) {
         )
     }
 
-    private fun progress(sessions: List<ExerciseSession>, metric: ProgressMetric): ProgressUi? {
+    private fun progress(sessions: List<ExerciseSession>, metric: ProgressMetric, bodyweight: BodyweightLog?): ProgressUi? {
         val values = sessions.mapNotNull { session ->
-            metric.valueOf(session)?.let { session.finishedAt.toDate() to it }
+            val date = session.finishedAt.toDate()
+            metric.valueOf(session, bodyweight?.on(date))?.let { date to it }
         }
         val chart = ChartModel.build(values) ?: return null
         return ProgressUi(chart = chart, change = chart.last.value - chart.first.value, since = chart.first.date)
