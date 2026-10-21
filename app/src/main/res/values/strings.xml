@@ -163,6 +163,8 @@
     </plurals>
     <string name="rest_remaining_description">Resting. %1$s %2$s</string>
     <string name="workout_set_saved" tools:ignore="PluralsCandidate">Set %1$d saved</string>
+    <string name="workout_new_record">New personal best! %1$s</string>
+    <string name="workout_record_badge_description">New personal best</string>
     <string name="workout_previous_exercise">Previous exercise</string>
     <string name="workout_next_exercise">Next: %1$s</string>
     <string name="workout_finish_workout">Finish workout</string>

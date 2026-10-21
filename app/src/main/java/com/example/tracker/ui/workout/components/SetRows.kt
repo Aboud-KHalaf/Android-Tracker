@@ -1,5 +1,8 @@
 package com.example.tracker.ui.workout.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -19,9 +22,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -30,6 +36,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.example.tracker.R
+import com.example.tracker.ui.common.PersonalRecordBadge
 import com.example.tracker.ui.common.SetValueUi
 import com.example.tracker.ui.common.text
 import com.example.tracker.ui.theme.Dimens
@@ -46,7 +53,9 @@ private val RowMinHeight = 56.dp
 fun DoneSetRow(set: SetRowUi.Done, onEdit: () -> Unit, modifier: Modifier = Modifier) {
     val valueText = set.value.textOrNotSet()
     val editLabel = stringResource(R.string.workout_edit_set)
+    val recordText = stringResource(R.string.workout_record_badge_description)
     val description = stringResource(R.string.workout_set_done_description, set.number, valueText)
+        .let { if (set.isRecord) "$it, $recordText" else it }
     Surface(
         onClick = onEdit,
         shape = MaterialTheme.shapes.medium,
@@ -67,6 +76,7 @@ fun DoneSetRow(set: SetRowUi.Done, onEdit: () -> Unit, modifier: Modifier = Modi
                 style = MaterialTheme.typography.titleMedium.tabularNumbers(),
                 modifier = Modifier.weight(1f),
             )
+            if (set.isRecord) RecordBadge()
             set.improvement?.let { improvement ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -161,3 +171,19 @@ private fun SetLabel(number: Int, color: Color) {
 
 @Composable
 private fun SetValueUi?.textOrNotSet(): String = this?.text() ?: stringResource(R.string.workout_value_not_set)
+
+/** "PB", popping in when the set is first shown as a record. */
+@Composable
+private fun RecordBadge() {
+    val scale = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        scale.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow))
+    }
+    PersonalRecordBadge(
+        text = stringResource(R.string.exercise_pb_badge),
+        modifier = Modifier.graphicsLayer {
+            scaleX = scale.value
+            scaleY = scale.value
+        },
+    )
+}

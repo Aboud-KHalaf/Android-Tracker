@@ -82,6 +82,8 @@ sealed interface SetRowUi {
         val value: SetValueUi?,
         /** How it beat the same set last time, if it did. */
         val improvement: SetImprovement?,
+        /** It beat the exercise's all-time best. */
+        val isRecord: Boolean = false,
     ) : SetRowUi
 
     /** The set being edited. */

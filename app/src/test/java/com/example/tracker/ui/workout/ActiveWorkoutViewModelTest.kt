@@ -9,6 +9,8 @@ import com.example.tracker.domain.model.SetImprovement
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutExercise
 import com.example.tracker.domain.model.WorkoutSet
+import com.example.tracker.domain.progress.toSessions
+import com.example.tracker.domain.progress.weightSet
 import com.example.tracker.domain.workout.RestKind
 import com.example.tracker.domain.workout.RestTimes
 import com.example.tracker.testing.FakeRestAlarm
@@ -25,6 +27,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -540,5 +543,31 @@ class ActiveWorkoutViewModelTest {
         time.advance(Duration.ofSeconds(90)) // Already over.
         viewModel.onAppBackgrounded()
         assertNull(restAlarm.scheduled)
+    }
+
+    @Test
+    fun completingASetPastTheAllTimeBest_isARecord() = runTest {
+        workouts.sessions.value = mapOf("bench" to listOf(weightSet("old", 1, 50.0, 8)).toSessions())
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onWeightTextChange("52.5")
+
+        viewModel.onCompleteSet()
+
+        assertEquals(ActiveWorkoutEvent.SetCompleted("s2", 2, isRecord = true), viewModel.events.first())
+        assertTrue((state().sets.first { it.id == "s2" } as SetRowUi.Done).isRecord)
+        // 47.5 kg was under the best, so the first set isn't one.
+        assertFalse((state().sets.first { it.id == "s1" } as SetRowUi.Done).isRecord)
+    }
+
+    @Test
+    fun matchingTheBest_isNotARecord() = runTest {
+        workouts.sessions.value = mapOf("bench" to listOf(weightSet("old", 1, 50.0, 8)).toSessions())
+        val viewModel = createViewModel()
+        collectState(viewModel)
+
+        viewModel.onCompleteSet()
+
+        assertEquals(ActiveWorkoutEvent.SetCompleted("s2", 2, isRecord = false), viewModel.events.first())
     }
 }
