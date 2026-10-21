@@ -16,7 +16,7 @@ import java.time.LocalDate
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-/** "Weight", "Reps", "Volume" or "Longest hold". */
+/** "Weight", "1RM", "Reps", "Volume" or "Longest hold". */
 @Composable
 @ReadOnlyComposable
 fun ProgressMetric.label(): String = stringResource(labelRes)
@@ -25,6 +25,7 @@ fun ProgressMetric.label(): String = stringResource(labelRes)
 internal val ProgressMetric.labelRes: Int
     get() = when (this) {
         ProgressMetric.WEIGHT -> R.string.metric_weight
+        ProgressMetric.ONE_REP_MAX -> R.string.metric_one_rep_max
         ProgressMetric.REPS -> R.string.metric_reps
         ProgressMetric.VOLUME -> R.string.metric_volume
         ProgressMetric.HOLD -> R.string.metric_hold
@@ -36,7 +37,8 @@ internal val ProgressMetric.labelRes: Int
 fun ProgressMetric.valueText(value: Double): String {
     val number = formatNumber(value, currentLocale())
     return when (this) {
-        ProgressMetric.WEIGHT, ProgressMetric.VOLUME -> stringResource(R.string.value_kg, number)
+        ProgressMetric.WEIGHT, ProgressMetric.ONE_REP_MAX, ProgressMetric.VOLUME ->
+            stringResource(R.string.value_kg, number)
         ProgressMetric.REPS -> pluralStringResource(R.plurals.value_reps, value.roundToInt(), number)
         ProgressMetric.HOLD -> formatClock(value.roundToInt())
     }
@@ -69,6 +71,7 @@ fun ProgressMetric.sinceText(since: LocalDate): String {
     return stringResource(
         when (this) {
             ProgressMetric.WEIGHT -> R.string.metric_weight_since
+            ProgressMetric.ONE_REP_MAX -> R.string.metric_one_rep_max_since
             ProgressMetric.REPS -> R.string.metric_reps_since
             ProgressMetric.VOLUME -> R.string.metric_volume_since
             ProgressMetric.HOLD -> R.string.metric_hold_since

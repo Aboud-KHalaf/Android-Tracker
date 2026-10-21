@@ -150,6 +150,7 @@ internal class ExerciseReportBuilder(private val zone: ZoneId) {
                 R.string.export_column_sets,
                 R.string.export_column_top_weight_kg,
                 R.string.export_column_top_set_reps,
+                R.string.export_column_one_rep_max_kg,
                 R.string.export_column_total_reps,
                 R.string.export_column_volume_kg,
                 R.string.export_column_personal_best,
@@ -171,6 +172,7 @@ internal class ExerciseReportBuilder(private val zone: ZoneId) {
                     numberCell(session.sets.size),
                     numberCell(stats.topWeightKg, WEIGHT_DECIMALS),
                     numberCell(stats.topSetReps),
+                    numberCell(stats.estimatedOneRepMaxKg, WEIGHT_DECIMALS),
                     numberCell(stats.totalReps),
                     numberCell(stats.volumeKg, WEIGHT_DECIMALS),
                     isBest,
@@ -193,12 +195,15 @@ internal class ExerciseReportBuilder(private val zone: ZoneId) {
     private fun Instant.toDate(): LocalDate = atZone(zone).toLocalDate()
 
     private val ProgressMetric.decimals: Int
-        get() = if (this == ProgressMetric.WEIGHT || this == ProgressMetric.VOLUME) WEIGHT_DECIMALS else 0
+        get() = when (this) {
+            ProgressMetric.WEIGHT, ProgressMetric.ONE_REP_MAX, ProgressMetric.VOLUME -> WEIGHT_DECIMALS
+            ProgressMetric.REPS, ProgressMetric.HOLD -> 0
+        }
 
     @get:StringRes
     private val ProgressMetric.unitRes: Int
         get() = when (this) {
-            ProgressMetric.WEIGHT, ProgressMetric.VOLUME -> R.string.export_unit_kg
+            ProgressMetric.WEIGHT, ProgressMetric.ONE_REP_MAX, ProgressMetric.VOLUME -> R.string.export_unit_kg
             ProgressMetric.REPS -> R.string.export_unit_reps
             ProgressMetric.HOLD -> R.string.export_unit_seconds
         }

@@ -54,6 +54,7 @@ class ExerciseReportBuilderTest {
                     numberCell(3),
                     numberCell(50.0, 1),
                     numberCell(8),
+                    numberCell(50.0 * (1 + 8 / 30.0), 1),
                     numberCell(26),
                     numberCell(1250.0, 1),
                     textCell(R.string.export_yes),

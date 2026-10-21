@@ -37,7 +37,7 @@ fun MetricSelector(
                 selected = metric == selected,
                 onClick = { onSelect(metric) },
                 shape = SegmentedButtonDefaults.itemShape(index, metrics.size),
-            ) { Text(metric.label()) }
+            ) { Text(metric.label(), maxLines = 1) }
         }
     }
 }

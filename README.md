@@ -32,7 +32,7 @@ All data stays on your device, and you don't need an account. When you want your
 
 ### 📈 Progress
 - A details screen for each exercise, with a progress chart and full history
-- Switch between progress metrics and time ranges
+- Switch between progress metrics (top set weight, **estimated one-rep max**, reps, volume) and time ranges
 - Export an exercise's progress for the selected metric and range as a PDF or Excel file
 
 ### 📊 Stats
