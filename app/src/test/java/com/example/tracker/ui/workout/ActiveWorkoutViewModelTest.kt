@@ -11,6 +11,7 @@ import com.example.tracker.domain.model.WorkoutExercise
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.workout.RestKind
 import com.example.tracker.domain.workout.RestTimes
+import com.example.tracker.testing.FakeRestAlarm
 import com.example.tracker.testing.FakeSettingsRepository
 import com.example.tracker.testing.FakeWorkoutRepository
 import com.example.tracker.testing.MainDispatcherRule
@@ -39,6 +40,7 @@ class ActiveWorkoutViewModelTest {
 
     private val time = FakeTimeProvider(Instant.parse("2026-10-03T09:00:00Z"))
     private val workouts = FakeWorkoutRepository(now = { time.now() })
+    private val restAlarm = FakeRestAlarm()
     private val settings = FakeSettingsRepository().apply {
         restTimes.value = RestTimes(betweenSetsSeconds = 90, betweenExercisesSeconds = 120)
     }
@@ -70,7 +72,7 @@ class ActiveWorkoutViewModelTest {
         workouts.lastTimes["bench"] = listOf(set("p1", 0, 45.0, 10), set("p2", 1, 50.0, 8), set("p3", 2, 50.0, 8))
     }
 
-    private fun createViewModel() = ActiveWorkoutViewModel("w1", workouts, settings, time)
+    private fun createViewModel() = ActiveWorkoutViewModel("w1", workouts, settings, restAlarm, time)
 
     private fun TestScope.collectState(viewModel: ActiveWorkoutViewModel): () -> ActiveWorkoutUiState.Success {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
@@ -386,7 +388,7 @@ class ActiveWorkoutViewModelTest {
     fun recreatedFromSavedState_keepsTheRunningHoldAndItsClock() = runTest {
         usePlankWorkout()
         val savedState = SavedStateHandle()
-        val before = ActiveWorkoutViewModel("w1", workouts, settings, time, savedState)
+        val before = ActiveWorkoutViewModel("w1", workouts, settings, restAlarm, time, savedState)
         collectState(before)
         before.onToggleTimer()
         time.advance(Duration.ofSeconds(20))
@@ -394,7 +396,7 @@ class ActiveWorkoutViewModelTest {
         // Android ends the app in the background; its saved state comes back as plain values.
         val restored = SavedStateHandle(savedState.keys().associateWith { savedState.get<Any?>(it) })
         time.advance(Duration.ofSeconds(10))
-        val after = collectState(ActiveWorkoutViewModel("w1", workouts, settings, time, restored))
+        val after = collectState(ActiveWorkoutViewModel("w1", workouts, settings, restAlarm, time, restored))
 
         assertTrue(after().hold().isRunning)
         assertEquals(30, after().hold().secondsAt(time.now()))
@@ -403,11 +405,11 @@ class ActiveWorkoutViewModelTest {
     @Test
     fun recreatedFromSavedState_keepsTypedInput() = runTest {
         val savedState = SavedStateHandle()
-        val before = ActiveWorkoutViewModel("w1", workouts, settings, time, savedState)
+        val before = ActiveWorkoutViewModel("w1", workouts, settings, restAlarm, time, savedState)
         collectState(before)
         before.onWeightTextChange("52.5")
 
-        val after = collectState(ActiveWorkoutViewModel("w1", workouts, settings, time, savedState))
+        val after = collectState(ActiveWorkoutViewModel("w1", workouts, settings, restAlarm, time, savedState))
 
         assertEquals(SetEditorUi.WeightReps("52.5", "8"), after().editor())
     }
@@ -502,14 +504,41 @@ class ActiveWorkoutViewModelTest {
     @Test
     fun recreatedFromSavedState_keepsTheRestCountingDown() = runTest {
         val savedState = SavedStateHandle()
-        val before = ActiveWorkoutViewModel("w1", workouts, settings, time, savedState)
+        val before = ActiveWorkoutViewModel("w1", workouts, settings, restAlarm, time, savedState)
         collectState(before)
         before.onCompleteSet()
 
         val restored = SavedStateHandle(savedState.keys().associateWith { savedState.get<Any?>(it) })
         time.advance(Duration.ofSeconds(40))
-        val after = collectState(ActiveWorkoutViewModel("w1", workouts, settings, time, restored))
+        val after = collectState(ActiveWorkoutViewModel("w1", workouts, settings, restAlarm, time, restored))
 
         assertEquals(50, after().rest!!.remainingSecondsAt(time.now()))
+    }
+
+    @Test
+    fun backgroundedWhileResting_setsAnAlarmForTheEnd_andReturningCancelsIt() = runTest {
+        val viewModel = createViewModel()
+        collectState(viewModel)
+        viewModel.onCompleteSet()
+
+        viewModel.onAppBackgrounded()
+        assertEquals(Triple("w1", RestKind.BETWEEN_SETS, time.now().plusSeconds(90)), restAlarm.scheduled)
+
+        viewModel.onAppForegrounded()
+        assertNull(restAlarm.scheduled)
+    }
+
+    @Test
+    fun backgroundedWithoutARunningRest_setsNoAlarm() = runTest {
+        val viewModel = createViewModel()
+        collectState(viewModel)
+
+        viewModel.onAppBackgrounded()
+        assertNull(restAlarm.scheduled)
+
+        viewModel.onCompleteSet()
+        time.advance(Duration.ofSeconds(90)) // Already over.
+        viewModel.onAppBackgrounded()
+        assertNull(restAlarm.scheduled)
     }
 }

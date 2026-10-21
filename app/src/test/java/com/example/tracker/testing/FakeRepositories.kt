@@ -30,6 +30,8 @@ import com.example.tracker.domain.repository.ProgramRepository
 import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
+import com.example.tracker.domain.workout.RestAlarm
+import com.example.tracker.domain.workout.RestKind
 import com.example.tracker.domain.workout.RestTimes
 import java.io.File
 import java.time.DayOfWeek
@@ -456,5 +458,20 @@ class FakeExerciseCatalogRepository : ExerciseCatalogRepository {
         queries += query
         error?.let { throw it }
         return results
+    }
+}
+
+class FakeRestAlarm : RestAlarm {
+    /** The pending alert: workout, kind and end time; null when none. */
+    var scheduled: Triple<String, RestKind, Instant>? = null
+    var cancelCalls = 0
+
+    override fun schedule(workoutId: String, kind: RestKind, endsAt: Instant) {
+        scheduled = Triple(workoutId, kind, endsAt)
+    }
+
+    override fun cancel() {
+        scheduled = null
+        cancelCalls++
     }
 }

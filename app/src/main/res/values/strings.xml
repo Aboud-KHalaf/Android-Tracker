@@ -537,6 +537,11 @@
     <string name="plan_error_save_config">Couldn\'t save the targets. Try again.</string>
 
     <!-- Workout in progress notification -->
+    <string name="rest_channel_name">Rest timer</string>
+    <string name="rest_channel_description">Tells you when your rest is over while you\'re away from the app</string>
+    <string name="rest_notification_title">Rest\'s over</string>
+    <string name="rest_notification_next_set">Time for your next set</string>
+    <string name="rest_notification_next_exercise">Time for the next exercise</string>
     <string name="workout_channel_name">Workout in progress</string>
     <string name="workout_channel_description">Shows the workout you\'re doing and its timer while you\'re away from the app</string>
     <string name="workout_notification_text">%1$s · %2$s</string>

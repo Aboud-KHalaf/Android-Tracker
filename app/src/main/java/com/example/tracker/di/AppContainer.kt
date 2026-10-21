@@ -30,9 +30,11 @@ import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.domain.workout.ActiveWorkoutSession
+import com.example.tracker.domain.workout.RestAlarm
 import com.example.tracker.reminder.AlarmReminderScheduler
 import com.example.tracker.reminder.NotificationReminderNotifier
 import com.example.tracker.workout.AndroidActiveWorkoutNotifier
+import com.example.tracker.workout.AndroidRestAlarm
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -82,6 +84,8 @@ class AppContainer(context: Context) {
     val activeWorkoutSession: ActiveWorkoutSession by lazy {
         ActiveWorkoutSession(workoutRepository, AndroidActiveWorkoutNotifier(context.applicationContext))
     }
+
+    val restAlarm: RestAlarm by lazy { AndroidRestAlarm(context.applicationContext) }
 
     val dailyReminder: DailyReminder by lazy {
         DailyReminder(
