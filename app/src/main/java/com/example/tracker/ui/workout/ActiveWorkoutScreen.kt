@@ -76,6 +76,7 @@ import kotlinx.coroutines.launch
 fun ActiveWorkoutRoute(
     onMinimize: () -> Unit,
     onWorkoutEnded: () -> Unit,
+    onWorkoutFinished: (workoutId: String) -> Unit,
     onOpenExerciseProgress: (exerciseId: String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ActiveWorkoutViewModel = viewModel(factory = ActiveWorkoutViewModel.Factory),
@@ -91,6 +92,7 @@ fun ActiveWorkoutRoute(
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             ActiveWorkoutEvent.WorkoutEnded -> onWorkoutEnded()
+            is ActiveWorkoutEvent.WorkoutFinished -> onWorkoutFinished(event.workoutId)
             is ActiveWorkoutEvent.ShowMessage -> scope.launch {
                 snackbarHostState.showSnackbar(context.getString(event.messageRes))
             }

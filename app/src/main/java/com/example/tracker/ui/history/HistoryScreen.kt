@@ -41,6 +41,7 @@ import com.example.tracker.ui.theme.spacing
 fun HistoryRoute(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenWorkout: (workoutId: String) -> Unit = {},
     viewModel: HistoryViewModel = viewModel(factory = HistoryViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -49,6 +50,7 @@ fun HistoryRoute(
         onSelectPlan = viewModel::onSelectPlan,
         onRetry = viewModel::onRetry,
         onBack = onBack,
+        onOpenWorkout = onOpenWorkout,
         modifier = modifier,
     )
 }
@@ -62,6 +64,7 @@ fun HistoryScreen(
     onRetry: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenWorkout: (workoutId: String) -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
@@ -85,7 +88,7 @@ fun HistoryScreen(
                     modifier = Modifier.padding(innerPadding),
                 )
 
-                is HistoryUiState.Success -> HistoryContent(state, onSelectPlan, innerPadding)
+                is HistoryUiState.Success -> HistoryContent(state, onSelectPlan, onOpenWorkout, innerPadding)
             }
         }
     }
@@ -95,6 +98,7 @@ fun HistoryScreen(
 private fun HistoryContent(
     state: HistoryUiState.Success,
     onSelectPlan: (String?) -> Unit,
+    onOpenWorkout: (String) -> Unit,
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
@@ -136,7 +140,9 @@ private fun HistoryContent(
                         modifier = Modifier.animateItem(),
                     )
                 }
-                items(group.workouts, key = { it.id }) { WorkoutSummaryRow(it, Modifier.animateItem()) }
+                items(group.workouts, key = { it.id }) { workout ->
+                    WorkoutSummaryRow(workout, Modifier.animateItem(), onClick = { onOpenWorkout(workout.id) })
+                }
             }
         }
     }

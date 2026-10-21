@@ -196,12 +196,12 @@ class ActiveWorkoutViewModel(
 
     fun onNextExercise() = goToExercise(offset = 1)
 
-    fun onFinishWorkout() = endWorkout(R.string.workout_error_finish) {
+    fun onFinishWorkout() = endWorkout(R.string.workout_error_finish, ActiveWorkoutEvent.WorkoutFinished(workoutId)) {
         saveDraft()
         workoutRepository.finishWorkout(workoutId)
     }
 
-    fun onDiscardWorkout() = endWorkout(R.string.workout_error_finish) {
+    fun onDiscardWorkout() = endWorkout(R.string.workout_error_finish, ActiveWorkoutEvent.WorkoutEnded) {
         workoutRepository.discardWorkout(workoutId)
     }
 
@@ -238,13 +238,13 @@ class ActiveWorkoutViewModel(
         }
     }
 
-    private fun endWorkout(@StringRes errorRes: Int, block: suspend () -> Unit) {
+    private fun endWorkout(@StringRes errorRes: Int, ended: ActiveWorkoutEvent, block: suspend () -> Unit) {
         if (isFinishing.value) return
         isFinishing.value = true
         viewModelScope.launchCatching(onError = { showMessage(errorRes) }) {
             try {
                 block()
-                _events.send(ActiveWorkoutEvent.WorkoutEnded)
+                _events.send(ended)
             } finally {
                 isFinishing.value = false
             }

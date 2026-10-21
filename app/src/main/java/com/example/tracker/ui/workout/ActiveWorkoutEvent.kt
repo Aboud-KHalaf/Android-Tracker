@@ -10,5 +10,8 @@ sealed interface ActiveWorkoutEvent {
     /** The workout was finished or discarded; leave the screen. */
     data object WorkoutEnded : ActiveWorkoutEvent
 
+    /** The workout was finished and saved; show its summary. */
+    data class WorkoutFinished(val workoutId: String) : ActiveWorkoutEvent
+
     data class ShowMessage(@StringRes val messageRes: Int) : ActiveWorkoutEvent
 }

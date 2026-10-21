@@ -23,6 +23,7 @@ All data stays on your device, and you don't need an account. When you want your
 - Log weight-and-reps sets during an active workout
 - Built-in hold timer for timed sets (planks, holds, etc.)
 - Workout history grouped by month, with a filter by training day
+- **Workout summary** after finishing (and from any workout in Home or History): time, sets, volume against the last workout of the same day, the personal bests it set, and each exercise's sets
 
 ### ⏱️ Workouts that survive leaving the app
 - While a workout is in progress, an ongoing notification shows it with a running clock; tap it to jump back in

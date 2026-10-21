@@ -212,14 +212,14 @@ class ActiveWorkoutViewModelTest {
     }
 
     @Test
-    fun onFinishWorkout_finishesAndEnds() = runTest {
+    fun onFinishWorkout_finishesAndOpensItsSummary() = runTest {
         val viewModel = createViewModel()
         collectState(viewModel)
 
         viewModel.onFinishWorkout()
 
         assertNotNull(workouts.activeWorkout.value?.finishedAt)
-        assertEquals(ActiveWorkoutEvent.WorkoutEnded, viewModel.events.first())
+        assertEquals(ActiveWorkoutEvent.WorkoutFinished("w1"), viewModel.events.first())
         assertEquals(ActiveWorkoutUiState.NotFound, viewModel.uiState.value)
     }
 

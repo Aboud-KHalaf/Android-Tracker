@@ -234,6 +234,19 @@
 
     <!-- History -->
     <string name="history_title">History</string>
+    <string name="summary_title">Workout summary</string>
+    <string name="summary_done_headline">Workout done. Nice work!</string>
+    <string name="summary_duration">Time</string>
+    <string name="summary_sets">Sets</string>
+    <string name="summary_volume">Volume</string>
+    <string name="summary_volume_change">%1$s vs last time</string>
+    <string name="summary_volume_same">Same as last time</string>
+    <string name="summary_personal_bests">Personal bests</string>
+    <string name="summary_exercises">Exercises</string>
+    <string name="summary_not_found">This workout isn\'t available.</string>
+    <string name="summary_error">Couldn\'t load this workout.</string>
+    <string name="summary_open_progress">Open %1$s progress</string>
+    <string name="action_done">Done</string>
     <string name="history_open">Workout history</string>
     <string name="history_error_load">Couldn\'t load your history.</string>
     <string name="history_filter_group">Filter by training day</string>
