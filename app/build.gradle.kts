@@ -106,6 +106,10 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.health.connect)
+    // Health Connect puts Guava in the app, which empties the ListenableFuture stub CameraX
+    // compiles against; depending on that same Guava keeps ListenableFuture visible.
+    implementation(libs.guava)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)

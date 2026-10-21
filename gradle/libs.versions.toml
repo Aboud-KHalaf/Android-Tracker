@@ -19,6 +19,9 @@ navigationCompose = "2.9.5"
 kotlinxSerialization = "1.7.3"
 coil = "2.7.0"
 camerax = "1.5.3"
+healthConnect = "1.1.0"
+# The Guava Health Connect ships with; see app/build.gradle.kts.
+guava = "31.1-android"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,6 +56,8 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
 androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+androidx-health-connect = { group = "androidx.health.connect", name = "connect-client", version.ref = "healthConnect" }
+guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 
 [plugins]
