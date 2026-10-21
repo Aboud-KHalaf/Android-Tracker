@@ -33,6 +33,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.example.tracker.R
 import com.example.tracker.ui.common.SetValueUi
+import com.example.tracker.ui.common.currentLocale
+import com.example.tracker.ui.common.formatNumber
 import com.example.tracker.ui.common.text
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
@@ -51,7 +53,9 @@ private val RowMinHeight = 56.dp
 fun DoneSetRow(set: SetRowUi.Done, onEdit: () -> Unit, modifier: Modifier = Modifier) {
     val valueText = set.value.textOrNotSet()
     val editLabel = stringResource(R.string.workout_edit_set)
-    val description = rowDescription(R.string.workout_set_done_description, set, valueText)
+    val rpeText = set.rpe?.let { stringResource(R.string.workout_rpe_value, formatNumber(it, currentLocale())) }
+    val description = listOfNotNull(rowDescription(R.string.workout_set_done_description, set, valueText), rpeText)
+        .joinToString()
     Surface(
         onClick = onEdit,
         shape = MaterialTheme.shapes.medium,
@@ -72,6 +76,13 @@ fun DoneSetRow(set: SetRowUi.Done, onEdit: () -> Unit, modifier: Modifier = Modi
                 style = MaterialTheme.typography.titleMedium.tabularNumbers(),
                 modifier = Modifier.weight(1f),
             )
+            set.rpe?.let { rpe ->
+                Text(
+                    text = stringResource(R.string.workout_rpe_value, formatNumber(rpe, currentLocale())),
+                    style = MaterialTheme.typography.labelMedium.tabularNumbers(),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             set.improvement?.let { improvement ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(

@@ -157,6 +157,9 @@
     <string name="set_type_warm_up">Warm-up</string>
     <string name="set_type_drop">Drop set</string>
     <string name="set_type_failure">To failure</string>
+    <string name="workout_rpe_label">Effort (RPE)</string>
+    <string name="workout_rpe_help">10: nothing left · 9: 1 more rep · 8: 2 more</string>
+    <string name="workout_rpe_value">RPE %1$s</string>
     <string name="set_type_warm_up_description">Not counted in progress or records</string>
     <string name="rest_between_sets">Next set in</string>
     <string name="rest_before_exercise">Next exercise in</string>
