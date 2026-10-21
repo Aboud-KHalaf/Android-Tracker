@@ -27,6 +27,7 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.roundToLong
+import com.example.tracker.ui.common.toWesternDigits
 
 val StatIcon.imageVector: ImageVector
     get() = when (this) {
@@ -84,11 +85,11 @@ private const val MAX_INPUT_LENGTH = 10
 
 /**
  * Keeps what can be part of a number with up to [decimals] places, e.g. "-12.5":
- * digits, a leading minus, and one decimal separator (a comma becomes a dot).
+ * digits (Arabic ones become 0–9), a leading minus, and one decimal separator (a comma becomes a dot).
  */
 fun sanitizeStatInput(text: String, decimals: Int): String {
     val negative = text.trimStart().startsWith('-')
-    val normalized = text.replace(',', '.').filter { it.isDigit() || (it == '.' && decimals > 0) }
+    val normalized = text.toWesternDigits().replace(',', '.').filter { it in '0'..'9' || (it == '.' && decimals > 0) }
     val dot = normalized.indexOf('.')
     val cleaned = if (dot < 0) {
         normalized
@@ -100,7 +101,7 @@ fun sanitizeStatInput(text: String, decimals: Int): String {
 
 /** The number in [text] if it is a valid stat value, otherwise null. */
 fun parseStatInput(text: String): Double? =
-    text.trim().toDoubleOrNull()?.takeIf { it.isFinite() && it in CustomStat.MIN_VALUE..CustomStat.MAX_VALUE }
+    text.toWesternDigits().trim().toDoubleOrNull()?.takeIf { it.isFinite() && it in CustomStat.MIN_VALUE..CustomStat.MAX_VALUE }
 
 /** "19.5" for a field: the value at [decimals] places, without grouping. */
 fun Double.toStatInput(decimals: Int): String =

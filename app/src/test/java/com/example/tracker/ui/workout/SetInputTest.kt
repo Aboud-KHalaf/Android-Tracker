@@ -46,4 +46,11 @@ class SetInputTest {
         assertEquals("1", SetInput.stepReps("1", -1))
         assertEquals("1", SetInput.stepReps("", 1))
     }
+
+    @Test
+    fun arabicDigits_areRead() {
+        assertEquals(47.5, SetInput.parseWeight("٤٧٫٥")!!, 0.0)
+        assertEquals(8, SetInput.parseReps("٨"))
+        assertEquals("9", SetInput.stepReps("٨", 1))
+    }
 }
