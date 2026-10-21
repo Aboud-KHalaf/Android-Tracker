@@ -36,12 +36,24 @@ interface WorkoutRepository {
     /** Completed working sets (not warm-ups) from the last finished workout that included the exercise. */
     suspend fun lastTimeSets(exerciseId: String): List<WorkoutSet>
 
+    /** The note left on the exercise in the last finished workout that included it, if any. */
+    suspend fun lastTimeNote(exerciseId: String): String?
+
     /**
      * Starts a workout from a plan and returns its id. Each exercise gets the plan's target
      * number of sets, prefilled from its targets and, where none is set, from last time.
      */
     suspend fun startWorkout(planId: String): String
     suspend fun finishWorkout(workoutId: String)
+
+    /**
+     * Sets the workout's note; blank text removes it. Throws [IllegalArgumentException] past
+     * [com.example.tracker.domain.model.WorkoutNote.MAX_LENGTH].
+     */
+    suspend fun setWorkoutNote(workoutId: String, note: String?)
+
+    /** Sets the note on one exercise of a workout; blank text removes it. */
+    suspend fun setExerciseNote(workoutExerciseId: String, note: String?)
 
     /** Remembers which exercise is open, so an interrupted session reopens on it. */
     suspend fun setCurrentExercise(workoutId: String, exerciseIndex: Int)

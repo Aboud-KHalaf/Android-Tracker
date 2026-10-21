@@ -71,12 +71,14 @@ internal fun WorkoutEntity.toDomain(
         startedAt = startedAt.toInstant(),
         finishedAt = finishedAt?.toInstant(),
         currentExerciseIndex = currentExercisePosition,
+        note = note,
         exercises = exercises.map { row ->
             WorkoutExercise(
                 id = row.id,
                 exercise = Exercise(row.exerciseId, row.exerciseName, row.exerciseType),
                 position = row.position,
                 sets = setsByExercise[row.id].orEmpty().map { it.toDomain() },
+                note = row.note,
             )
         },
     )
@@ -90,6 +92,7 @@ internal fun WorkoutSummaryRow.toDomain(personalBestCount: Int) = WorkoutSummary
     finishedAt = finishedAt.toInstant(),
     exerciseCount = exerciseCount,
     personalBestCount = personalBestCount,
+    note = note,
 )
 
 internal fun LoggedSetRow.toDomain() = LoggedSet(
@@ -100,4 +103,5 @@ internal fun LoggedSetRow.toDomain() = LoggedSet(
     weightKg = weightKg,
     reps = reps,
     durationSeconds = durationSeconds,
+    exerciseNote = exerciseNote,
 )

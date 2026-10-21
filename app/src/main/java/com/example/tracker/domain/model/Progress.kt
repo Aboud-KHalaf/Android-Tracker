@@ -13,6 +13,8 @@ data class LoggedSet(
     val weightKg: Double?,
     val reps: Int?,
     val durationSeconds: Int?,
+    /** The note on the exercise in that workout. */
+    val exerciseNote: String? = null,
 )
 
 /** The completed sets of one exercise in one finished workout. */
@@ -22,6 +24,7 @@ data class ExerciseSession(
     val exerciseType: ExerciseType,
     val finishedAt: Instant,
     val sets: List<LoggedSet>,
+    val note: String? = null,
 )
 
 /**

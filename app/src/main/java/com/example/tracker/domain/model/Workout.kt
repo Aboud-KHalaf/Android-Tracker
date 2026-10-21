@@ -15,6 +15,8 @@ data class Workout(
     val finishedAt: Instant?,
     val exercises: List<WorkoutExercise>,
     val currentExerciseIndex: Int? = null,
+    /** How the workout went, in the user's words. */
+    val note: String? = null,
 ) {
     val isInProgress: Boolean get() = finishedAt == null
 }
@@ -24,7 +26,21 @@ data class WorkoutExercise(
     val exercise: Exercise,
     val position: Int,
     val sets: List<WorkoutSet>,
+    /** Something to remember about this exercise in this workout, e.g. "left shoulder hurt". */
+    val note: String? = null,
 )
+
+/** Rules for workout and exercise notes. */
+object WorkoutNote {
+    const val MAX_LENGTH = 500
+
+    /** The note to store for [text]: trimmed, or null when blank. */
+    fun normalize(text: String?): String? {
+        val note = text?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        require(note.length <= MAX_LENGTH) { "A note is at most $MAX_LENGTH characters" }
+        return note
+    }
+}
 
 /**
  * One set. Weight-and-reps exercises use [weightKg] and [reps]; duration exercises use
@@ -72,6 +88,7 @@ data class WorkoutSummary(
     val finishedAt: Instant,
     val exerciseCount: Int,
     val personalBestCount: Int,
+    val note: String? = null,
 ) {
     val duration: Duration get() = Duration.between(startedAt, finishedAt)
 }

@@ -34,6 +34,7 @@ data class WorkoutEntity(
     @ColumnInfo(name = "started_at") val startedAt: Long,
     @ColumnInfo(name = "finished_at") val finishedAt: Long?,
     @ColumnInfo(name = "current_exercise_position") val currentExercisePosition: Int? = null,
+    @ColumnInfo(name = "note") val note: String? = null,
     @Embedded val sync: SyncMetadata,
 )
 
@@ -60,6 +61,7 @@ data class WorkoutExerciseEntity(
     @ColumnInfo(name = "workout_id") val workoutId: String,
     @ColumnInfo(name = "exercise_id") val exerciseId: String,
     @ColumnInfo(name = "position") val position: Int,
+    @ColumnInfo(name = "note") val note: String? = null,
     @Embedded val sync: SyncMetadata,
 )
 

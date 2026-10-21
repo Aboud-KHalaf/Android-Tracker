@@ -38,6 +38,7 @@ fun List<LoggedSet>.toSessions(): List<ExerciseSession> =
                 exerciseType = first.exerciseType,
                 finishedAt = first.finishedAt,
                 sets = sets,
+                note = first.exerciseNote,
             )
         }
         .sortedBy { it.finishedAt }

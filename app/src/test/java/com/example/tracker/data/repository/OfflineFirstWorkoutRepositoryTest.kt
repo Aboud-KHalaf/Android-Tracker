@@ -316,4 +316,49 @@ class OfflineFirstWorkoutRepositoryTest {
 
         workouts.setSetRpe(set.id, 11.0)
     }
+
+    @Test
+    fun notes_areTrimmedStoredAndShownInHistoryAndProgress() = runTest {
+        val id = workouts.startWorkout(planId)
+        val bench = workouts.observeWorkout(id).first()!!.exercises.first()
+        workouts.setWorkoutNote(id, "  Felt strong  ")
+        workouts.setExerciseNote(bench.id, "Left shoulder tight")
+        workouts.updateSet(bench.sets.first().id, 60.0, 8, null)
+        workouts.completeSet(bench.sets.first().id)
+
+        val workout = workouts.observeWorkout(id).first()!!
+        assertEquals("Felt strong", workout.note)
+        assertEquals("Left shoulder tight", workout.exercises.first().note)
+
+        workouts.finishWorkout(id)
+        assertEquals("Felt strong", workouts.observeHistory().first().single().note)
+        assertEquals("Left shoulder tight", workouts.observeExerciseSessions(benchId).first().single().note)
+        assertEquals("Left shoulder tight", workouts.lastTimeNote(benchId))
+    }
+
+    @Test
+    fun blankNote_removesIt() = runTest {
+        val id = workouts.startWorkout(planId)
+        workouts.setWorkoutNote(id, "Tired")
+
+        workouts.setWorkoutNote(id, "   ")
+
+        assertNull(workouts.observeWorkout(id).first()!!.note)
+    }
+
+    @Test
+    fun lastTimeNote_isOnlyTheLastWorkoutsNote() = runTest {
+        val first = workouts.startWorkout(planId)
+        workouts.setExerciseNote(workouts.observeWorkout(first).first()!!.exercises.first().id, "Old note")
+        workouts.finishWorkout(first)
+        time.advance(Duration.ofDays(1))
+        workouts.finishWorkout(workouts.startWorkout(planId))
+
+        assertNull(workouts.lastTimeNote(benchId))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun tooLongNote_isRejected() = runTest {
+        workouts.setWorkoutNote(workouts.startWorkout(planId), "x".repeat(501))
+    }
 }
