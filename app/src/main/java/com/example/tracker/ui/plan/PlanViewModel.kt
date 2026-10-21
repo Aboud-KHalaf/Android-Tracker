@@ -150,6 +150,19 @@ class PlanViewModel(
         }
     }
 
+    /** Pairs the exercise with the one after it, so they are done in turn. */
+    fun onSupersetWithNext(planExerciseId: String) {
+        viewModelScope.launchCatching(onError = { showMessage(R.string.plan_error_update) }) {
+            planRepository.supersetWithNext(planExerciseId)
+        }
+    }
+
+    fun onRemoveFromSuperset(planExerciseId: String) {
+        viewModelScope.launchCatching(onError = { showMessage(R.string.plan_error_update) }) {
+            planRepository.removeFromSuperset(planExerciseId)
+        }
+    }
+
     fun onUndoRemoveExercise(planExerciseId: String) {
         viewModelScope.launchCatching(onError = { showMessage(R.string.plan_error_update) }) {
             planRepository.restoreExercise(planExerciseId)

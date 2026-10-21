@@ -75,6 +75,8 @@ data class CurrentExerciseUi(
     val note: String? = null,
     /** The note left on this exercise last time, if any. */
     val lastTimeNote: String? = null,
+    /** The other exercises of its superset, in order; empty when it isn't in one. */
+    val supersetPartners: List<String> = emptyList(),
 )
 
 /**

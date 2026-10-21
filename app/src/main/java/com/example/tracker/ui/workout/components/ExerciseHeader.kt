@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material.icons.outlined.SyncAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -61,6 +62,27 @@ fun ExerciseHeader(
                     style = MaterialTheme.typography.bodyMedium.tabularNumbers(),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            if (exercise.supersetPartners.isNotEmpty()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.xs),
+                ) {
+                    Icon(
+                        Icons.Outlined.SyncAlt,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.workout_superset_with,
+                            exercise.supersetPartners.joinToString(stringResource(R.string.separator_comma)),
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
+                }
             }
             exercise.lastTimeNote?.let { note ->
                 Text(

@@ -7,7 +7,9 @@ import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FindReplace
+import androidx.compose.material.icons.outlined.LinkOff
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.SyncAlt
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -31,6 +33,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
@@ -55,6 +61,8 @@ data class PlanExerciseRowActions(
     val onMoveUp: () -> Unit,
     val onMoveDown: () -> Unit,
     val onRemove: () -> Unit,
+    val onSupersetWithNext: () -> Unit = {},
+    val onRemoveFromSuperset: () -> Unit = {},
 )
 
 /**
@@ -85,7 +93,22 @@ fun PlanExerciseRow(
     ) {
         ListItem(
             headlineContent = { Text(exercise.name) },
-            supportingContent = { Text(exercise.config.summary(exercise.type)) },
+            supportingContent = {
+                val summary = exercise.config.summary(exercise.type)
+                if (exercise.supersetLabel == null) {
+                    Text(summary)
+                } else {
+                    Text(
+                        buildAnnotatedString {
+                            withStyle(SpanStyle(color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.Medium)) {
+                                append(stringResource(R.string.plan_superset_label, exercise.supersetLabel))
+                            }
+                            append(stringResource(R.string.separator_dot))
+                            append(summary)
+                        },
+                    )
+                }
+            },
             leadingContent = {
                 IconAvatar(
                     icon = exercise.type.icon,
@@ -141,6 +164,21 @@ private fun ExerciseOptionsMenu(exercise: PlanExerciseUi, actions: PlanExerciseR
                 enabled = exercise.canMoveDown,
                 onClick = { select(actions.onMoveDown) },
             )
+            HorizontalDivider()
+            if (exercise.canSupersetWithNext) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.plan_superset_with_next)) },
+                    leadingIcon = { Icon(Icons.Outlined.SyncAlt, contentDescription = null) },
+                    onClick = { select(actions.onSupersetWithNext) },
+                )
+            }
+            if (exercise.supersetLabel != null) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.plan_remove_from_superset)) },
+                    leadingIcon = { Icon(Icons.Outlined.LinkOff, contentDescription = null) },
+                    onClick = { select(actions.onRemoveFromSuperset) },
+                )
+            }
             HorizontalDivider()
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.plan_remove)) },
