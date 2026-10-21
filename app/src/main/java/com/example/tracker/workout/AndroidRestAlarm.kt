@@ -33,7 +33,7 @@ class AndroidRestAlarm(private val context: Context) : RestAlarm {
             try {
                 manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, alarm)
                 return
-            } catch (e: SecurityException) {
+            } catch (ignored: SecurityException) {
                 // Exact alarm access was revoked after the check; fall back to an inexact alarm.
             }
         }
@@ -73,7 +73,7 @@ class AndroidRestAlarm(private val context: Context) : RestAlarm {
             .build()
         try {
             manager.notify(NOTIFICATION_ID, notification)
-        } catch (e: SecurityException) {
+        } catch (ignored: SecurityException) {
             // Permission revoked between the check and the post; nothing to show.
         }
     }

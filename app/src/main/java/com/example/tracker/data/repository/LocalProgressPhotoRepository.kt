@@ -57,6 +57,8 @@ class LocalProgressPhotoRepository(
 
     override suspend fun createCaptureFile(): File = withContext(ioDispatcher) { store.newCaptureFile() }
 
+    // Whatever fails, the copied file goes before the failure propagates.
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun savePhoto(checkInId: String?, pose: PhotoPose, capture: File): String {
         require(capture.length() > 0) { "Empty capture: $capture" }
         val sessionId = checkInId?.also { requireNotNull(photoDao.getSession(it)) { "No check-in $it" } }

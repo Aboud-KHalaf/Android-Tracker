@@ -14,6 +14,8 @@ class TrackerApplication : Application() {
     lateinit var container: AppContainer
         private set
 
+    // Startup work must never crash the app; each failure is logged and retried next start.
+    @Suppress("TooGenericExceptionCaught")
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
