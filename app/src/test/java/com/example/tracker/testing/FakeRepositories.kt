@@ -18,6 +18,7 @@ import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.model.WeekSummary
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutPlan
+import com.example.tracker.domain.model.SetType
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.domain.photos.PhotoCheckIn
@@ -215,20 +216,32 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
         activeWorkout.value = null
     }
 
-    override suspend fun addSet(workoutExerciseId: String): String {
+    override suspend fun addSet(workoutExerciseId: String, type: SetType): String {
         val id = "new-set-${nextSetId++}"
         writeWorkout { workout ->
             workout.copy(
                 exercises = workout.exercises.map { exercise ->
                     if (exercise.id != workoutExerciseId) return@map exercise
-                    val last = exercise.sets.maxByOrNull { it.position }
-                    val set = WorkoutSet(id, (last?.position ?: -1) + 1, last?.weightKg, last?.reps, null, null)
-                    exercise.copy(sets = exercise.sets + set)
+                    val ordered = exercise.sets.sortedBy { it.position }
+                    if (type == SetType.WARM_UP) {
+                        // Warm-ups go before the working sets, which move down one place.
+                        val last = ordered.lastOrNull { it.type == SetType.WARM_UP }
+                        val position = last?.position?.plus(1) ?: ordered.firstOrNull()?.position ?: 0
+                        val set = WorkoutSet(id, position, last?.weightKg, last?.reps, null, null, type)
+                        val moved = exercise.sets.map { if (it.position >= position) it.copy(position = it.position + 1) else it }
+                        exercise.copy(sets = moved + set)
+                    } else {
+                        val last = ordered.lastOrNull()
+                        val set = WorkoutSet(id, (last?.position ?: -1) + 1, last?.weightKg, last?.reps, null, null, type)
+                        exercise.copy(sets = exercise.sets + set)
+                    }
                 },
             )
         }
         return id
     }
+
+    override suspend fun setSetType(setId: String, type: SetType) = writeSet(setId) { it.copy(type = type) }
 
     override suspend fun updateSet(setId: String, weightKg: Double?, reps: Int?, durationSeconds: Int?) =
         writeSet(setId) { it.copy(weightKg = weightKg, reps = reps, durationSeconds = durationSeconds) }

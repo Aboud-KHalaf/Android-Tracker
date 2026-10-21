@@ -7,6 +7,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.tracker.data.local.SyncMetadata
+import com.example.tracker.domain.model.SetType
 
 /**
  * A performed workout. [finishedAt] is null while the workout is in progress.
@@ -86,5 +87,6 @@ data class WorkoutSetEntity(
     @ColumnInfo(name = "reps") val reps: Int?,
     @ColumnInfo(name = "duration_seconds") val durationSeconds: Int?,
     @ColumnInfo(name = "completed_at") val completedAt: Long?,
+    @ColumnInfo(name = "set_type", defaultValue = "'NORMAL'") val type: SetType = SetType.NORMAL,
     @Embedded val sync: SyncMetadata,
 )

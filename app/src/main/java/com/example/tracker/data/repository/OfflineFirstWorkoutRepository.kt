@@ -10,6 +10,7 @@ import com.example.tracker.data.local.entity.WorkoutExerciseEntity
 import com.example.tracker.data.local.entity.WorkoutSetEntity
 import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.PersonalBest
+import com.example.tracker.domain.model.SetType
 import com.example.tracker.domain.model.WeekSummary
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutSet
@@ -150,25 +151,43 @@ class OfflineFirstWorkoutRepository(
         }
     }
 
-    override suspend fun addSet(workoutExerciseId: String): String = database.withTransaction {
+    override suspend fun addSet(workoutExerciseId: String, type: SetType): String = database.withTransaction {
         requireNotNull(workoutDao.getWorkoutExercise(workoutExerciseId)) {
             "Workout exercise $workoutExerciseId not found"
         }
-        val previous = workoutDao.getSets(workoutExerciseId).lastOrNull()
+        val sets = workoutDao.getSets(workoutExerciseId)
+        val now = now()
+        val previous: WorkoutSetEntity?
+        val position: Int
+        if (type == SetType.WARM_UP) {
+            previous = sets.lastOrNull { it.type == SetType.WARM_UP }
+            position = previous?.position?.plus(1) ?: sets.firstOrNull()?.position ?: 0
+            workoutDao.shiftSets(workoutExerciseId, from = position, now = now)
+        } else {
+            previous = sets.lastOrNull()
+            position = workoutDao.maxSetPosition(workoutExerciseId) + 1
+        }
         val id = ids.newId()
         val set = WorkoutSetEntity(
             id = id,
             workoutExerciseId = workoutExerciseId,
-            position = workoutDao.maxSetPosition(workoutExerciseId) + 1,
+            position = position,
             weightKg = previous?.weightKg,
             reps = previous?.reps,
             // A new timed set starts from zero rather than copying the last hold.
             durationSeconds = null,
             completedAt = null,
-            sync = SyncMetadata.created(now()),
+            type = type,
+            sync = SyncMetadata.created(now),
         )
         workoutDao.upsertSets(listOf(set))
         id
+    }
+
+    override suspend fun setSetType(setId: String, type: SetType) {
+        val set = requireSet(setId)
+        if (set.type == type) return
+        workoutDao.upsertSets(listOf(set.copy(type = type, sync = set.sync.touched(now()))))
     }
 
     override suspend fun updateSet(setId: String, weightKg: Double?, reps: Int?, durationSeconds: Int?) {

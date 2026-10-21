@@ -97,13 +97,22 @@ interface WorkoutDao {
     )
     suspend fun maxSetPosition(workoutExerciseId: String): Int
 
+    /** Moves the sets at [from] and after one place down, to make room for a set at [from]. */
+    @Query(
+        """
+        UPDATE workout_sets SET position = position + 1, updated_at = :now, sync_state = 'PENDING'
+        WHERE workout_exercise_id = :workoutExerciseId AND position >= :from AND deleted_at IS NULL
+        """
+    )
+    suspend fun shiftSets(workoutExerciseId: String, from: Int, now: Long)
+
     // Progress
 
-    /** Completed sets of the most recent finished workout that included [exerciseId]. */
+    /** Completed working sets (not warm-ups) of the most recent finished workout that included [exerciseId]. */
     @Query(
         """
         SELECT s.* FROM workout_sets s
-        WHERE s.deleted_at IS NULL AND s.completed_at IS NOT NULL
+        WHERE s.deleted_at IS NULL AND s.completed_at IS NOT NULL AND s.set_type != 'WARM_UP'
             AND s.workout_exercise_id = (
                 SELECT we.id FROM workout_exercises we
                 JOIN workouts w ON w.id = we.workout_id
@@ -111,7 +120,7 @@ interface WorkoutDao {
                 WHERE we.exercise_id = :exerciseId
                     AND we.deleted_at IS NULL AND w.deleted_at IS NULL
                     AND w.finished_at IS NOT NULL
-                    AND cs.deleted_at IS NULL AND cs.completed_at IS NOT NULL
+                    AND cs.deleted_at IS NULL AND cs.completed_at IS NOT NULL AND cs.set_type != 'WARM_UP'
                 ORDER BY w.finished_at DESC LIMIT 1
             )
         ORDER BY s.position
@@ -119,7 +128,7 @@ interface WorkoutDao {
     )
     suspend fun lastCompletedSets(exerciseId: String): List<WorkoutSetEntity>
 
-    /** All completed sets in finished workouts, optionally for one exercise, oldest first. */
+    /** All completed working sets (not warm-ups) in finished workouts, optionally for one exercise, oldest first. */
     @Query(
         """
         SELECT w.id AS workout_id, w.finished_at, e.id AS exercise_id, e.type AS exercise_type,
@@ -128,7 +137,7 @@ interface WorkoutDao {
         JOIN workout_exercises we ON we.id = s.workout_exercise_id
         JOIN workouts w ON w.id = we.workout_id
         JOIN exercises e ON e.id = we.exercise_id
-        WHERE s.deleted_at IS NULL AND s.completed_at IS NOT NULL
+        WHERE s.deleted_at IS NULL AND s.completed_at IS NOT NULL AND s.set_type != 'WARM_UP'
             AND we.deleted_at IS NULL AND w.deleted_at IS NULL AND w.finished_at IS NOT NULL
             AND (:exerciseId IS NULL OR e.id = :exerciseId)
         ORDER BY w.finished_at, we.position, s.position
