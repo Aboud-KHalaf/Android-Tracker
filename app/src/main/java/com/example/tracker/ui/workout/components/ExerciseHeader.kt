@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.example.tracker.R
@@ -58,6 +59,14 @@ fun ExerciseHeader(
                         stringResource(R.string.workout_last_time, exercise.lastTime.compactText())
                     },
                     style = MaterialTheme.typography.bodyMedium.tabularNumbers(),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            exercise.lastTimeNote?.let { note ->
+                Text(
+                    text = stringResource(R.string.workout_last_note, note),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontStyle = FontStyle.Italic,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }

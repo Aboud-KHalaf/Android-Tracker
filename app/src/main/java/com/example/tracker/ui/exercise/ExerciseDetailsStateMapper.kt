@@ -77,6 +77,7 @@ internal class ExerciseDetailsStateMapper(private val zone: ZoneId) {
             best = best,
             sets = sets.mapNotNull { it.toValue() },
             isPersonalBest = isPersonalBest,
+            note = note,
         )
     }
 

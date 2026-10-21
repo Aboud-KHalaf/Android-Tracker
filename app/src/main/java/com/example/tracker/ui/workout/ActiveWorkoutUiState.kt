@@ -30,6 +30,7 @@ sealed interface ActiveWorkoutUiState {
         val isFinishing: Boolean = false,
         /** The rest after the last completed set, while it runs. */
         val rest: RestUi? = null,
+        val workoutNote: String? = null,
     ) : ActiveWorkoutUiState {
         /** Every set of the current exercise is completed. */
         val allSetsDone: Boolean get() = sets.none { it is SetRowUi.Active || it is SetRowUi.Upcoming }
@@ -70,6 +71,10 @@ data class CurrentExerciseUi(
     val type: ExerciseType,
     /** The sets from the last finished workout with this exercise; empty the first time. */
     val lastTime: List<SetValueUi>,
+    /** This exercise's note in this workout. */
+    val note: String? = null,
+    /** The note left on this exercise last time, if any. */
+    val lastTimeNote: String? = null,
 )
 
 /**

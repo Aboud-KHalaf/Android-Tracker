@@ -1,5 +1,6 @@
 package com.example.tracker.ui.exercise.components
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Text
@@ -8,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.example.tracker.R
+import com.example.tracker.ui.common.NoteText
 import com.example.tracker.ui.common.DateTile
 import com.example.tracker.ui.common.PersonalRecordBadge
 import com.example.tracker.ui.common.SetValueUi
@@ -30,7 +32,12 @@ fun SessionRow(session: SessionRowUi, modifier: Modifier = Modifier) {
                 )
             }
         },
-        supportingContent = { Text(session.sets.compactText()) },
+        supportingContent = {
+            Column {
+                Text(session.sets.compactText())
+                session.note?.let { NoteText(it) }
+            }
+        },
         leadingContent = { DateTile(session.date) },
         trailingContent = if (session.isPersonalBest) {
             { PersonalRecordBadge(stringResource(R.string.exercise_pb_badge)) }

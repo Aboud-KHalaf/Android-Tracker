@@ -47,6 +47,8 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
+import com.example.tracker.ui.common.NoteDialog
+import com.example.tracker.ui.workout.components.ExerciseNote
 import com.example.tracker.domain.model.SetType
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
@@ -139,6 +141,8 @@ fun ActiveWorkoutRoute(
             onAddSet = viewModel::onAddSet,
             onAddWarmUpSet = viewModel::onAddWarmUpSet,
             onSetActiveSetType = viewModel::onSetActiveSetType,
+            onSetWorkoutNote = viewModel::onSetWorkoutNote,
+            onSetExerciseNote = viewModel::onSetExerciseNote,
             rest = RestTimerActions(onAdjust = viewModel::onAdjustRest, onEnd = viewModel::onEndRest),
             onPreviousExercise = viewModel::onPreviousExercise,
             onNextExercise = viewModel::onNextExercise,
@@ -162,6 +166,8 @@ data class ActiveWorkoutActions(
     val onAddSet: () -> Unit = {},
     val onAddWarmUpSet: () -> Unit = {},
     val onSetActiveSetType: (SetType) -> Unit = {},
+    val onSetWorkoutNote: (String) -> Unit = {},
+    val onSetExerciseNote: (String) -> Unit = {},
     val rest: RestTimerActions = RestTimerActions(),
     val onPreviousExercise: () -> Unit = {},
     val onNextExercise: () -> Unit = {},
@@ -177,6 +183,7 @@ fun ActiveWorkoutScreen(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     var showEndDialog by rememberSaveable { mutableStateOf(false) }
+    var showWorkoutNote by rememberSaveable { mutableStateOf(false) }
     val success = uiState as? ActiveWorkoutUiState.Success
     // Finishing asks first only when something would be lost or there is nothing to save.
     val requestFinish = {
@@ -201,6 +208,8 @@ fun ActiveWorkoutScreen(
                     isFinishing = success.isFinishing,
                     onMinimize = actions.onMinimize,
                     onFinish = requestFinish,
+                    hasNote = success.workoutNote != null,
+                    onEditNote = { showWorkoutNote = true },
                 )
             }
         },
@@ -251,6 +260,19 @@ fun ActiveWorkoutScreen(
         }
     }
 
+    if (showWorkoutNote && success != null) {
+        NoteDialog(
+            title = stringResource(R.string.workout_note),
+            placeholder = stringResource(R.string.workout_note_hint),
+            initialNote = success.workoutNote,
+            onSave = { note ->
+                showWorkoutNote = false
+                actions.onSetWorkoutNote(note)
+            },
+            onDismiss = { showWorkoutNote = false },
+        )
+    }
+
     if (showEndDialog && success != null) {
         val dismiss = { showEndDialog = false }
         if (success.completedSetCount == 0) {
@@ -298,7 +320,15 @@ private fun WorkoutContent(
                 ExerciseHeader(
                     exercise = state.exercise,
                     onOpenProgress = { actions.onOpenExerciseProgress(state.exercise.exerciseId) },
-                    modifier = Modifier.padding(top = spacing.lg, bottom = spacing.md),
+                    modifier = Modifier.padding(top = spacing.lg, bottom = spacing.sm),
+                )
+            }
+            item(key = "note-${state.exercise.workoutExerciseId}") {
+                ExerciseNote(
+                    exerciseName = state.exercise.name,
+                    note = state.exercise.note,
+                    onSave = actions.onSetExerciseNote,
+                    modifier = Modifier.padding(bottom = spacing.md),
                 )
             }
             items(state.sets, key = { it.id }) { set ->

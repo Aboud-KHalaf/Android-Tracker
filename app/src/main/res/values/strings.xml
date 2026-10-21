@@ -112,6 +112,14 @@
     <string name="workout_header_subtitle">%1$s · Exercise %2$d of %3$d</string>
     <string name="workout_last_time">Last time · %1$s</string>
     <string name="workout_last_time_weights">%1$s kg</string>
+    <string name="workout_note">Workout note</string>
+    <string name="workout_note_hint">How did it go?</string>
+    <string name="workout_exercise_note_add">Add note</string>
+    <string name="workout_exercise_note_title">Note on %1$s</string>
+    <string name="workout_exercise_note_hint">E.g. left shoulder felt tight</string>
+    <string name="workout_exercise_note_edit">Edit note on %1$s</string>
+    <string name="workout_last_note">Last time: “%1$s”</string>
+    <string name="note_length">%1$d/%2$d</string>
     <string name="workout_first_time">First time doing this exercise</string>
     <string name="workout_exercise_progress">%1$s progress</string>
     <string name="workout_set_number">Set %1$d</string>

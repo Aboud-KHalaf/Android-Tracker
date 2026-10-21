@@ -79,8 +79,8 @@ class ActiveWorkoutViewModel(
                 selection,
                 draft,
                 combine(isFinishing, rest, ::Pair),
-            ) { workout, lastTimes, selection, draft, (finishing, rest) ->
-                val state = ActiveWorkoutStateMapper.map(workout, lastTimes, selection, draft)
+            ) { workout, (lastTimes, lastNotes), selection, draft, (finishing, rest) ->
+                val state = ActiveWorkoutStateMapper.map(workout, lastTimes, selection, draft, lastNotes)
                 if (state is ActiveWorkoutUiState.Success) state.copy(isFinishing = finishing, rest = rest) else state
             }
                 .onStart { emit(ActiveWorkoutUiState.Loading) }
@@ -216,6 +216,21 @@ class ActiveWorkoutViewModel(
         rest.value = null
     }
 
+    /** Saves the workout's note; blank text removes it. */
+    fun onSetWorkoutNote(note: String) {
+        viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
+            workoutRepository.setWorkoutNote(workoutId, note)
+        }
+    }
+
+    /** Saves the current exercise's note; blank text removes it. */
+    fun onSetExerciseNote(note: String) {
+        val state = uiState.value as? ActiveWorkoutUiState.Success ?: return
+        viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
+            workoutRepository.setExerciseNote(state.exercise.workoutExerciseId, note)
+        }
+    }
+
     fun onPreviousExercise() = goToExercise(offset = -1)
 
     fun onNextExercise() = goToExercise(offset = 1)
@@ -337,7 +352,10 @@ class ActiveWorkoutViewModel(
     private fun observeLastTimes() = workoutRepository.observeWorkout(workoutId)
         .map { workout -> workout?.exercises?.map { it.exercise.id }?.toSet().orEmpty() }
         .distinctUntilChanged()
-        .map { exerciseIds -> exerciseIds.associateWith { workoutRepository.lastTimeSets(it) } }
+        .map { exerciseIds ->
+            exerciseIds.associateWith { workoutRepository.lastTimeSets(it) } to
+                exerciseIds.associateWith { workoutRepository.lastTimeNote(it) }
+        }
 
     private suspend fun showMessage(@StringRes messageRes: Int) {
         _events.send(ActiveWorkoutEvent.ShowMessage(messageRes))
