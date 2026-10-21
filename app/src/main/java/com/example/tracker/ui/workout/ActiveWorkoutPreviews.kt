@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.SetImprovement
+import com.example.tracker.domain.workout.RestKind
 import com.example.tracker.ui.common.SetValueUi
 import com.example.tracker.ui.theme.TrackerTheme
 import java.time.Instant
@@ -37,6 +38,14 @@ private val previewState = ActiveWorkoutUiState.Success(
 @Composable
 private fun ActiveWorkoutScreenPreview() {
     TrackerTheme { ActiveWorkoutScreen(uiState = previewState, actions = ActiveWorkoutActions()) }
+}
+
+@Preview(name = "Resting", showBackground = true, heightDp = 844)
+@Preview(name = "Resting dark", showBackground = true, heightDp = 844, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ActiveWorkoutRestingPreview() {
+    val rest = RestUi(RestKind.BETWEEN_SETS, endsAt = Instant.now().plusSeconds(75), totalSeconds = 90)
+    TrackerTheme { ActiveWorkoutScreen(uiState = previewState.copy(rest = rest), actions = ActiveWorkoutActions()) }
 }
 
 @Preview(name = "All sets done, last exercise", showBackground = true, heightDp = 844)

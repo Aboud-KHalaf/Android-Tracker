@@ -32,6 +32,13 @@ sealed interface ActiveWorkoutUiState {
     ) : ActiveWorkoutUiState {
         /** Every set of the current exercise is completed. */
         val allSetsDone: Boolean get() = sets.none { it is SetRowUi.Active || it is SetRowUi.Upcoming }
+
+        /** Something is being timed (a hold or a rest), so the display should stay on. */
+        val isTiming: Boolean
+            get() = rest != null || sets.any { row ->
+                val editor = (row as? SetRowUi.Active)?.editor
+                editor is SetEditorUi.Duration && editor.isRunning
+            }
     }
 }
 

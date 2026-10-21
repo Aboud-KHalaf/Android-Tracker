@@ -19,10 +19,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -55,7 +53,6 @@ fun DurationEditor(
 ) {
     val now = rememberTickingNow(ticking = editor.isRunning, intervalMillis = TIMER_TICK_MILLIS)
     val seconds = editor.secondsAt(now)
-    KeepScreenOn(editor.isRunning)
 
     Column(verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)) {
         Row(
@@ -129,15 +126,5 @@ private fun AdjustButton(label: String, description: String, onClick: () -> Unit
             .semantics { contentDescription = description },
     ) {
         Text(label, style = MaterialTheme.typography.labelLarge)
-    }
-}
-
-/** Keeps the display on while a hold is being timed. */
-@Composable
-private fun KeepScreenOn(enabled: Boolean) {
-    val view = LocalView.current
-    DisposableEffect(view, enabled) {
-        view.keepScreenOn = enabled
-        onDispose { view.keepScreenOn = false }
     }
 }

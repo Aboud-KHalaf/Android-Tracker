@@ -1,7 +1,11 @@
 package com.example.tracker.ui.workout
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -55,6 +59,9 @@ import com.example.tracker.ui.workout.components.DoneSetRow
 import com.example.tracker.ui.workout.components.DurationEditorActions
 import com.example.tracker.ui.workout.components.ExerciseHeader
 import com.example.tracker.ui.workout.components.FinishWorkoutDialog
+import com.example.tracker.ui.workout.components.KeepScreenOn
+import com.example.tracker.ui.workout.components.RestTimerActions
+import com.example.tracker.ui.workout.components.RestTimerBar
 import com.example.tracker.ui.workout.components.UpcomingSetRow
 import com.example.tracker.ui.workout.components.WeightRepsEditorActions
 import com.example.tracker.ui.workout.components.WorkoutFooter
@@ -121,6 +128,7 @@ fun ActiveWorkoutRoute(
             onRemoveActiveSet = viewModel::onRemoveActiveSet,
             onSelectSet = viewModel::onSelectSet,
             onAddSet = viewModel::onAddSet,
+            rest = RestTimerActions(onAdjust = viewModel::onAdjustRest, onEnd = viewModel::onEndRest),
             onPreviousExercise = viewModel::onPreviousExercise,
             onNextExercise = viewModel::onNextExercise,
             onRetry = viewModel::onRetry,
@@ -141,6 +149,7 @@ data class ActiveWorkoutActions(
     val onRemoveActiveSet: () -> Unit = {},
     val onSelectSet: (setId: String) -> Unit = {},
     val onAddSet: () -> Unit = {},
+    val rest: RestTimerActions = RestTimerActions(),
     val onPreviousExercise: () -> Unit = {},
     val onNextExercise: () -> Unit = {},
     val onRetry: () -> Unit = {},
@@ -165,6 +174,8 @@ fun ActiveWorkoutScreen(
         }
     }
 
+    KeepScreenOn(success?.isTiming == true)
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -182,14 +193,26 @@ fun ActiveWorkoutScreen(
         },
         bottomBar = {
             if (success != null) {
-                WorkoutFooter(
-                    hasPrevious = success.previousExerciseName != null,
-                    nextExerciseName = success.nextExerciseName,
-                    isFinishing = success.isFinishing,
-                    onPrevious = actions.onPreviousExercise,
-                    onNext = actions.onNextExercise,
-                    onFinish = requestFinish,
-                )
+                Column {
+                    // Keeps the last rest while it slides away, since the state drops it at once.
+                    var shownRest by remember { mutableStateOf(success.rest) }
+                    if (success.rest != null) shownRest = success.rest
+                    AnimatedVisibility(
+                        visible = success.rest != null,
+                        enter = expandVertically(),
+                        exit = shrinkVertically(),
+                    ) {
+                        shownRest?.let { RestTimerBar(it, actions.rest) }
+                    }
+                    WorkoutFooter(
+                        hasPrevious = success.previousExerciseName != null,
+                        nextExerciseName = success.nextExerciseName,
+                        isFinishing = success.isFinishing,
+                        onPrevious = actions.onPreviousExercise,
+                        onNext = actions.onNextExercise,
+                        onFinish = requestFinish,
+                    )
+                }
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
