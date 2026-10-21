@@ -45,6 +45,11 @@ private fun HistoryScreenPreview() {
 @Composable
 private fun HistoryScreenEmptyPreview() {
     TrackerTheme {
-        HistoryScreen(uiState = previewState.copy(selectedPlanId = "legs", months = emptyList()), onSelectPlan = {}, onRetry = {}, onBack = {})
+        HistoryScreen(
+            uiState = previewState.copy(selectedPlanId = "legs", months = emptyList()),
+            onSelectPlan = {},
+            onRetry = {},
+            onBack = {},
+        )
     }
 }

@@ -32,7 +32,13 @@ private val Transitions.isTabSwitch: Boolean
         TopLevelDestination.of(targetState.destination) != null
 
 private fun fadeThroughIn(): EnterTransition =
-    fadeIn(tween(Motion.DurationMedium - FADE_THROUGH_OUT_DURATION, delayMillis = FADE_THROUGH_OUT_DURATION, easing = Motion.EmphasizedDecelerate)) +
+    fadeIn(
+        tween(
+            durationMillis = Motion.DurationMedium - FADE_THROUGH_OUT_DURATION,
+            delayMillis = FADE_THROUGH_OUT_DURATION,
+            easing = Motion.EmphasizedDecelerate,
+        ),
+    ) +
         scaleIn(
             animationSpec = tween(Motion.DurationMedium, easing = Motion.EmphasizedDecelerate),
             initialScale = FADE_THROUGH_SCALE,

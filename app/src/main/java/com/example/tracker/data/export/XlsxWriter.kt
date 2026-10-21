@@ -129,6 +129,8 @@ class XlsxWriter(private val resolve: (ReportText) -> String) {
 
     companion object {
         private const val MAX_SHEET_NAME = 31
+        private const val SPREADSHEET_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml"
+        private const val LETTERS = 'Z' - 'A' + 1
         private const val MIN_WIDTH = 8
         private const val MAX_WIDTH = 60
         private const val DATE_WIDTH = 12
@@ -178,13 +180,16 @@ class XlsxWriter(private val resolve: (ReportText) -> String) {
             append("""<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">""")
             append("""<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>""")
             append("""<Default Extension="xml" ContentType="application/xml"/>""")
-            append("""<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>""")
-            append("""<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>""")
+            append(contentOverride("/xl/workbook.xml", "$SPREADSHEET_TYPE.sheet.main+xml"))
+            append(contentOverride("/xl/styles.xml", "$SPREADSHEET_TYPE.styles+xml"))
             for (i in 1..sheetCount) {
-                append("""<Override PartName="/xl/worksheets/sheet$i.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>""")
+                append(contentOverride("/xl/worksheets/sheet$i.xml", "$SPREADSHEET_TYPE.worksheet+xml"))
             }
             append("</Types>")
         }
+
+        private fun contentOverride(partName: String, contentType: String) =
+            """<Override PartName="$partName" ContentType="$contentType"/>"""
 
         private fun workbook(names: List<String>) = buildString {
             append(XML_HEADER)
@@ -228,9 +233,9 @@ class XlsxWriter(private val resolve: (ReportText) -> String) {
             var n = index + 1
             val name = StringBuilder()
             while (n > 0) {
-                val rem = (n - 1) % 26
+                val rem = (n - 1) % LETTERS
                 name.insert(0, 'A' + rem)
-                n = (n - 1) / 26
+                n = (n - 1) / LETTERS
             }
             return name.toString()
         }

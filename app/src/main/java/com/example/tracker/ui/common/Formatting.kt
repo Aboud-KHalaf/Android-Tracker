@@ -16,6 +16,10 @@ import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 
+private const val SECONDS_PER_MINUTE = 60
+private const val MINUTES_PER_HOUR = 60
+private const val SECONDS_PER_HOUR = 3_600
+
 /** The locale of the current configuration, so text updates when the user changes language. */
 @Composable
 @ReadOnlyComposable
@@ -28,14 +32,14 @@ fun formatWeight(kg: Double, locale: Locale): String =
 
 /** "0:45", "1:05". */
 fun formatClock(totalSeconds: Int): String =
-    "%d:%02d".format(Locale.ROOT, totalSeconds / 60, totalSeconds % 60)
+    "%d:%02d".format(Locale.ROOT, totalSeconds / SECONDS_PER_MINUTE, totalSeconds % SECONDS_PER_MINUTE)
 
 /** "55 min" or "2 h 35 min". */
 @Composable
 @ReadOnlyComposable
 fun formatDuration(duration: Duration): String {
     val hours = duration.toHours().toInt()
-    val minutes = duration.toMinutes().toInt() % 60
+    val minutes = duration.toMinutes().toInt() % MINUTES_PER_HOUR
     return if (hours > 0) {
         stringResource(R.string.duration_hours_minutes, hours, minutes)
     } else {
@@ -47,8 +51,8 @@ fun formatDuration(duration: Duration): String {
 @Composable
 @ReadOnlyComposable
 fun formatRestTime(totalSeconds: Int): String {
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
+    val minutes = totalSeconds / SECONDS_PER_MINUTE
+    val seconds = totalSeconds % SECONDS_PER_MINUTE
     return when {
         totalSeconds <= 0 -> stringResource(R.string.rest_time_off)
         minutes == 0 -> stringResource(R.string.rest_time_seconds, seconds)
@@ -92,9 +96,9 @@ fun LocalDate.dateWithYear(locale: Locale): String =
 
 /** Workout clock: "24:13", or "1:05:09" from an hour on. */
 fun formatElapsed(totalSeconds: Long): String {
-    val hours = totalSeconds / 3600
-    val minutes = totalSeconds % 3600 / 60
-    val seconds = totalSeconds % 60
+    val hours = totalSeconds / SECONDS_PER_HOUR
+    val minutes = totalSeconds % SECONDS_PER_HOUR / SECONDS_PER_MINUTE
+    val seconds = totalSeconds % SECONDS_PER_MINUTE
     return if (hours > 0) {
         "%d:%02d:%02d".format(Locale.ROOT, hours, minutes, seconds)
     } else {

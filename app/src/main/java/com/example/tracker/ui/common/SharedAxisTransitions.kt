@@ -26,7 +26,13 @@ private fun slideOffset(fullWidth: Int) = (fullWidth * SHARED_AXIS_OFFSET).round
 fun sharedAxisXIn(forward: Boolean): EnterTransition =
     slideInHorizontally(tween(Motion.DurationLong, easing = Motion.Emphasized)) {
         if (forward) slideOffset(it) else -slideOffset(it)
-    } + fadeIn(tween(Motion.DurationMedium, delayMillis = Motion.DurationLong - Motion.DurationMedium, easing = Motion.EmphasizedDecelerate))
+    } + fadeIn(
+        tween(
+            durationMillis = Motion.DurationMedium,
+            delayMillis = Motion.DurationLong - Motion.DurationMedium,
+            easing = Motion.EmphasizedDecelerate,
+        ),
+    )
 
 /** Content leaving: to the left going [forward], to the right going back. */
 fun sharedAxisXOut(forward: Boolean): ExitTransition =

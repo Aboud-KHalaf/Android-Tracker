@@ -66,7 +66,11 @@ fun StatSuggestionsCard(
                         onClick = { onPick(template) },
                         label = { Text(name) },
                         leadingIcon = {
-                            Icon(template.icon.imageVector, contentDescription = null, modifier = Modifier.size(AssistChipDefaults.IconSize))
+                            Icon(
+                                template.icon.imageVector,
+                                contentDescription = null,
+                                modifier = Modifier.size(AssistChipDefaults.IconSize),
+                            )
                         },
                     )
                 }

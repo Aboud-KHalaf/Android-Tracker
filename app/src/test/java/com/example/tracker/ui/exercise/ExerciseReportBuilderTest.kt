@@ -63,7 +63,10 @@ class ExerciseReportBuilderTest {
         )
         val sets = report.sections[2].table!!
         assertEquals(3, sets.rows.size)
-        assertEquals(listOf(ReportCell.Date(LocalDate.of(2026, 9, 5)), numberCell(1), numberCell(45.0, 1), numberCell(10)), sets.rows.first())
+        assertEquals(
+            listOf(ReportCell.Date(LocalDate.of(2026, 9, 5)), numberCell(1), numberCell(45.0, 1), numberCell(10)),
+            sets.rows.first(),
+        )
     }
 
     @Test
@@ -73,7 +76,10 @@ class ExerciseReportBuilderTest {
         val report = builder.build(plank, sessions, metric = null, TimeRange.ALL, now)
 
         assertEquals(4, report.sections[1].table!!.headers.size)
-        assertEquals(listOf(ReportCell.Date(LocalDate.of(2026, 8, 8)), numberCell(1), numberCell(60)), report.sections[2].table!!.rows.last())
+        assertEquals(
+            listOf(ReportCell.Date(LocalDate.of(2026, 8, 8)), numberCell(1), numberCell(60)),
+            report.sections[2].table!!.rows.last(),
+        )
     }
 
     @Test

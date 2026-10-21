@@ -140,7 +140,11 @@ fun ExerciseDetailsScreen(
                                 text = {
                                     Text(
                                         stringResource(
-                                            if (option == ExerciseTab.PROGRESS) R.string.exercise_tab_progress else R.string.exercise_tab_history,
+                                            if (option == ExerciseTab.PROGRESS) {
+                                                R.string.exercise_tab_progress
+                                            } else {
+                                                R.string.exercise_tab_history
+                                            },
                                         ),
                                     )
                                 },
@@ -215,7 +219,9 @@ private fun LazyListScope.progressTab(
                 metrics = state.metrics,
                 selected = state.metric,
                 onSelect = actions.onSelectMetric,
-                modifier = Modifier.padding(start = MaterialTheme.spacing.lg, end = MaterialTheme.spacing.lg, top = MaterialTheme.spacing.lg),
+                modifier = Modifier
+                    .padding(horizontal = MaterialTheme.spacing.lg)
+                    .padding(top = MaterialTheme.spacing.lg),
             )
         }
     }
@@ -259,7 +265,9 @@ private fun LazyListScope.progressTab(
                 personalBest = best,
                 sessionCount = state.sessionCount,
                 firstSessionOn = firstSession,
-                modifier = Modifier.padding(start = MaterialTheme.spacing.lg, end = MaterialTheme.spacing.lg, top = MaterialTheme.spacing.xl),
+                modifier = Modifier
+                    .padding(horizontal = MaterialTheme.spacing.lg)
+                    .padding(top = MaterialTheme.spacing.xl),
             )
         }
     }

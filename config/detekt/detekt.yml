@@ -36,7 +36,11 @@ style:
     ignoreAnnotated: ["Composable", "Preview"]
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
-    excludes: ["**/test/**", "**/androidTest/**", "**/ui/theme/**"]
+    # Enum values like THREE(3) and ranges like 200..299 already say what the number means.
+    ignoreEnums: true
+    ignoreRanges: true
+    # Migrations name schema versions and SQLite bind positions, which are clearer as numbers.
+    excludes: ["**/test/**", "**/androidTest/**", "**/ui/theme/**", "**/data/local/*Migration.kt"]
   UnusedPrivateMember:
     # Previews are only used by the IDE.
     ignoreAnnotated: ["Preview"]

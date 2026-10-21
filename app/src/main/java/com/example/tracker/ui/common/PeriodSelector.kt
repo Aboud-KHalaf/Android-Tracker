@@ -78,7 +78,9 @@ fun PeriodSelector(
                     },
                 )
             },
-            leadingIcon = { Icon(Icons.Outlined.DateRange, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize)) },
+            leadingIcon = {
+                Icon(Icons.Outlined.DateRange, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize))
+            },
         )
     }
 

@@ -18,7 +18,9 @@ sealed interface DatePeriod {
 
     /** The 30 days ending today. */
     data object Last30Days : DatePeriod {
-        override fun start(today: LocalDate): LocalDate = today.minusDays(29)
+        private const val DAYS = 30L
+
+        override fun start(today: LocalDate): LocalDate = today.minusDays(DAYS - 1)
         override fun end(today: LocalDate): LocalDate = today
     }
 
