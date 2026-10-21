@@ -1,6 +1,7 @@
 package com.example.tracker.ui.exercise
 
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.domain.progress.ProgressMetric
 import com.example.tracker.domain.progress.TimeRange
 import com.example.tracker.ui.common.SetValueUi
@@ -18,6 +19,7 @@ sealed interface ExerciseDetailsUiState {
     data class Success(
         val name: String,
         val type: ExerciseType,
+        val muscleGroup: MuscleGroup? = null,
         /** Metrics this exercise can be charted by; a picker is shown when there are several. */
         val metrics: List<ProgressMetric>,
         val metric: ProgressMetric,

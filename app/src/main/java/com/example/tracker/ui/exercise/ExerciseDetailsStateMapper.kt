@@ -34,6 +34,7 @@ internal class ExerciseDetailsStateMapper(private val zone: ZoneId) {
         return ExerciseDetailsUiState.Success(
             name = exercise.name,
             type = exercise.type,
+            muscleGroup = exercise.muscleGroup,
             metrics = metrics,
             metric = metric,
             range = range,

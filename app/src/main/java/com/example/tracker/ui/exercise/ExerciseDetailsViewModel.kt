@@ -13,6 +13,7 @@ import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.export.ExportFormat
 import com.example.tracker.domain.export.ReportExporter
 import com.example.tracker.domain.export.exportFileName
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.domain.progress.ProgressMetric
 import com.example.tracker.domain.progress.TimeRange
 import com.example.tracker.domain.repository.ExerciseRepository
@@ -87,6 +88,15 @@ class ExerciseDetailsViewModel(
             onError = { _events.send(ExerciseDetailsEvent.ShowMessage(R.string.exercise_error_rename)) },
         ) {
             exerciseRepository.renameExercise(exerciseId, trimmed)
+        }
+    }
+
+    /** Sets the body part the exercise trains, for the weekly sets per muscle; null clears it. */
+    fun onSetMuscleGroup(group: MuscleGroup?) {
+        viewModelScope.launchCatching(
+            onError = { _events.send(ExerciseDetailsEvent.ShowMessage(R.string.exercise_error_muscle_group)) },
+        ) {
+            exerciseRepository.setMuscleGroup(exerciseId, group)
         }
     }
 
