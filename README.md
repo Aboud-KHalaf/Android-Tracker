@@ -98,7 +98,8 @@ Get the latest APK from the [website](https://aboud-khalaf.github.io/Android-Tra
 | Images | Coil |
 | Storage | Room (with migrations and exported schemas) |
 | Widget | Jetpack Glance |
-| Background | AlarmManager for the daily stats reminder; an ongoing notification for the workout in progress |
+| Health | Health Connect client (read-only: steps, weight, sleep) |
+| Background | AlarmManager for the daily stats reminder and the end of a rest; an ongoing notification for the workout in progress |
 | Dependency injection | Manual (`AppContainer`) |
 | Testing | JUnit, Robolectric, Compose UI tests; device tests for every database migration and the workout journey (`./gradlew connectedDebugAndroidTest`) |
 | Code checks | Android lint and detekt, run in CI (`./gradlew lintDebug detekt`) |
@@ -111,23 +112,28 @@ The app follows **MVVM** with unidirectional data flow:
 ```
 UI (Compose screens)  →  ViewModels (StateFlow UI state)  →  Repositories  →  Room database
                                                                             ↘  wger API (exercise catalog)
-                                                                            ↘  app files (progress photos)
+                                                                            ↘  app files (progress photos, backups)
+                                                                            ↘  Health Connect (optional sync)
 ```
 
 ```
 app/src/main/java/com/example/tracker/
+├── core/        # Time and ID providers
 ├── data/        # Room entities, DAOs, database and repository implementations
+│   ├── backup/  # Zip backup and restore of the database and progress photos
 │   ├── export/  # PDF and Excel (.xlsx) writers for exported reports
+│   ├── health/  # Health Connect data source
 │   └── remote/  # HTTP client and the wger exercise catalog API
 ├── domain/      # Domain models, repository interfaces and business logic
 │                #   (progress, stats, photos, programs, plans, workout sessions,
-│                #    catalog, reminders, export)
+│                #    catalog, reminders, export, health sync, onboarding)
 ├── di/          # AppContainer: manual dependency wiring
 ├── reminder/    # Daily stats reminder: alarms, notification, reboot receiver
-├── workout/     # Workout-in-progress notification and its reboot/update receiver
+├── widget/      # Up next home screen widget (Glance)
+├── workout/     # Workout-in-progress notification, rest alarm and the reboot/update receiver
 └── ui/          # Compose screens and ViewModels, one package per feature
-    ├── home/ program/ plan/ catalog/ workout/ history/ exercise/ exercises/
-    ├── stats/ photos/ settings/ splash/
+    ├── home/ onboarding/ program/ plan/ catalog/ workout/ summary/ history/
+    ├── exercise/ exercises/ stats/ photos/ settings/ health/ splash/
     ├── navigation/ common/
     └── theme/   # Colors, typography, shapes and spacing tokens
 ```
