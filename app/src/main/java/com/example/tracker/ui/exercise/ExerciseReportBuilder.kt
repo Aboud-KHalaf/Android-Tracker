@@ -16,6 +16,7 @@ import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.PersonalBest
+import com.example.tracker.domain.progress.BodyweightLog
 import com.example.tracker.domain.progress.ProgressMetric
 import com.example.tracker.domain.progress.TimeRange
 import com.example.tracker.domain.progress.currentPersonalBest
@@ -38,13 +39,14 @@ internal class ExerciseReportBuilder(private val zone: ZoneId) {
         metric: ProgressMetric?,
         range: TimeRange,
         now: Instant,
+        bodyweight: BodyweightLog? = null,
     ): Report {
-        val metrics = ProgressMetric.forType(exercise.type)
+        val metrics = ProgressMetric.forType(exercise.type, withBodyweight = bodyweight?.isEmpty == false)
         val chosen = metric?.takeIf { it in metrics } ?: metrics.first()
         val ordered = sessions.sortedBy { it.finishedAt }
         val inRange = ordered.filter { range.contains(it.finishedAt, now, zone) }
         val best = currentPersonalBest(ordered)
-        val values = inRange.mapNotNull { chosen.valueOf(it) }
+        val values = inRange.mapNotNull { chosen.valueOf(it, bodyweight?.on(it.finishedAt.toDate())) }
         val unit = text(chosen.unitRes)
         val decimals = chosen.decimals
 
@@ -197,6 +199,7 @@ internal class ExerciseReportBuilder(private val zone: ZoneId) {
     private val ProgressMetric.decimals: Int
         get() = when (this) {
             ProgressMetric.WEIGHT, ProgressMetric.ONE_REP_MAX, ProgressMetric.VOLUME -> WEIGHT_DECIMALS
+            ProgressMetric.RELATIVE_STRENGTH -> RATIO_DECIMALS
             ProgressMetric.REPS, ProgressMetric.HOLD -> 0
         }
 
@@ -206,9 +209,11 @@ internal class ExerciseReportBuilder(private val zone: ZoneId) {
             ProgressMetric.WEIGHT, ProgressMetric.ONE_REP_MAX, ProgressMetric.VOLUME -> R.string.export_unit_kg
             ProgressMetric.REPS -> R.string.export_unit_reps
             ProgressMetric.HOLD -> R.string.export_unit_seconds
+            ProgressMetric.RELATIVE_STRENGTH -> R.string.export_unit_bodyweight
         }
 
     private companion object {
         const val WEIGHT_DECIMALS = 1
+        const val RATIO_DECIMALS = 2
     }
 }

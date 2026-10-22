@@ -12,7 +12,10 @@ import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.common.formatClock
 import com.example.tracker.ui.common.formatNumber
 import com.example.tracker.ui.common.shortDate
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.time.LocalDate
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -29,6 +32,7 @@ internal val ProgressMetric.labelRes: Int
         ProgressMetric.REPS -> R.string.metric_reps
         ProgressMetric.VOLUME -> R.string.metric_volume
         ProgressMetric.HOLD -> R.string.metric_hold
+        ProgressMetric.RELATIVE_STRENGTH -> R.string.metric_relative_strength
     }
 
 /** A value with its unit: "50 kg", "24 reps", "1,250 kg" or "0:50". */
@@ -41,14 +45,23 @@ fun ProgressMetric.valueText(value: Double): String {
             stringResource(R.string.value_kg, number)
         ProgressMetric.REPS -> pluralStringResource(R.plurals.value_reps, value.roundToInt(), number)
         ProgressMetric.HOLD -> formatClock(value.roundToInt())
+        ProgressMetric.RELATIVE_STRENGTH -> stringResource(R.string.value_bodyweight, formatRatio(value, currentLocale()))
     }
 }
+
+/** "1.25": two decimals, so small gains in a bodyweight multiple still show. */
+private fun formatRatio(value: Double, locale: Locale): String =
+    DecimalFormat("0.00", DecimalFormatSymbols.getInstance(locale)).format(value)
 
 /** A y-axis label without the unit: "50", "1,250" or "0:50". */
 @Composable
 @ReadOnlyComposable
 fun ProgressMetric.axisText(value: Double): String =
-    if (this == ProgressMetric.HOLD) formatClock(value.roundToInt()) else formatNumber(value, currentLocale())
+    when (this) {
+        ProgressMetric.HOLD -> formatClock(value.roundToInt())
+        ProgressMetric.RELATIVE_STRENGTH -> formatRatio(value, currentLocale())
+        else -> formatNumber(value, currentLocale())
+    }
 
 /** A signed change: "+10 kg", "−3 reps", "+5 s", or "No change". */
 @Composable
@@ -75,6 +88,7 @@ fun ProgressMetric.sinceText(since: LocalDate): String {
             ProgressMetric.REPS -> R.string.metric_reps_since
             ProgressMetric.VOLUME -> R.string.metric_volume_since
             ProgressMetric.HOLD -> R.string.metric_hold_since
+            ProgressMetric.RELATIVE_STRENGTH -> R.string.metric_relative_strength_since
         },
         date,
     )

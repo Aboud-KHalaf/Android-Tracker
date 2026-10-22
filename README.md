@@ -39,7 +39,7 @@ All data stays on your device, and you don't need an account. When you want your
 ### 📈 Progress
 - **Sets this week by muscle**: working sets per muscle group (chest, back, shoulders, arms, legs, core) this week next to last week. Exercises added from the catalog get their group automatically; set or change it on any exercise
 - A details screen for each exercise, with a progress chart and full history
-- Switch between progress metrics (top set weight, **estimated one-rep max**, reps, volume) and time ranges
+- Switch between progress metrics (top set weight, **estimated one-rep max**, reps, volume) and time ranges; once you log your **Weight** stat, **× BW** charts each top set as a multiple of your bodyweight that day
 - Export an exercise's progress for the selected metric and range as a PDF or Excel file
 
 ### 📊 Stats
