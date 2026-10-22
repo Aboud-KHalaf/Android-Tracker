@@ -404,6 +404,19 @@
     <string name="export_all_title">بيانات Tracker</string>
     <string name="settings_export_all">تصدير كل البيانات</string>
     <string name="settings_export_all_description">احفظ كل التمارين والسجل اليومي والأوزان في ملف PDF أو Excel</string>
+    <string name="settings_backup">نسخ البيانات احتياطيًا</string>
+    <string name="settings_backup_description">احفظ كل شيء، بما فيه صور التقدّم، في ملف واحد تستعيده هنا أو على هاتف آخر</string>
+    <string name="settings_restore">الاستعادة من نسخة احتياطية</string>
+    <string name="settings_restore_description">استبدل البيانات على هذا الجهاز بملف نسخة احتياطية</string>
+    <string name="settings_restore_title">استعادة هذه النسخة الاحتياطية؟</string>
+    <string name="settings_restore_body">ستُستبدل كل التمارين والبرامج وسجل التمارين والإحصاءات وصور التقدّم على هذا الجهاز بما في النسخة الاحتياطية. لا يمكن التراجع عن ذلك.</string>
+    <string name="settings_restore_confirm">استعادة</string>
+    <string name="settings_backup_done">حُفظت النسخة الاحتياطية</string>
+    <string name="settings_restore_done">استُعيدت النسخة الاحتياطية</string>
+    <string name="settings_error_backup">تعذّر حفظ النسخة الاحتياطية. حاول مرة أخرى.</string>
+    <string name="settings_error_restore">تعذّرت استعادة النسخة الاحتياطية. لم تتغيّر بياناتك.</string>
+    <string name="settings_error_restore_invalid">هذا الملف ليس نسخة احتياطية من Tracker، أو أنه تالف. لم تتغيّر بياناتك.</string>
+    <string name="settings_error_restore_newer">هذه النسخة الاحتياطية من إصدار أحدث من Tracker. حدّث التطبيق وحاول مرة أخرى.</string>
 
     <!-- Progress photos -->
     <string name="photos_title">صور التقدّم</string>
