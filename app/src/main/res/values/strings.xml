@@ -210,6 +210,15 @@
     <string name="workout_rpe_help">10: nothing left · 9: 1 more rep · 8: 2 more</string>
     <string name="workout_rpe_value">RPE %1$s</string>
     <string name="set_type_warm_up_description">Not counted in progress or records</string>
+    <string name="plates_action">Plates</string>
+    <string name="plates_title">Plates for %1$s</string>
+    <string name="plates_bar">Bar</string>
+    <string name="plates_each_side">Each side: %1$s</string>
+    <string name="plates_just_bar">Just the bar, no plates</string>
+    <string name="plates_below_bar">Lighter than the bar (%1$s)</string>
+    <string name="plates_missing">%1$s more can\'t be made with standard plates</string>
+    <string name="plates_no_weight">Enter a weight to see its plates</string>
+    <string name="plates_separator">" + "</string>
     <string name="rest_between_sets">Next set in</string>
     <string name="rest_before_exercise">Next exercise in</string>
     <string name="rest_skip">Skip</string>

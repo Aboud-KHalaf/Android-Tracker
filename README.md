@@ -25,6 +25,7 @@ All data stays on your device, and you don't need an account. When you want your
 - Optionally rate each weighted set's effort on the **RPE** scale (6–10), shown next to the set once it's done
 - **Notes**: a note on the whole workout (shown in history) and on each exercise (shown in its progress history and, next time, under the exercise as "Last time")
 - **Supersets**: pair exercises on a training day ("Superset with next"); during the workout, completing a set goes straight to the next exercise of the superset, and the rest comes after each round
+- **Plate calculator**: see which plates go on each side of a 20, 15 or 10 kg bar for the weight you typed
 - Built-in hold timer for timed sets (planks, holds, etc.)
 - Workout history grouped by month, with a filter by training day
 
