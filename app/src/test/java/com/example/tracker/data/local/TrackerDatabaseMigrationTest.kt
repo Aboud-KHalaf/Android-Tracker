@@ -391,4 +391,24 @@ class TrackerDatabaseMigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate13To14_existingExercisesHaveNoMuscleGroup() {
+        helper.createDatabase(DB_NAME, 13).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO exercises (id, name, type, created_at, updated_at, deleted_at, sync_state)
+                VALUES ('e1', 'Bench Press', 'WEIGHT_REPS', 0, 0, NULL, 'SYNCED')
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 14, true).use { db ->
+            db.query("SELECT muscle_group, name FROM exercises WHERE id = 'e1'").use { cursor ->
+                cursor.moveToFirst()
+                assertTrue(cursor.isNull(0))
+                assertEquals("Bench Press", cursor.getString(1))
+            }
+        }
+    }
 }

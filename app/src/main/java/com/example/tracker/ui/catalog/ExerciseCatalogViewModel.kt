@@ -12,6 +12,7 @@ import com.example.tracker.TrackerApplication
 import com.example.tracker.domain.catalog.AddCatalogExerciseToPlan
 import com.example.tracker.domain.model.CatalogExercise
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.PlanRepository
 import com.example.tracker.ui.common.launchCatching
@@ -107,7 +108,7 @@ class ExerciseCatalogViewModel(
         isAdding.value = true
         viewModelScope.launchCatching(onError = { _events.send(ExerciseCatalogEvent.ShowMessage(R.string.catalog_error_add)) }) {
             try {
-                addToPlan(planId, exercise.name, type)
+                addToPlan(planId, exercise.name, type, MuscleGroup.fromCatalogCategory(exercise.category))
                 selectedId.value = null
                 _events.send(ExerciseCatalogEvent.ExerciseAdded(exercise.name))
             } finally {

@@ -32,6 +32,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
+import com.example.tracker.domain.model.MuscleGroup
+import com.example.tracker.ui.exercise.components.MuscleGroupChip
 import com.example.tracker.domain.progress.ProgressMetric
 import com.example.tracker.domain.progress.TimeRange
 import com.example.tracker.ui.common.ErrorContent
@@ -84,6 +86,7 @@ fun ExerciseDetailsRoute(
             onSelectMetric = viewModel::onSelectMetric,
             onSelectRange = viewModel::onSelectRange,
             onRename = viewModel::onRenameExercise,
+            onSetMuscleGroup = viewModel::onSetMuscleGroup,
             onRetry = viewModel::onRetry,
         ),
         modifier = modifier,
@@ -99,6 +102,7 @@ data class ExerciseDetailsActions(
     val onSelectMetric: (ProgressMetric) -> Unit = {},
     val onSelectRange: (TimeRange) -> Unit = {},
     val onRename: (name: String) -> Unit = {},
+    val onSetMuscleGroup: (MuscleGroup?) -> Unit = {},
     val onRetry: () -> Unit = {},
 )
 
@@ -160,6 +164,13 @@ fun ExerciseDetailsScreen(
                             .fillMaxSize(),
                         contentPadding = PaddingValues(bottom = MaterialTheme.spacing.xl),
                     ) {
+                        item(key = "muscle-group") {
+                            MuscleGroupChip(
+                                selected = state.muscleGroup,
+                                onSelect = actions.onSetMuscleGroup,
+                                modifier = Modifier.padding(horizontal = MaterialTheme.spacing.lg),
+                            )
+                        }
                         when {
                             state.sessions.isEmpty() -> item(key = "empty") { NoSessions() }
                             tab == ExerciseTab.PROGRESS -> progressTab(state, actions, onSeeAll = { tab = ExerciseTab.HISTORY })

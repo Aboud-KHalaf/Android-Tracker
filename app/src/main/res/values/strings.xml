@@ -11,6 +11,10 @@
         <item quantity="one">%d exercise</item>
         <item quantity="other">%d exercises</item>
     </plurals>
+    <plurals name="set_count_plain">
+        <item quantity="one">%d set</item>
+        <item quantity="other">%d sets</item>
+    </plurals>
     <plurals name="workout_count">
         <item quantity="one">%d workout</item>
         <item quantity="other">%d workouts</item>
@@ -252,6 +256,19 @@
     <string name="exercise_top_set">Top set %1$s</string>
     <string name="exercise_longest_hold">Longest hold %1$s</string>
     <string name="exercise_pb_badge">PB</string>
+    <string name="exercise_muscle_group">Muscle group: %1$s</string>
+    <string name="muscle_chest">Chest</string>
+    <string name="muscle_back">Back</string>
+    <string name="muscle_shoulders">Shoulders</string>
+    <string name="muscle_arms">Arms</string>
+    <string name="muscle_legs">Legs</string>
+    <string name="muscle_core">Core</string>
+    <string name="muscle_none">No muscle group</string>
+    <string name="exercises_muscle_week_title">Sets this week by muscle</string>
+    <string name="exercises_muscle_week_last">Last week %1$d</string>
+    <string name="exercises_muscle_week_description">%1$s: %2$s this week, %3$s last week</string>
+    <string name="exercises_muscle_week_unassigned">Pick a muscle group on an exercise to count its sets.</string>
+    <string name="exercise_error_muscle_group">Couldn\'t save the muscle group. Try again.</string>
     <string name="exercise_no_sessions_title">No sessions yet</string>
     <string name="exercise_no_sessions_body">Complete a set of this exercise in a workout to see your progress.</string>
     <string name="exercise_no_sessions_in_range">No sessions in this period. Try a longer range.</string>

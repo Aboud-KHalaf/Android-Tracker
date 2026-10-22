@@ -25,7 +25,7 @@ internal fun Long.toInstant(): Instant = Instant.ofEpochMilli(this)
 /** Weekdays are stored as ISO numbers, 1 = Monday. */
 internal fun Int.toDayOfWeek(): DayOfWeek = DayOfWeek.of(this)
 
-internal fun ExerciseEntity.toDomain() = Exercise(id = id, name = name, type = type)
+internal fun ExerciseEntity.toDomain() = Exercise(id = id, name = name, type = type, muscleGroup = muscleGroup)
 
 internal fun PlanSummaryRow.toDomain() = WorkoutPlan(
     id = id,

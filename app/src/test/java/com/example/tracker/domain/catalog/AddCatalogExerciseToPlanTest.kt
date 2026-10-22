@@ -2,6 +2,7 @@ package com.example.tracker.domain.catalog
 
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.testing.FakeExerciseRepository
 import com.example.tracker.testing.FakePlanRepository
 import kotlinx.coroutines.test.runTest
@@ -37,5 +38,25 @@ class AddCatalogExerciseToPlanTest {
     @Test(expected = IllegalArgumentException::class)
     fun blankName_isRejected() = runTest {
         addToPlan("push", " ", ExerciseType.WEIGHT_REPS)
+    }
+
+    @Test
+    fun catalogMuscleGroup_goesOnANewExercise() = runTest {
+        addToPlan("push", "Bench Press", ExerciseType.WEIGHT_REPS, MuscleGroup.CHEST)
+
+        assertEquals(listOf<MuscleGroup?>(MuscleGroup.CHEST), exercises.createdMuscleGroups)
+    }
+
+    @Test
+    fun catalogMuscleGroup_fillsInButNeverReplacesOne() = runTest {
+        exercises.exercises.value = listOf(
+            Exercise("bench", "Bench Press", ExerciseType.WEIGHT_REPS),
+            Exercise("row", "Row", ExerciseType.WEIGHT_REPS, MuscleGroup.BACK),
+        )
+
+        addToPlan("push", "bench press", ExerciseType.WEIGHT_REPS, MuscleGroup.CHEST)
+        addToPlan("push", "row", ExerciseType.WEIGHT_REPS, MuscleGroup.ARMS)
+
+        assertEquals(listOf(MuscleGroup.CHEST, MuscleGroup.BACK), exercises.exercises.value.map { it.muscleGroup })
     }
 }

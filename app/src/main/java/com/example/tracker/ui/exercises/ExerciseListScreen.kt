@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
+import com.example.tracker.ui.exercises.components.MuscleWeekCard
 import com.example.tracker.ui.common.EmptyState
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.IconAvatar
@@ -75,7 +77,7 @@ fun ExerciseListScreen(
                     modifier = Modifier.padding(innerPadding),
                 )
 
-                is ExerciseListUiState.Success -> ExerciseList(state.exercises, onOpenExercise, onOpenHistory, innerPadding)
+                is ExerciseListUiState.Success -> ExerciseList(state.exercises, state.muscleWeek, onOpenExercise, onOpenHistory, innerPadding)
             }
         }
     }
@@ -84,6 +86,7 @@ fun ExerciseListScreen(
 @Composable
 private fun ExerciseList(
     exercises: List<ExerciseItemUi>,
+    muscleWeek: List<MuscleSetsUi>,
     onOpenExercise: (String) -> Unit,
     onOpenHistory: () -> Unit,
     contentPadding: PaddingValues,
@@ -108,6 +111,16 @@ private fun ExerciseList(
                     IconButton(onClick = onOpenHistory) {
                         Icon(Icons.Outlined.History, contentDescription = stringResource(R.string.history_open))
                     }
+                }
+            }
+            if (muscleWeek.isNotEmpty()) {
+                item(key = "muscle-week") {
+                    MuscleWeekCard(
+                        rows = muscleWeek,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = spacing.lg, end = spacing.lg, bottom = spacing.md),
+                    )
                 }
             }
             if (exercises.isEmpty()) {

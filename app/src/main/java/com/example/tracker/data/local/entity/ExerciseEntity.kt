@@ -7,6 +7,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.tracker.data.local.SyncMetadata
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 
 @Entity(
     tableName = "exercises",
@@ -17,4 +18,5 @@ data class ExerciseEntity(
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "type") val type: ExerciseType,
     @Embedded val sync: SyncMetadata,
+    @ColumnInfo(name = "muscle_group") val muscleGroup: MuscleGroup? = null,
 )
