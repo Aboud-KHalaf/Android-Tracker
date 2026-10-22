@@ -25,6 +25,14 @@
         <item quantity="one">%d workout this week</item>
         <item quantity="other">%d workouts this week</item>
     </plurals>
+    <plurals name="home_week_streak">
+        <item quantity="one">%d-week streak</item>
+        <item quantity="other">%d-week streak</item>
+    </plurals>
+    <plurals name="home_days_trained">
+        <item quantity="one">%1$d day trained in the last %2$d weeks</item>
+        <item quantity="other">%1$d days trained in the last %2$d weeks</item>
+    </plurals>
     <plurals name="workout_count">
         <item quantity="one">%d workout</item>
         <item quantity="other">%d workouts</item>
@@ -70,6 +78,10 @@
     <string name="home_resume_workout">Resume workout</string>
     <string name="home_get_started">Get started</string>
     <string name="home_this_week">This week</string>
+    <string name="home_consistency">Consistency</string>
+    <string name="home_no_streak">Train this week to start a streak</string>
+    <string name="home_calendar_less">Less</string>
+    <string name="home_calendar_more">More</string>
     <string name="home_day_trained">%1$s, trained</string>
     <string name="home_day_today">%1$s, today</string>
     <string name="home_new_personal_best">New personal best</string>

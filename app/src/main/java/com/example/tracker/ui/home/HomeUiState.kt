@@ -16,6 +16,7 @@ sealed interface HomeUiState {
         val today: LocalDate,
         val upNext: UpNextUi,
         val week: WeekUi,
+        val consistency: ConsistencyUi = ConsistencyUi(weekStreak = 0, weeks = emptyList()),
         val programs: List<ProgramItemUi>,
         val recentWorkouts: List<WorkoutSummaryUi>,
         /** True while a workout is being started, to disable the start button. */
@@ -55,6 +56,17 @@ data class WeekUi(
     /** The latest personal best set this week, if any. */
     val personalBest: PersonalBestUi?,
 )
+
+/**
+ * The training calendar: [weeks] are columns, oldest first, each Monday to Sunday.
+ * [weekStreak] counts weeks in a row with a workout.
+ */
+data class ConsistencyUi(val weekStreak: Int, val weeks: List<List<CalendarDayUi>>) {
+    val trainedDayCount: Int get() = weeks.sumOf { week -> week.count { it.workoutCount > 0 } }
+}
+
+/** A day of the training calendar; [isFuture] days (later this week) are left blank. */
+data class CalendarDayUi(val date: LocalDate, val workoutCount: Int, val isToday: Boolean, val isFuture: Boolean)
 
 data class WeekDayUi(val dayOfWeek: DayOfWeek, val status: DayStatus)
 
