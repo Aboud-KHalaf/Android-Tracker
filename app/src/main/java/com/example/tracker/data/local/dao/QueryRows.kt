@@ -25,6 +25,7 @@ data class PlanExerciseRow(
     @ColumnInfo(name = "exercise_id") val exerciseId: String,
     @ColumnInfo(name = "exercise_name") val exerciseName: String,
     @ColumnInfo(name = "exercise_type") val exerciseType: ExerciseType,
+    @ColumnInfo(name = "superset_group") val supersetGroup: String?,
 )
 
 /** A workout exercise joined with its exercise. */
@@ -36,6 +37,7 @@ data class WorkoutExerciseRow(
     @ColumnInfo(name = "exercise_name") val exerciseName: String,
     @ColumnInfo(name = "exercise_type") val exerciseType: ExerciseType,
     @ColumnInfo(name = "note") val note: String?,
+    @ColumnInfo(name = "superset_group") val supersetGroup: String?,
 )
 
 /** A finished workout with its exercise count, for history lists. */

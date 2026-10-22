@@ -631,4 +631,51 @@ class ActiveWorkoutViewModelTest {
         assertEquals("Felt fine", state().exercise.note)
         assertEquals("Shoulder tight", state().exercise.lastTimeNote)
     }
+
+    private fun supersetBenchAndIncline() {
+        workouts.activeWorkout.value = workouts.activeWorkout.value!!.let { workout ->
+            workout.copy(exercises = workout.exercises.map { it.copy(supersetGroup = "s") })
+        }
+    }
+
+    @Test
+    fun superset_completingASetGoesToThePartnerWithoutRest() = runTest {
+        supersetBenchAndIncline()
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        assertEquals(listOf("Incline Dumbbell Press"), state().exercise.supersetPartners)
+
+        viewModel.onCompleteSet()
+
+        assertEquals(1, state().exerciseIndex)
+        assertNull(state().rest)
+        assertEquals(listOf("Bench Press"), state().exercise.supersetPartners)
+        assertEquals(1, workouts.activeWorkout.value!!.currentExerciseIndex)
+    }
+
+    @Test
+    fun superset_endOfRoundRestsAndGoesBack() = runTest {
+        supersetBenchAndIncline()
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onCompleteSet()
+
+        viewModel.onCompleteSet()
+
+        assertEquals(0, state().exerciseIndex)
+        assertEquals(RestKind.BETWEEN_SETS, state().rest?.kind)
+    }
+
+    @Test
+    fun superset_undoGoesBackToTheSetsExercise() = runTest {
+        supersetBenchAndIncline()
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onCompleteSet()
+
+        viewModel.onUndoCompleteSet("s2")
+
+        assertEquals(0, state().exerciseIndex)
+        assertEquals("s2", state().active().id)
+    }
 }

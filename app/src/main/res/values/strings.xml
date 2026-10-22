@@ -6,6 +6,7 @@
     <string name="duration_minutes">%1$d min</string>
     <string name="duration_hours_minutes">%1$d h %2$d min</string>
     <string name="separator_dot">" · "</string>
+    <string name="separator_comma">", "</string>
     <plurals name="exercise_count">
         <item quantity="one">%d exercise</item>
         <item quantity="other">%d exercises</item>
@@ -120,6 +121,10 @@
     <string name="workout_exercise_note_edit">Edit note on %1$s</string>
     <string name="workout_last_note">Last time: “%1$s”</string>
     <string name="note_length">%1$d/%2$d</string>
+    <string name="workout_superset_with">Superset with %1$s</string>
+    <string name="plan_superset_label">Superset %1$s</string>
+    <string name="plan_superset_with_next">Superset with next</string>
+    <string name="plan_remove_from_superset">Remove from superset</string>
     <string name="workout_first_time">First time doing this exercise</string>
     <string name="workout_exercise_progress">%1$s progress</string>
     <string name="workout_set_number">Set %1$d</string>

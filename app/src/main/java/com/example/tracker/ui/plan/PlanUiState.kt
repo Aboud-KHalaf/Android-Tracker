@@ -39,7 +39,12 @@ data class PlanExerciseUi(
     val config: ExerciseConfig,
     val canMoveUp: Boolean,
     val canMoveDown: Boolean,
-)
+    /** Its superset's letter ("A" for the day's first superset), or null when it isn't in one. */
+    val supersetLabel: String? = null,
+) {
+    /** The last exercise has nothing after it to pair with. */
+    val canSupersetWithNext: Boolean get() = canMoveDown
+}
 
 data class ExerciseOptionUi(val id: String, val name: String, val type: ExerciseType)
 

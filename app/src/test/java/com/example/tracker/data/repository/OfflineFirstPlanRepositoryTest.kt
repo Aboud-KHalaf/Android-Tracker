@@ -162,4 +162,75 @@ class OfflineFirstPlanRepositoryTest {
         val a = plans.observePlan(planId).first()!!.exercises.single()
         plans.updateExerciseConfig(a.id, ExerciseConfig(targetSets = 0))
     }
+
+    /** Each exercise's superset as a letter in order of appearance, "-" for none: "AA-BB". */
+    private suspend fun supersets(planId: String): String {
+        val groups = plans.observePlan(planId).first()!!.exercises.map { it.supersetGroup }
+        val letters = groups.filterNotNull().distinct().withIndex().associate { (i, group) -> group to 'A' + i }
+        return groups.joinToString("") { group -> letters[group]?.toString() ?: "-" }
+    }
+
+    private suspend fun exerciseIds(planId: String) = plans.observePlan(planId).first()!!.exercises.map { it.id }
+
+    @Test
+    fun supersetWithNext_pairsAndThenGrowsTheSuperset() = runTest {
+        val planId = pushDayWith("A", "B", "C", "D")
+        val ids = exerciseIds(planId)
+
+        plans.supersetWithNext(ids[0])
+        assertEquals("AA--", supersets(planId))
+
+        plans.supersetWithNext(ids[1])
+        assertEquals("AAA-", supersets(planId))
+    }
+
+    @Test
+    fun supersetWithNext_joinsTwoSupersets() = runTest {
+        val planId = pushDayWith("A", "B", "C", "D")
+        val ids = exerciseIds(planId)
+        plans.supersetWithNext(ids[0])
+        plans.supersetWithNext(ids[2])
+        assertEquals("AABB", supersets(planId))
+
+        plans.supersetWithNext(ids[1])
+
+        assertEquals("AAAA", supersets(planId))
+    }
+
+    @Test
+    fun supersetWithNext_lastExercise_doesNothing() = runTest {
+        val planId = pushDayWith("A", "B")
+
+        plans.supersetWithNext(exerciseIds(planId)[1])
+
+        assertEquals("--", supersets(planId))
+    }
+
+    @Test
+    fun removeFromSuperset_middleSplitsIt_andALoneExerciseLeavesToo() = runTest {
+        val planId = pushDayWith("A", "B", "C", "D")
+        val ids = exerciseIds(planId)
+        plans.supersetWithNext(ids[0])
+        plans.supersetWithNext(ids[1])
+        plans.supersetWithNext(ids[2])
+        assertEquals("AAAA", supersets(planId))
+
+        plans.removeFromSuperset(ids[1])
+
+        assertEquals("--AA", supersets(planId))
+    }
+
+    @Test
+    fun startWorkout_copiesSupersets() = runTest {
+        val planId = pushDayWith("A", "B", "C")
+        plans.supersetWithNext(exerciseIds(planId)[0])
+        val workouts = OfflineFirstWorkoutRepository(database, time, ids)
+
+        val workout = workouts.observeWorkout(workouts.startWorkout(planId)).first()!!
+
+        val groups = workout.exercises.sortedBy { it.position }.map { it.supersetGroup }
+        assertEquals(groups[0], groups[1])
+        assertEquals(true, groups[0] != null)
+        assertEquals(null, groups[2])
+    }
 }

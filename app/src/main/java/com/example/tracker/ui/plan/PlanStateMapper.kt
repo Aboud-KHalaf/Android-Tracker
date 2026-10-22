@@ -5,6 +5,7 @@ import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.WorkoutSet
+import com.example.tracker.domain.workout.Supersets
 import com.example.tracker.ui.common.toSetValue
 import java.time.ZoneId
 
@@ -13,6 +14,11 @@ internal data class EditTarget(val planExerciseId: String, val lastRecorded: Lis
 
 /** Maps domain data to [PlanUiState]. Pure, so it can be tested without a ViewModel. */
 internal class PlanStateMapper(private val zone: ZoneId) {
+    private companion object {
+        /** Supersets are lettered A to Z, then start again. */
+        const val LETTERS = 26
+    }
+
 
     fun map(
         details: PlanDetails?,
@@ -24,6 +30,9 @@ internal class PlanStateMapper(private val zone: ZoneId) {
         if (details == null) return PlanUiState.NotFound
         val lastIndex = details.exercises.lastIndex
         val inPlan = details.exercises.map { it.exercise.id }.toSet()
+        val supersetLabels = Supersets.runs(details.exercises.map { it.supersetGroup })
+            .flatMapIndexed { number, run -> run.map { it to ('A' + number % LETTERS).toString() } }
+            .toMap()
         val edited = editing?.let { target -> details.exercises.firstOrNull { it.id == target.planExerciseId } }
         return PlanUiState.Success(
             name = details.name,
@@ -38,6 +47,7 @@ internal class PlanStateMapper(private val zone: ZoneId) {
                     config = planExercise.config,
                     canMoveUp = index > 0,
                     canMoveDown = index < lastIndex,
+                    supersetLabel = supersetLabels[index],
                 )
             },
             availableExercises = library

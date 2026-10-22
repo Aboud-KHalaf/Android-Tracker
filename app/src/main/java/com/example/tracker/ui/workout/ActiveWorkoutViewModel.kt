@@ -16,7 +16,7 @@ import com.example.tracker.domain.model.SetType
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.domain.workout.RestAlarm
-import com.example.tracker.domain.workout.restAfterCompleting
+import com.example.tracker.domain.workout.afterCompleting
 import com.example.tracker.domain.workout.resumeExerciseIndex
 import com.example.tracker.ui.common.SetValueUi
 import com.example.tracker.ui.common.launchCatching
@@ -136,18 +136,28 @@ class ActiveWorkoutViewModel(
             workoutRepository.completeSet(active.id)
             draft.value = null
             selection.update { it.copy(setId = null) }
-            startRestAfter(active.id)
+            continueAfter(active.id)
             _events.send(ActiveWorkoutEvent.SetCompleted(active.id, active.number, active.type))
         }
     }
 
-    /** Undoes [onCompleteSet]: the set becomes active again, and its rest is dropped. */
+    /**
+     * Undoes [onCompleteSet]: the set becomes active again, and its rest is dropped. In a
+     * superset the screen may have moved on, so it goes back to the set's exercise.
+     */
     fun onUndoCompleteSet(setId: String) {
-        val row = currentSets().firstOrNull { it.id == setId } as? SetRowUi.Done
         rest.value = null
         viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
             saveDraft()
-            reopen(setId, row)
+            val ordered = workoutRepository.observeWorkout(workoutId).first()?.exercises?.sortedBy { it.position }
+            val index = ordered?.indexOfFirst { exercise -> exercise.sets.any { it.id == setId } } ?: -1
+            val current = (uiState.value as? ActiveWorkoutUiState.Success)?.exerciseIndex
+            if (index >= 0 && index != current) {
+                selection.value = WorkoutSelection(exerciseIndex = index)
+                workoutRepository.setCurrentExercise(workoutId, index)
+            }
+            val set = ordered?.getOrNull(index)?.sets?.firstOrNull { it.id == setId }
+            reopen(setId, set?.durationSeconds?.let(SetValueUi::Hold))
         }
     }
 
@@ -157,7 +167,7 @@ class ActiveWorkoutViewModel(
         if (row is SetRowUi.Active) return
         viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
             saveDraft()
-            if (row is SetRowUi.Done) reopen(setId, row) else selection.update { it.copy(setId = setId) }
+            if (row is SetRowUi.Done) reopen(setId, row.value as? SetValueUi.Hold) else selection.update { it.copy(setId = setId) }
         }
     }
 
@@ -292,16 +302,23 @@ class ActiveWorkoutViewModel(
         }
     }
 
-    /** Starts the rest that follows completing [setId], or clears the last one if none follows. */
-    private suspend fun startRestAfter(setId: String) {
-        val workout = workoutRepository.observeWorkout(workoutId).first()
-        val period = workout?.restAfterCompleting(setId, settingsRepository.restTimes.value)
-        rest.value = period?.let { RestUi(it.kind, time.now().plusSeconds(it.seconds.toLong()), it.seconds) }
+    /**
+     * Starts the rest that follows completing [setId] (or clears the last one if none follows)
+     * and, in a superset, moves on to the next exercise of the round.
+     */
+    private suspend fun continueAfter(setId: String) {
+        val workout = workoutRepository.observeWorkout(workoutId).first() ?: return
+        val after = workout.afterCompleting(setId, settingsRepository.restTimes.value)
+        rest.value = after.rest?.let { RestUi(it.kind, time.now().plusSeconds(it.seconds.toLong()), it.seconds) }
+        val next = after.exerciseIndex ?: return
+        if (next != selection.value.exerciseIndex) {
+            selection.value = WorkoutSelection(exerciseIndex = next)
+            workoutRepository.setCurrentExercise(workoutId, next)
+        }
     }
 
     /** Makes a completed set active again; a hold continues from its recorded time. */
-    private suspend fun reopen(setId: String, row: SetRowUi.Done?) {
-        val hold = row?.value as? SetValueUi.Hold
+    private suspend fun reopen(setId: String, hold: SetValueUi.Hold?) {
         if (hold != null) draft.value = SetDraft.Hold(setId, hold.seconds, runningSince = null)
         selection.update { it.copy(setId = setId) }
         workoutRepository.reopenSet(setId)

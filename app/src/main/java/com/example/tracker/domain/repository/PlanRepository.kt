@@ -33,6 +33,15 @@ interface PlanRepository {
     suspend fun removeExercise(planExerciseId: String)
     suspend fun restoreExercise(planExerciseId: String)
 
+    /**
+     * Makes the exercise and the one after it a superset, joining any superset either is
+     * already in. Does nothing for the last exercise.
+     */
+    suspend fun supersetWithNext(planExerciseId: String)
+
+    /** Takes the exercise out of its superset; a superset left with one exercise ends. */
+    suspend fun removeFromSuperset(planExerciseId: String)
+
     /** Moves the exercise at [fromIndex] to [toIndex] in the plan's current order. */
     suspend fun moveExercise(planId: String, fromIndex: Int, toIndex: Int)
 }

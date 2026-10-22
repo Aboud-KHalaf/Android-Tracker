@@ -54,7 +54,7 @@ interface WorkoutDao {
 
     @Query(
         """
-        SELECT we.id, we.workout_id, we.position, we.note,
+        SELECT we.id, we.workout_id, we.position, we.note, we.superset_group,
             e.id AS exercise_id, e.name AS exercise_name, e.type AS exercise_type
         FROM workout_exercises we
         JOIN exercises e ON e.id = we.exercise_id

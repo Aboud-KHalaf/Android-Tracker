@@ -95,6 +95,7 @@ class OfflineFirstWorkoutRepository(
                 workoutId = workoutId,
                 exerciseId = planExercise.exerciseId,
                 position = index,
+                supersetGroup = planExercise.supersetGroup,
                 sync = SyncMetadata.created(now),
             )
             val lastTime = workoutDao.lastCompletedSets(planExercise.exerciseId)

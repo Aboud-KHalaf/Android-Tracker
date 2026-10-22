@@ -370,4 +370,25 @@ class TrackerDatabaseMigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate12To13_existingExercisesAreInNoSuperset() {
+        helper.createDatabase(DB_NAME, 12).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO plan_exercises (id, plan_id, exercise_id, position, target_sets,
+                    created_at, updated_at, deleted_at, sync_state)
+                VALUES ('pe1', 'p1', 'e1', 0, 3, 0, 0, NULL, 'SYNCED')
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 13, true).use { db ->
+            db.query("SELECT superset_group, target_sets FROM plan_exercises WHERE id = 'pe1'").use { cursor ->
+                cursor.moveToFirst()
+                assertTrue(cursor.isNull(0))
+                assertEquals(3, cursor.getInt(1))
+            }
+        }
+    }
 }

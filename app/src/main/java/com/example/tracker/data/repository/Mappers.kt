@@ -46,6 +46,7 @@ internal fun PlanExerciseRow.toDomain() = PlanExercise(
         targetWeightKg = targetWeightKg,
         targetDurationSeconds = targetDurationSeconds,
     ),
+    supersetGroup = supersetGroup,
 )
 
 internal fun WorkoutSetEntity.toDomain() = WorkoutSet(
@@ -79,6 +80,7 @@ internal fun WorkoutEntity.toDomain(
                 position = row.position,
                 sets = setsByExercise[row.id].orEmpty().map { it.toDomain() },
                 note = row.note,
+                supersetGroup = row.supersetGroup,
             )
         },
     )

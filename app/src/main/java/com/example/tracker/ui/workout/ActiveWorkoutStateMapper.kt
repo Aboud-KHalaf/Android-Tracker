@@ -5,6 +5,7 @@ import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutExercise
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.progress.improvementOver
+import com.example.tracker.domain.workout.Supersets
 import com.example.tracker.domain.workout.resumeExerciseIndex
 import com.example.tracker.ui.common.SetValueUi
 import com.example.tracker.ui.common.toSetValue
@@ -60,6 +61,9 @@ internal object ActiveWorkoutStateMapper {
                 lastTime = lastTime.mapNotNull { it.toSetValue() },
                 note = current.note,
                 lastTimeNote = lastNotes[current.exercise.id],
+                supersetPartners = Supersets.runOf(exercises.map { it.supersetGroup }, index)
+                    .filter { it != index }
+                    .map { exercises[it].exercise.name },
             ),
             sets = numbered(sets).map { (set, number) ->
                 // Last time only holds working sets, so a working set compares with the one in
