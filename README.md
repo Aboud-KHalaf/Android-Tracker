@@ -23,6 +23,7 @@ All data stays on your device, and you don't need an account. When you want your
 - Log weight-and-reps sets during an active workout
 - Mark a set as a **warm-up**, **drop set** or **to failure**; add warm-ups before the working sets with one tap. Warm-ups are numbered apart and left out of progress, records, volume and "last time" comparisons
 - Optionally rate each weighted set's effort on the **RPE** scale (6–10), shown next to the set once it's done
+- **Notes**: a note on the whole workout (shown in history) and on each exercise (shown in its progress history and, next time, under the exercise as "Last time")
 - Built-in hold timer for timed sets (planks, holds, etc.)
 - Workout history grouped by month, with a filter by training day
 

@@ -39,7 +39,7 @@ interface WorkoutDao {
 
     @Query(
         """
-        SELECT w.id, w.plan_id, w.name, w.started_at, w.finished_at,
+        SELECT w.id, w.plan_id, w.name, w.started_at, w.finished_at, w.note,
             (SELECT COUNT(*) FROM workout_exercises we
                 WHERE we.workout_id = w.id AND we.deleted_at IS NULL) AS exercise_count
         FROM workouts w
@@ -54,7 +54,7 @@ interface WorkoutDao {
 
     @Query(
         """
-        SELECT we.id, we.workout_id, we.position,
+        SELECT we.id, we.workout_id, we.position, we.note,
             e.id AS exercise_id, e.name AS exercise_name, e.type AS exercise_type
         FROM workout_exercises we
         JOIN exercises e ON e.id = we.exercise_id
@@ -128,11 +128,24 @@ interface WorkoutDao {
     )
     suspend fun lastCompletedSets(exerciseId: String): List<WorkoutSetEntity>
 
+    /** The note on [exerciseId] in the most recent finished workout that included it, if it has one. */
+    @Query(
+        """
+        SELECT we.note FROM workout_exercises we
+        JOIN workouts w ON w.id = we.workout_id
+        WHERE we.exercise_id = :exerciseId
+            AND we.deleted_at IS NULL AND w.deleted_at IS NULL AND w.finished_at IS NOT NULL
+        ORDER BY w.finished_at DESC LIMIT 1
+        """
+    )
+    suspend fun lastExerciseNote(exerciseId: String): String?
+
     /** All completed working sets (not warm-ups) in finished workouts, optionally for one exercise, oldest first. */
     @Query(
         """
         SELECT w.id AS workout_id, w.finished_at, e.id AS exercise_id, e.type AS exercise_type,
-            s.id AS set_id, s.position, s.weight_kg, s.reps, s.duration_seconds, s.completed_at
+            s.id AS set_id, s.position, s.weight_kg, s.reps, s.duration_seconds, s.completed_at,
+            we.note AS exercise_note
         FROM workout_sets s
         JOIN workout_exercises we ON we.id = s.workout_exercise_id
         JOIN workouts w ON w.id = we.workout_id

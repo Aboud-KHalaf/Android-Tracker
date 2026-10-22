@@ -14,6 +14,7 @@ import com.example.tracker.domain.model.Rpe
 import com.example.tracker.domain.model.SetType
 import com.example.tracker.domain.model.WeekSummary
 import com.example.tracker.domain.model.Workout
+import com.example.tracker.domain.model.WorkoutNote
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.domain.progress.findPersonalBests
@@ -77,6 +78,8 @@ class OfflineFirstWorkoutRepository(
     override suspend fun lastTimeSets(exerciseId: String): List<WorkoutSet> =
         workoutDao.lastCompletedSets(exerciseId).map { it.toDomain() }
 
+    override suspend fun lastTimeNote(exerciseId: String): String? = workoutDao.lastExerciseNote(exerciseId)
+
     override suspend fun startWorkout(planId: String): String = database.withTransaction {
         check(workoutDao.getActive() == null) { "A workout is already in progress" }
         val plan = requireNotNull(planDao.get(planId)) { "Plan $planId not found" }
@@ -131,6 +134,22 @@ class OfflineFirstWorkoutRepository(
         check(workout.finishedAt == null) { "Workout $workoutId is already finished" }
         val now = now()
         workoutDao.upsertWorkouts(listOf(workout.copy(finishedAt = now, sync = workout.sync.touched(now))))
+    }
+
+    override suspend fun setWorkoutNote(workoutId: String, note: String?) {
+        val normalized = WorkoutNote.normalize(note)
+        val workout = requireWorkout(workoutId)
+        if (workout.note == normalized) return
+        workoutDao.upsertWorkouts(listOf(workout.copy(note = normalized, sync = workout.sync.touched(now()))))
+    }
+
+    override suspend fun setExerciseNote(workoutExerciseId: String, note: String?) {
+        val normalized = WorkoutNote.normalize(note)
+        val exercise = requireNotNull(workoutDao.getWorkoutExercise(workoutExerciseId)) {
+            "Workout exercise $workoutExerciseId not found"
+        }
+        if (exercise.note == normalized) return
+        workoutDao.upsertWorkoutExercises(listOf(exercise.copy(note = normalized, sync = exercise.sync.touched(now()))))
     }
 
     override suspend fun setCurrentExercise(workoutId: String, exerciseIndex: Int) {

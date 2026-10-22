@@ -65,4 +65,5 @@ data class SessionRowUi(
     val best: SetValueUi?,
     val sets: List<SetValueUi>,
     val isPersonalBest: Boolean,
+    val note: String? = null,
 )

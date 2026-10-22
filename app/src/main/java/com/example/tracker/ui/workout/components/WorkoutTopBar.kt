@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Notes
+import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -43,6 +45,8 @@ fun WorkoutTopBar(
     isFinishing: Boolean,
     onMinimize: () -> Unit,
     onFinish: () -> Unit,
+    hasNote: Boolean = false,
+    onEditNote: () -> Unit = {},
 ) {
     Column {
         TopAppBar(
@@ -72,6 +76,12 @@ fun WorkoutTopBar(
                 }
             },
             actions = {
+                IconButton(onClick = onEditNote) {
+                    Icon(
+                        if (hasNote) Icons.AutoMirrored.Outlined.Notes else Icons.Outlined.EditNote,
+                        contentDescription = stringResource(R.string.workout_note),
+                    )
+                }
                 FilledTonalButton(
                     onClick = onFinish,
                     enabled = !isFinishing,

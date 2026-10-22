@@ -349,4 +349,25 @@ class TrackerDatabaseMigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate11To12_addsEmptyNotes() {
+        helper.createDatabase(DB_NAME, 11).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO workouts (id, plan_id, name, started_at, finished_at, current_exercise_position,
+                    created_at, updated_at, deleted_at, sync_state)
+                VALUES ('w1', NULL, 'Push', 0, 1, NULL, 0, 0, NULL, 'SYNCED')
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 12, true).use { db ->
+            db.query("SELECT name, note FROM workouts WHERE id = 'w1'").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals("Push", cursor.getString(0))
+                assertTrue(cursor.isNull(1))
+            }
+        }
+    }
 }

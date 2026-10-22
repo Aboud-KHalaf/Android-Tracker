@@ -617,4 +617,18 @@ class ActiveWorkoutViewModelTest {
 
         assertNull(state().active().rpe)
     }
+
+    @Test
+    fun notes_areSavedAndShownWithLastTimesNote() = runTest {
+        workouts.lastNotes["bench"] = "Shoulder tight"
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onSetWorkoutNote("Good session")
+        viewModel.onSetExerciseNote(" Felt fine ")
+
+        assertEquals("Good session", state().workoutNote)
+        assertEquals("Felt fine", state().exercise.note)
+        assertEquals("Shoulder tight", state().exercise.lastTimeNote)
+    }
 }

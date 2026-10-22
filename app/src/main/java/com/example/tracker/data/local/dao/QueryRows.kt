@@ -35,6 +35,7 @@ data class WorkoutExerciseRow(
     @ColumnInfo(name = "exercise_id") val exerciseId: String,
     @ColumnInfo(name = "exercise_name") val exerciseName: String,
     @ColumnInfo(name = "exercise_type") val exerciseType: ExerciseType,
+    @ColumnInfo(name = "note") val note: String?,
 )
 
 /** A finished workout with its exercise count, for history lists. */
@@ -45,6 +46,7 @@ data class WorkoutSummaryRow(
     @ColumnInfo(name = "started_at") val startedAt: Long,
     @ColumnInfo(name = "finished_at") val finishedAt: Long,
     @ColumnInfo(name = "exercise_count") val exerciseCount: Int,
+    @ColumnInfo(name = "note") val note: String?,
 )
 
 /** A completed set in a finished workout, with the context needed for progress stats. */
@@ -59,4 +61,5 @@ data class LoggedSetRow(
     @ColumnInfo(name = "reps") val reps: Int?,
     @ColumnInfo(name = "duration_seconds") val durationSeconds: Int?,
     @ColumnInfo(name = "completed_at") val completedAt: Long,
+    @ColumnInfo(name = "exercise_note") val exerciseNote: String?,
 )

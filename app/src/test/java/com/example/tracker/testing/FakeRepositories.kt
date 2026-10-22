@@ -19,6 +19,7 @@ import com.example.tracker.domain.model.WeekSummary
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutPlan
 import com.example.tracker.domain.model.SetType
+import com.example.tracker.domain.model.WorkoutNote
 import com.example.tracker.domain.model.WorkoutSet
 import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.domain.photos.PhotoCheckIn
@@ -199,6 +200,22 @@ class FakeWorkoutRepository(private val now: () -> Instant = { Instant.parse("20
         sessions.map { all -> all.values.flatten().sortedBy { it.finishedAt } }
     override fun observePersonalBests(): Flow<List<PersonalBest>> = personalBests
     override suspend fun lastTimeSets(exerciseId: String): List<WorkoutSet> = lastTimes[exerciseId].orEmpty()
+
+    /** Last time's note per exercise id. */
+    val lastNotes = mutableMapOf<String, String>()
+
+    override suspend fun lastTimeNote(exerciseId: String): String? = lastNotes[exerciseId]
+
+    override suspend fun setWorkoutNote(workoutId: String, note: String?) =
+        writeWorkout { it.copy(note = WorkoutNote.normalize(note)) }
+
+    override suspend fun setExerciseNote(workoutExerciseId: String, note: String?) = writeWorkout { workout ->
+        workout.copy(
+            exercises = workout.exercises.map {
+                if (it.id == workoutExerciseId) it.copy(note = WorkoutNote.normalize(note)) else it
+            },
+        )
+    }
 
     override suspend fun startWorkout(planId: String): String {
         startWorkoutError?.let { throw it }

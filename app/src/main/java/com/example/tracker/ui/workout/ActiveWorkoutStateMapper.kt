@@ -32,6 +32,7 @@ internal object ActiveWorkoutStateMapper {
         lastTimes: Map<String, List<WorkoutSet>>,
         selection: WorkoutSelection,
         draft: SetDraft?,
+        lastNotes: Map<String, String?> = emptyMap(),
     ): ActiveWorkoutUiState {
         if (workout == null || !workout.isInProgress) return ActiveWorkoutUiState.NotFound
         val exercises = workout.exercises.sortedBy { it.position }
@@ -57,6 +58,8 @@ internal object ActiveWorkoutStateMapper {
                 name = current.exercise.name,
                 type = current.exercise.type,
                 lastTime = lastTime.mapNotNull { it.toSetValue() },
+                note = current.note,
+                lastTimeNote = lastNotes[current.exercise.id],
             ),
             sets = numbered(sets).map { (set, number) ->
                 // Last time only holds working sets, so a working set compares with the one in
@@ -88,6 +91,7 @@ internal object ActiveWorkoutStateMapper {
             nextExerciseName = exercises.getOrNull(index + 1)?.exercise?.name,
             completedSetCount = allSets.count { it.isCompleted },
             openSetCount = allSets.count { !it.isCompleted },
+            workoutNote = workout.note,
         )
     }
 
