@@ -115,14 +115,15 @@
     <string name="workout_first_time">First time doing this exercise</string>
     <string name="workout_exercise_progress">%1$s progress</string>
     <string name="workout_set_number">Set %1$d</string>
-    <string name="workout_set_done_description" tools:ignore="PluralsCandidate">Set %1$d done, %2$s</string>
-    <string name="workout_set_upcoming_description">Set %1$d, planned %2$s</string>
+    <string name="workout_warm_up_number">Warm-up %1$d</string>
+    <string name="workout_set_done_description">%1$s done, %2$s</string>
+    <string name="workout_set_upcoming_description">%1$s, planned %2$s</string>
     <string name="workout_edit_set">Edit</string>
     <string name="workout_go_to_set">Go to set</string>
     <string name="workout_value_not_set">Not set</string>
     <string name="workout_last_time_set">Last time %1$s</string>
     <string name="workout_new_set">New set</string>
-    <string name="workout_remove_set">Remove set %1$d</string>
+    <string name="workout_remove_set">Remove %1$s</string>
     <string name="workout_weight_label">Weight (kg)</string>
     <string name="workout_reps_label">Reps</string>
     <string name="workout_decrease_weight">Decrease weight by %1$s kg</string>
@@ -150,6 +151,13 @@
     <string name="hold_status_past">+%1$d s past last time</string>
     <string name="workout_all_sets_done">All sets done. Add another set or move on.</string>
     <string name="workout_add_set">Add set</string>
+    <string name="workout_add_warm_up">Add warm-up</string>
+    <string name="workout_set_type">Set type: %1$s</string>
+    <string name="set_type_normal">Normal set</string>
+    <string name="set_type_warm_up">Warm-up</string>
+    <string name="set_type_drop">Drop set</string>
+    <string name="set_type_failure">To failure</string>
+    <string name="set_type_warm_up_description">Not counted in progress or records</string>
     <string name="rest_between_sets">Next set in</string>
     <string name="rest_before_exercise">Next exercise in</string>
     <string name="rest_skip">Skip</string>
@@ -162,7 +170,7 @@
         <item quantity="other">Extend rest by %1$d seconds</item>
     </plurals>
     <string name="rest_remaining_description">Resting. %1$s %2$s</string>
-    <string name="workout_set_saved" tools:ignore="PluralsCandidate">Set %1$d saved</string>
+    <string name="workout_set_saved">%1$s saved</string>
     <string name="workout_previous_exercise">Previous exercise</string>
     <string name="workout_next_exercise">Next: %1$s</string>
     <string name="workout_finish_workout">Finish workout</string>

@@ -1,7 +1,9 @@
 package com.example.tracker.ui.workout.components
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,6 +38,9 @@ import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 import com.example.tracker.ui.theme.tabularNumbers
 import com.example.tracker.ui.workout.SetRowUi
+import com.example.tracker.ui.workout.hasTag
+import com.example.tracker.ui.workout.label
+import com.example.tracker.ui.workout.setName
 
 /** Width of the "Set 1" label, so values line up across rows. */
 private val SetLabelWidth = 48.dp
@@ -46,7 +51,7 @@ private val RowMinHeight = 56.dp
 fun DoneSetRow(set: SetRowUi.Done, onEdit: () -> Unit, modifier: Modifier = Modifier) {
     val valueText = set.value.textOrNotSet()
     val editLabel = stringResource(R.string.workout_edit_set)
-    val description = stringResource(R.string.workout_set_done_description, set.number, valueText)
+    val description = rowDescription(R.string.workout_set_done_description, set, valueText)
     Surface(
         onClick = onEdit,
         shape = MaterialTheme.shapes.medium,
@@ -61,7 +66,7 @@ fun DoneSetRow(set: SetRowUi.Done, onEdit: () -> Unit, modifier: Modifier = Modi
     ) {
         SetRowLayout {
             Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            SetLabel(set.number, MaterialTheme.colorScheme.onSurfaceVariant)
+            SetLabel(set, MaterialTheme.colorScheme.onSurfaceVariant)
             Text(
                 text = valueText,
                 style = MaterialTheme.typography.titleMedium.tabularNumbers(),
@@ -91,7 +96,7 @@ fun DoneSetRow(set: SetRowUi.Done, onEdit: () -> Unit, modifier: Modifier = Modi
 fun UpcomingSetRow(set: SetRowUi.Upcoming, onSelect: () -> Unit, modifier: Modifier = Modifier) {
     val valueText = set.planned.textOrNotSet()
     val selectLabel = stringResource(R.string.workout_go_to_set)
-    val description = stringResource(R.string.workout_set_upcoming_description, set.number, valueText)
+    val description = rowDescription(R.string.workout_set_upcoming_description, set, valueText)
     Surface(
         onClick = onSelect,
         shape = MaterialTheme.shapes.medium,
@@ -108,7 +113,7 @@ fun UpcomingSetRow(set: SetRowUi.Upcoming, onSelect: () -> Unit, modifier: Modif
     ) {
         SetRowLayout {
             Icon(Icons.Outlined.RadioButtonUnchecked, contentDescription = null)
-            SetLabel(set.number, MaterialTheme.colorScheme.onSurfaceVariant)
+            SetLabel(set, MaterialTheme.colorScheme.onSurfaceVariant)
             Text(
                 text = valueText,
                 style = MaterialTheme.typography.bodyLarge.tabularNumbers(),
@@ -149,14 +154,31 @@ private fun SetRowLayout(content: @Composable RowScope.() -> Unit) {
     )
 }
 
+/** "Set 2" or "Warm-up 1", with "Drop set" or "To failure" under it for those sets. */
 @Composable
-private fun SetLabel(number: Int, color: Color) {
-    Text(
-        text = stringResource(R.string.workout_set_number, number),
-        style = MaterialTheme.typography.labelLarge,
-        color = color,
-        modifier = Modifier.widthIn(min = SetLabelWidth),
-    )
+private fun SetLabel(set: SetRowUi, color: Color) {
+    Column(modifier = Modifier.widthIn(min = SetLabelWidth)) {
+        Text(
+            text = setName(set.type, set.number),
+            style = MaterialTheme.typography.labelLarge,
+            color = color,
+        )
+        if (set.type.hasTag) {
+            Text(
+                text = set.type.label(),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.tertiary,
+            )
+        }
+    }
+}
+
+/** "Set 2 done, 50 kg × 8", adding "Drop set" or "To failure" for those sets. */
+@Composable
+private fun rowDescription(@StringRes descriptionRes: Int, set: SetRowUi, valueText: String): String {
+    val name = setName(set.type, set.number)
+    val description = stringResource(descriptionRes, name, valueText)
+    return if (set.type.hasTag) "$description, ${set.type.label()}" else description
 }
 
 @Composable

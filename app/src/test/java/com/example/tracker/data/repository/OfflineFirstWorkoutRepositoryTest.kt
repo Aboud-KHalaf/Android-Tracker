@@ -3,6 +3,7 @@ package com.example.tracker.data.repository
 import com.example.tracker.data.local.TrackerDatabase
 import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.SetType
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDate
@@ -230,5 +231,69 @@ class OfflineFirstWorkoutRepositoryTest {
 
         val reloaded = OfflineFirstWorkoutRepository(database, time, ids).observeActiveWorkout().first()!!
         assertEquals(1, reloaded.currentExerciseIndex)
+    }
+
+    @Test
+    fun addSet_warmUp_goesBeforeTheWorkingSetsAndCopiesTheLastWarmUp() = runTest {
+        val id = workouts.startWorkout(planId)
+        val bench = workouts.observeWorkout(id).first()!!.exercises.first()
+        val first = workouts.addSet(bench.id, SetType.WARM_UP)
+        workouts.updateSet(first, 20.0, 10, null)
+
+        val second = workouts.addSet(bench.id, SetType.WARM_UP)
+
+        val sets = workouts.observeWorkout(id).first()!!.exercises.first().sets.sortedBy { it.position }
+        assertEquals(listOf(first, second) + bench.sets.map { it.id }, sets.map { it.id })
+        assertEquals(listOf(0, 1, 2, 3, 4), sets.map { it.position })
+        assertEquals(
+            listOf(SetType.WARM_UP, SetType.WARM_UP, SetType.NORMAL, SetType.NORMAL, SetType.NORMAL),
+            sets.map { it.type },
+        )
+        assertEquals(20.0, sets[1].weightKg)
+        assertEquals(10, sets[1].reps)
+    }
+
+    @Test
+    fun setSetType_changesOnlyTheType() = runTest {
+        val id = workouts.startWorkout(planId)
+        val set = workouts.observeWorkout(id).first()!!.exercises.first().sets.first()
+        workouts.updateSet(set.id, 60.0, 8, null)
+
+        workouts.setSetType(set.id, SetType.DROP)
+
+        val stored = workouts.observeWorkout(id).first()!!.exercises.first().sets.first { it.id == set.id }
+        assertEquals(SetType.DROP, stored.type)
+        assertEquals(60.0, stored.weightKg)
+    }
+
+    @Test
+    fun warmUps_areLeftOutOfProgressAndLastTime() = runTest {
+        val id = workouts.startWorkout(planId)
+        val bench = workouts.observeWorkout(id).first()!!.exercises.first()
+        val warmUp = workouts.addSet(bench.id, SetType.WARM_UP)
+        workouts.updateSet(warmUp, 100.0, 1, null)
+        workouts.completeSet(warmUp)
+        val working = bench.sets.first().id
+        workouts.updateSet(working, 60.0, 8, null)
+        workouts.completeSet(working)
+        workouts.finishWorkout(id)
+
+        val session = workouts.observeExerciseSessions(benchId).first().single()
+        assertEquals(listOf(60.0), session.sets.map { it.weightKg })
+        assertEquals(listOf(60.0), workouts.lastTimeSets(benchId).map { it.weightKg })
+        assertTrue(workouts.observePersonalBests().first().isEmpty())
+    }
+
+    @Test
+    fun lastTimeSets_skipsAWorkoutWithOnlyWarmUps() = runTest {
+        logWorkout(listOf(60.0 to 8))
+        val id = workouts.startWorkout(planId)
+        val bench = workouts.observeWorkout(id).first()!!.exercises.first()
+        val warmUp = workouts.addSet(bench.id, SetType.WARM_UP)
+        workouts.updateSet(warmUp, 20.0, 10, null)
+        workouts.completeSet(warmUp)
+        workouts.finishWorkout(id)
+
+        assertEquals(listOf(60.0), workouts.lastTimeSets(benchId).map { it.weightKg })
     }
 }

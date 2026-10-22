@@ -58,24 +58,28 @@ internal object ActiveWorkoutStateMapper {
                 type = current.exercise.type,
                 lastTime = lastTime.mapNotNull { it.toSetValue() },
             ),
-            sets = sets.mapIndexed { i, set ->
-                val previous = lastTime.getOrNull(i)
+            sets = numbered(sets).map { (set, number) ->
+                // Last time only holds working sets, so a working set compares with the one in
+                // its place among them; warm-ups have nothing to compare with.
+                val previous = if (set.type.isWarmUp) null else lastTime.getOrNull(number - 1)
                 when {
                     set.id == activeId -> SetRowUi.Active(
                         id = set.id,
-                        number = i + 1,
+                        number = number,
                         lastTime = previous?.toSetValue(),
                         editor = editorFor(current, set, previous, draft),
+                        type = set.type,
                     )
 
                     set.isCompleted -> SetRowUi.Done(
                         id = set.id,
-                        number = i + 1,
+                        number = number,
                         value = set.toSetValue(),
                         improvement = improvementOver(current.exercise.type, set, previous),
+                        type = set.type,
                     )
 
-                    else -> SetRowUi.Upcoming(id = set.id, number = i + 1, planned = set.toSetValue())
+                    else -> SetRowUi.Upcoming(id = set.id, number = number, planned = set.toSetValue(), type = set.type)
                 }
             },
             previousExerciseName = exercises.getOrNull(index - 1)?.exercise?.name,
@@ -83,6 +87,13 @@ internal object ActiveWorkoutStateMapper {
             completedSetCount = allSets.count { it.isCompleted },
             openSetCount = allSets.count { !it.isCompleted },
         )
+    }
+
+    /** Each set with its one-based number, counting warm-ups and working sets separately. */
+    private fun numbered(sets: List<WorkoutSet>): List<Pair<WorkoutSet, Int>> {
+        var warmUps = 0
+        var working = 0
+        return sets.map { set -> set to if (set.type.isWarmUp) ++warmUps else ++working }
     }
 
     private fun editorFor(

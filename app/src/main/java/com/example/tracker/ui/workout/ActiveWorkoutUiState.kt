@@ -2,6 +2,7 @@ package com.example.tracker.ui.workout
 
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.SetImprovement
+import com.example.tracker.domain.model.SetType
 import com.example.tracker.domain.workout.RestKind
 import com.example.tracker.ui.common.SetValueUi
 import java.time.Instant
@@ -71,10 +72,14 @@ data class CurrentExerciseUi(
     val lastTime: List<SetValueUi>,
 )
 
-/** One set of the current exercise. [number] is one-based. */
+/**
+ * One set of the current exercise. [number] is one-based and counts warm-ups and working sets
+ * separately: "Warm-up 1, Warm-up 2, Set 1, Set 2".
+ */
 sealed interface SetRowUi {
     val id: String
     val number: Int
+    val type: SetType
 
     data class Done(
         override val id: String,
@@ -82,6 +87,7 @@ sealed interface SetRowUi {
         val value: SetValueUi?,
         /** How it beat the same set last time, if it did. */
         val improvement: SetImprovement?,
+        override val type: SetType = SetType.NORMAL,
     ) : SetRowUi
 
     /** The set being edited. */
@@ -90,12 +96,14 @@ sealed interface SetRowUi {
         override val number: Int,
         val lastTime: SetValueUi?,
         val editor: SetEditorUi,
+        override val type: SetType = SetType.NORMAL,
     ) : SetRowUi
 
     data class Upcoming(
         override val id: String,
         override val number: Int,
         val planned: SetValueUi?,
+        override val type: SetType = SetType.NORMAL,
     ) : SetRowUi
 }
 

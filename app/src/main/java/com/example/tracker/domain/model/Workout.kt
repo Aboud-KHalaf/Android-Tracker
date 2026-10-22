@@ -37,8 +37,19 @@ data class WorkoutSet(
     val reps: Int?,
     val durationSeconds: Int?,
     val completedAt: Instant?,
+    val type: SetType = SetType.NORMAL,
 ) {
     val isCompleted: Boolean get() = completedAt != null
+}
+
+/** What kind of set it is. Only warm-ups are left out of progress, records and comparisons. */
+enum class SetType {
+    NORMAL,
+    WARM_UP,
+    DROP,
+    FAILURE;
+
+    val isWarmUp: Boolean get() = this == WARM_UP
 }
 
 /** A finished workout as shown in history lists. */

@@ -2,6 +2,7 @@ package com.example.tracker.domain.repository
 
 import com.example.tracker.domain.model.ExerciseSession
 import com.example.tracker.domain.model.PersonalBest
+import com.example.tracker.domain.model.SetType
 import com.example.tracker.domain.model.WeekSummary
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutSet
@@ -23,7 +24,7 @@ interface WorkoutRepository {
     fun observeHistory(planId: String? = null): Flow<List<WorkoutSummary>>
     fun observeWeekSummary(weekStart: LocalDate): Flow<WeekSummary>
 
-    /** Completed sessions of one exercise, oldest first. */
+    /** Completed sessions of one exercise, oldest first. Warm-up sets are left out. */
     fun observeExerciseSessions(exerciseId: String): Flow<List<ExerciseSession>>
 
     /** Completed sessions of every exercise, oldest first. */
@@ -32,7 +33,7 @@ interface WorkoutRepository {
     /** Every personal best ever set, oldest first. */
     fun observePersonalBests(): Flow<List<PersonalBest>>
 
-    /** Completed sets from the last finished workout that included the exercise. */
+    /** Completed working sets (not warm-ups) from the last finished workout that included the exercise. */
     suspend fun lastTimeSets(exerciseId: String): List<WorkoutSet>
 
     /**
@@ -48,8 +49,13 @@ interface WorkoutRepository {
     /** Deletes an in-progress or finished workout with all its sets. */
     suspend fun discardWorkout(workoutId: String)
 
-    /** Adds a set after the last one, copying its weight and reps. Returns the set's id. */
-    suspend fun addSet(workoutExerciseId: String): String
+    /**
+     * Adds a set and returns its id. A working set goes after the last set and copies its
+     * weight and reps; a warm-up goes after the last warm-up (so before the working sets) and
+     * copies that warm-up, if any.
+     */
+    suspend fun addSet(workoutExerciseId: String, type: SetType = SetType.NORMAL): String
+    suspend fun setSetType(setId: String, type: SetType)
     suspend fun updateSet(setId: String, weightKg: Double?, reps: Int?, durationSeconds: Int?)
     suspend fun completeSet(setId: String)
     suspend fun reopenSet(setId: String)

@@ -6,6 +6,7 @@ import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.SetImprovement
+import com.example.tracker.domain.model.SetType
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutExercise
 import com.example.tracker.domain.model.WorkoutSet
@@ -540,5 +541,56 @@ class ActiveWorkoutViewModelTest {
         time.advance(Duration.ofSeconds(90)) // Already over.
         viewModel.onAppBackgrounded()
         assertNull(restAlarm.scheduled)
+    }
+
+    @Test
+    fun warmUps_areNumberedApartAndNotComparedWithLastTime() = runTest {
+        val state = collectState(createViewModel())
+
+        workouts.addSet("we-bench", SetType.WARM_UP)
+
+        val sets = state().sets
+        assertEquals(listOf(1, 1, 2, 3), sets.map { it.number })
+        assertEquals(listOf(SetType.WARM_UP, SetType.NORMAL, SetType.NORMAL, SetType.NORMAL), sets.map { it.type })
+        // Set 1 still compares with last time's first working set.
+        assertEquals(SetImprovement.Weight(2.5), (sets[1] as SetRowUi.Done).improvement)
+        // The new warm-up is the first open set, so it is up next, with nothing to compare.
+        assertEquals(SetType.WARM_UP, state().active().type)
+        assertNull(state().active().lastTime)
+        assertEquals(SetValueUi.WeightReps(50.0, 8), (sets[2] as SetRowUi.Upcoming).planned)
+    }
+
+    @Test
+    fun onAddWarmUpSet_addsAWarmUpBeforeTheWorkingSets() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onAddWarmUpSet()
+
+        assertEquals(SetType.WARM_UP, state().sets.first().type)
+        assertEquals(4, state().sets.size)
+    }
+
+    @Test
+    fun onSetActiveSetType_storesTheType() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onSetActiveSetType(SetType.FAILURE)
+
+        assertEquals(SetType.FAILURE, workouts.set("s2").type)
+        assertEquals(SetType.FAILURE, state().active().type)
+    }
+
+    @Test
+    fun completingAWarmUp_reportsItAsAWarmUp() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onSetActiveSetType(SetType.WARM_UP)
+
+        viewModel.onCompleteSet()
+
+        assertEquals(ActiveWorkoutEvent.SetCompleted("s2", 1, SetType.WARM_UP), viewModel.events.first())
+        assertTrue(state().sets.first { it.id == "s2" } is SetRowUi.Done)
     }
 }
