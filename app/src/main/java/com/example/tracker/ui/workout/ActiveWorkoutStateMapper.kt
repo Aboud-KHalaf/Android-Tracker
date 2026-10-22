@@ -69,6 +69,7 @@ internal object ActiveWorkoutStateMapper {
                         lastTime = previous?.toSetValue(),
                         editor = editorFor(current, set, previous, draft),
                         type = set.type,
+                        rpe = set.rpe,
                     )
 
                     set.isCompleted -> SetRowUi.Done(
@@ -77,6 +78,7 @@ internal object ActiveWorkoutStateMapper {
                         value = set.toSetValue(),
                         improvement = improvementOver(current.exercise.type, set, previous),
                         type = set.type,
+                        rpe = set.rpe,
                     )
 
                     else -> SetRowUi.Upcoming(id = set.id, number = number, planned = set.toSetValue(), type = set.type)

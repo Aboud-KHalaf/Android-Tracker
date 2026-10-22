@@ -39,7 +39,7 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         PhotoSessionEntity::class,
         PhotoMeasurementEntity::class,
     ],
-    version = 10,
+    version = 11,
     exportSchema = true,
     autoMigrations = [
         // Adds daily_nutrition.
@@ -58,6 +58,8 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         // logs into custom stats: PhotoSessionsMigration and LegacyLogsMigration, added below.
         // Adds workout_sets.set_type (warm-up, drop set, to failure).
         AutoMigration(from = 9, to = 10),
+        // Adds workout_sets.rpe.
+        AutoMigration(from = 10, to = 11),
     ],
 )
 abstract class TrackerDatabase : RoomDatabase() {

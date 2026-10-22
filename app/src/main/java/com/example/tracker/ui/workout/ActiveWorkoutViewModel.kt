@@ -184,6 +184,15 @@ class ActiveWorkoutViewModel(
         }
     }
 
+    /** Rates how hard the active set felt; null clears the rating. */
+    fun onSetActiveRpe(rpe: Double?) {
+        val active = activeSet() ?: return
+        if (active.rpe == rpe) return
+        viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
+            workoutRepository.setSetRpe(active.id, rpe)
+        }
+    }
+
     private fun addSet(type: SetType) {
         val state = uiState.value as? ActiveWorkoutUiState.Success ?: return
         viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {

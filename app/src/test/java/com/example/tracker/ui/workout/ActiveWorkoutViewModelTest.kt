@@ -593,4 +593,28 @@ class ActiveWorkoutViewModelTest {
         assertEquals(ActiveWorkoutEvent.SetCompleted("s2", 1, SetType.WARM_UP), viewModel.events.first())
         assertTrue(state().sets.first { it.id == "s2" } is SetRowUi.Done)
     }
+
+    @Test
+    fun onSetActiveRpe_ratesTheActiveSetAndShowsItOnceDone() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onSetActiveRpe(8.0)
+        assertEquals(8.0, state().active().rpe)
+        viewModel.onCompleteSet()
+
+        assertEquals(8.0, (state().sets.first { it.id == "s2" } as SetRowUi.Done).rpe)
+        assertEquals(8.0, workouts.set("s2").rpe)
+    }
+
+    @Test
+    fun onSetActiveRpe_null_clearsIt() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onSetActiveRpe(9.0)
+
+        viewModel.onSetActiveRpe(null)
+
+        assertNull(state().active().rpe)
+    }
 }

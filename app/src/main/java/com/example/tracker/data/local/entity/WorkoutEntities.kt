@@ -88,5 +88,6 @@ data class WorkoutSetEntity(
     @ColumnInfo(name = "duration_seconds") val durationSeconds: Int?,
     @ColumnInfo(name = "completed_at") val completedAt: Long?,
     @ColumnInfo(name = "set_type", defaultValue = "'NORMAL'") val type: SetType = SetType.NORMAL,
+    @ColumnInfo(name = "rpe") val rpe: Double? = null,
     @Embedded val sync: SyncMetadata,
 )

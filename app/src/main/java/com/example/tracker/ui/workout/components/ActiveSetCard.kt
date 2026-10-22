@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,8 +38,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.tracker.R
+import com.example.tracker.domain.model.Rpe
 import com.example.tracker.domain.model.SetType
 import com.example.tracker.ui.common.currentLocale
+import com.example.tracker.ui.common.formatNumber
 import com.example.tracker.ui.common.formatWeight
 import com.example.tracker.ui.common.text
 import com.example.tracker.ui.theme.Dimens
@@ -58,6 +61,8 @@ data class WeightRepsEditorActions(
     val onRepsChange: (String) -> Unit = {},
     val onWeightStep: (steps: Int) -> Unit = {},
     val onRepsStep: (steps: Int) -> Unit = {},
+    /** A rating, or null to clear it. */
+    val onRpeChange: (Double?) -> Unit = {},
 )
 
 /** The set being edited: last time's values, its inputs, and Complete. */
@@ -92,7 +97,7 @@ fun ActiveSetCard(
                 verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
             ) {
                 when (val editor = set.editor) {
-                    is SetEditorUi.WeightReps -> WeightRepsEditor(editor, weightRepsActions, onComplete)
+                    is SetEditorUi.WeightReps -> WeightRepsEditor(editor, set.rpe, weightRepsActions, onComplete)
                     is SetEditorUi.Duration -> DurationEditor(editor, durationActions, onComplete)
                 }
             }
@@ -161,6 +166,7 @@ private fun SetTypeChip(selected: SetType, onSelect: (SetType) -> Unit) {
 @Composable
 private fun WeightRepsEditor(
     editor: SetEditorUi.WeightReps,
+    rpe: Double?,
     actions: WeightRepsEditorActions,
     onComplete: () -> Unit,
 ) {
@@ -187,6 +193,7 @@ private fun WeightRepsEditor(
         onDecrease = { actions.onRepsStep(-1) },
         onIncrease = { actions.onRepsStep(1) },
     )
+    RpeSelector(selected = rpe, onSelect = actions.onRpeChange)
     Button(
         onClick = onComplete,
         enabled = editor.canComplete,
@@ -197,5 +204,31 @@ private fun WeightRepsEditor(
         Icon(Icons.Outlined.Check, contentDescription = null)
         Spacer(Modifier.width(ButtonDefaults.IconSpacing))
         Text(stringResource(R.string.workout_complete_set), style = MaterialTheme.typography.titleMedium)
+    }
+}
+
+/** Optional effort rating: tapping a value picks it, tapping it again clears it. */
+@Composable
+private fun RpeSelector(selected: Double?, onSelect: (Double?) -> Unit) {
+    val locale = currentLocale()
+    Column {
+        Text(stringResource(R.string.workout_rpe_label), style = MaterialTheme.typography.labelLarge)
+        Text(
+            text = stringResource(R.string.workout_rpe_help),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)) {
+            Rpe.choices.forEach { value ->
+                val number = formatNumber(value, locale)
+                val description = stringResource(R.string.workout_rpe_value, number)
+                FilterChip(
+                    selected = value == selected,
+                    onClick = { onSelect(if (value == selected) null else value) },
+                    label = { Text(number) },
+                    modifier = Modifier.semantics { contentDescription = description },
+                )
+            }
+        }
     }
 }

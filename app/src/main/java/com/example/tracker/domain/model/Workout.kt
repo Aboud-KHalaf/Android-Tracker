@@ -38,8 +38,19 @@ data class WorkoutSet(
     val durationSeconds: Int?,
     val completedAt: Instant?,
     val type: SetType = SetType.NORMAL,
+    /** How hard the set felt, on the RPE scale ([Rpe.MIN] to [Rpe.MAX]); null if not rated. */
+    val rpe: Double? = null,
 ) {
     val isCompleted: Boolean get() = completedAt != null
+}
+
+/** Rate of perceived exertion: 10 is a maximal set, 9 leaves one rep in reserve, 8 two, and so on. */
+object Rpe {
+    const val MIN = 1.0
+    const val MAX = 10.0
+
+    /** The ratings offered while logging; below 6 a set is too easy to rate usefully. */
+    val choices: List<Double> = listOf(6.0, 7.0, 8.0, 9.0, 10.0)
 }
 
 /** What kind of set it is. Only warm-ups are left out of progress, records and comparisons. */

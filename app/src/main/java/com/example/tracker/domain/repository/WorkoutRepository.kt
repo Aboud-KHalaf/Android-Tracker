@@ -56,6 +56,9 @@ interface WorkoutRepository {
      */
     suspend fun addSet(workoutExerciseId: String, type: SetType = SetType.NORMAL): String
     suspend fun setSetType(setId: String, type: SetType)
+
+    /** Rates how hard the set felt, from [com.example.tracker.domain.model.Rpe.MIN] to its MAX; null clears it. */
+    suspend fun setSetRpe(setId: String, rpe: Double?)
     suspend fun updateSet(setId: String, weightKg: Double?, reps: Int?, durationSeconds: Int?)
     suspend fun completeSet(setId: String)
     suspend fun reopenSet(setId: String)

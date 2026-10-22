@@ -88,6 +88,7 @@ sealed interface SetRowUi {
         /** How it beat the same set last time, if it did. */
         val improvement: SetImprovement?,
         override val type: SetType = SetType.NORMAL,
+        val rpe: Double? = null,
     ) : SetRowUi
 
     /** The set being edited. */
@@ -97,6 +98,7 @@ sealed interface SetRowUi {
         val lastTime: SetValueUi?,
         val editor: SetEditorUi,
         override val type: SetType = SetType.NORMAL,
+        val rpe: Double? = null,
     ) : SetRowUi
 
     data class Upcoming(

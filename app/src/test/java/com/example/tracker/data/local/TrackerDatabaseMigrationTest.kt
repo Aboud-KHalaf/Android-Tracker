@@ -328,4 +328,25 @@ class TrackerDatabaseMigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate10To11_existingSetsAreUnrated() {
+        helper.createDatabase(DB_NAME, 10).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO workout_sets (id, workout_exercise_id, position, weight_kg, reps, duration_seconds, completed_at,
+                    set_type, created_at, updated_at, deleted_at, sync_state)
+                VALUES ('s1', 'we1', 0, 60.0, 8, NULL, 1, 'WARM_UP', 0, 0, NULL, 'SYNCED')
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 11, true).use { db ->
+            db.query("SELECT rpe, set_type FROM workout_sets WHERE id = 's1'").use { cursor ->
+                cursor.moveToFirst()
+                assertTrue(cursor.isNull(0))
+                assertEquals("WARM_UP", cursor.getString(1))
+            }
+        }
+    }
 }
