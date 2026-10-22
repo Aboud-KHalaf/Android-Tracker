@@ -2,7 +2,7 @@
 
 An offline-first Android app for tracking your **workouts**, any **stats** you measure (weight, calories, body fat, waist, sleep...) and **progress photos** in one place. Built with Kotlin, Jetpack Compose and Material Design 3.
 
-All data stays on your device, and you don't need an account. When you want your numbers elsewhere, export any screen's analytics, or everything at once, as a PDF or Excel file. To move to a new phone, back up everything to one file and restore it there. The only feature that uses the internet is the optional exercise catalog, which sends just your search to [wger.de](https://wger.de).
+All data stays on your device, and you don't need an account. When you want your numbers elsewhere, export any screen's analytics, or everything at once, as a PDF or Excel file. To move to a new phone, back up everything to one file and restore it there. Health Connect sync is optional and reads data that is already on the phone. The only feature that uses the internet is the optional exercise catalog, which sends just your search to [wger.de](https://wger.de).
 
 🌐 **Website:** [aboud-khalaf.github.io/Android-Tracker](https://aboud-khalaf.github.io/Android-Tracker/)
 
@@ -58,6 +58,7 @@ All data stays on your device, and you don't need an account. When you want your
 - Photos stay inside the app: they aren't added to your gallery or included in cloud backups
 
 ### ⚙️ Settings
+- **Health Connect** (Android 9+, optional): read the last 30 days of steps, weight and sleep into your Steps, Weight and Sleep stats when the app opens or on "Sync now". Nothing is written to Health Connect or sent anywhere
 - Light, dark or system theme
 - **Wallpaper colors** (Android 12+): color the app from your wallpaper instead of the blue brand theme
 - Turn the daily stats reminder on or off and choose when it arrives

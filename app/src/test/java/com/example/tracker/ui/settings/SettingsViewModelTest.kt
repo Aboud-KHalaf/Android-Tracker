@@ -3,6 +3,7 @@ package com.example.tracker.ui.settings
 import com.example.tracker.R
 import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.export.ExportFormat
+import com.example.tracker.domain.health.HealthAvailability
 import com.example.tracker.domain.export.ReportText
 import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.Exercise
@@ -313,5 +314,50 @@ class SettingsViewModelTest {
 
         assertEquals(true, settings.dynamicColor.value)
         assertEquals(true, viewModel.uiState.value.dynamicColor)
+    }
+
+    private var healthSyncs = 0
+
+    private fun createHealthViewModel(availability: HealthAvailability = HealthAvailability.AVAILABLE) = SettingsViewModel(
+        settingsRepository = settings,
+        data = SettingsViewModel.ExportableData(exercises, workouts, stats),
+        reportExporter = exporter,
+        backup = backup,
+        time = time,
+        health = SettingsViewModel.Health(
+            availability = { availability },
+            permissions = setOf("read-steps", "read-weight"),
+            sync = { healthSyncs++; 3 },
+        ),
+    )
+
+    @Test
+    fun healthPermissionsGranted_turnsSyncOnAndSyncs() = runTest {
+        val viewModel = createHealthViewModel()
+
+        viewModel.onHealthPermissionsResult(setOf("read-steps"))
+
+        assertTrue(settings.healthSyncEnabled.value)
+        assertEquals(1, healthSyncs)
+        assertEquals(SettingsEvent.ShowMessage(R.string.settings_health_synced), viewModel.events.first())
+    }
+
+    @Test
+    fun healthPermissionsDenied_staysOff() = runTest {
+        val viewModel = createHealthViewModel()
+
+        viewModel.onHealthPermissionsResult(emptySet())
+
+        assertFalse(settings.healthSyncEnabled.value)
+        assertEquals(0, healthSyncs)
+        assertEquals(SettingsEvent.ShowMessage(R.string.settings_health_denied), viewModel.events.first())
+    }
+
+    @Test
+    fun health_isHiddenWhereUnsupported() = runTest {
+        val viewModel = createHealthViewModel(HealthAvailability.UNSUPPORTED)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+
+        assertEquals(HealthAvailability.UNSUPPORTED, viewModel.uiState.value.health.availability)
     }
 }

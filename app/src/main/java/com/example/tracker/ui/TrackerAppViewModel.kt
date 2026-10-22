@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.first
 class TrackerAppViewModel(
     private val workoutRepository: WorkoutRepository,
     private val startNextWorkout: suspend () -> String?,
+    private val syncHealthIfDue: suspend () -> Unit = {},
 ) : ViewModel() {
 
     private val _workoutToOpen = MutableStateFlow<String?>(null)
@@ -78,12 +79,22 @@ class TrackerAppViewModel(
         _screenToOpen.value = null
     }
 
+    /** The app came to the foreground: refresh steps, weight and sleep if that's turned on. */
+    fun onAppStarted() {
+        // Failing is fine: Settings shows when it last worked and offers to sync again.
+        viewModelScope.launchCatching(onError = {}) { syncHealthIfDue() }
+    }
+
     companion object {
         val Factory = viewModelFactory {
             initializer {
                 val container = (this[APPLICATION_KEY] as TrackerApplication).container
                 val startNextWorkout = StartNextWorkout(container.programRepository, container.workoutRepository, container.time)
-                TrackerAppViewModel(container.workoutRepository, startNextWorkout = { startNextWorkout() })
+                TrackerAppViewModel(
+                    container.workoutRepository,
+                    startNextWorkout = { startNextWorkout() },
+                    syncHealthIfDue = { container.healthSync.syncIfDue() },
+                )
             }
         }
     }

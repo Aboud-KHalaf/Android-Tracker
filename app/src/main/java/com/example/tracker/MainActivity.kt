@@ -62,6 +62,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        appViewModel.onAppStarted()
+    }
+
     /** The workout notification or a launcher shortcut was tapped while the app was already open. */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)

@@ -2,6 +2,7 @@ package com.example.tracker.domain.repository
 
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.workout.RestTimes
+import java.time.Instant
 import java.time.LocalTime
 import kotlinx.coroutines.flow.StateFlow
 
@@ -30,6 +31,16 @@ interface SettingsRepository {
     val restTimes: StateFlow<RestTimes>
 
     suspend fun setRestTimes(times: RestTimes)
+
+    /** Whether steps, weight and sleep are read from Health Connect. Off by default. */
+    val healthSyncEnabled: StateFlow<Boolean>
+
+    suspend fun setHealthSyncEnabled(enabled: Boolean)
+
+    /** When Health Connect was last read, or null if never. */
+    val lastHealthSync: StateFlow<Instant?>
+
+    suspend fun setLastHealthSync(at: Instant)
 
     /** Whether the app has already asked for notification permission on its own (asked once). */
     val notificationPermissionRequested: StateFlow<Boolean>

@@ -8,6 +8,7 @@ import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.reminder.ReminderTime
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.workout.RestTimes
+import java.time.Instant
 import java.time.LocalTime
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -82,6 +83,28 @@ class LocalSettingsRepository(
         _restTimes.value = times
     }
 
+    private val _healthSyncEnabled = MutableStateFlow(preferences.getBoolean(KEY_HEALTH_SYNC, false))
+    override val healthSyncEnabled: StateFlow<Boolean> = _healthSyncEnabled.asStateFlow()
+
+    override suspend fun setHealthSyncEnabled(enabled: Boolean) {
+        withContext(ioDispatcher) {
+            preferences.edit(commit = true) { putBoolean(KEY_HEALTH_SYNC, enabled) }
+        }
+        _healthSyncEnabled.value = enabled
+    }
+
+    private val _lastHealthSync = MutableStateFlow(
+        preferences.getLong(KEY_LAST_HEALTH_SYNC, 0L).takeIf { it > 0L }?.let(Instant::ofEpochMilli),
+    )
+    override val lastHealthSync: StateFlow<Instant?> = _lastHealthSync.asStateFlow()
+
+    override suspend fun setLastHealthSync(at: Instant) {
+        withContext(ioDispatcher) {
+            preferences.edit(commit = true) { putLong(KEY_LAST_HEALTH_SYNC, at.toEpochMilli()) }
+        }
+        _lastHealthSync.value = at
+    }
+
     private val _notificationPermissionRequested =
         MutableStateFlow(preferences.getBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, false))
     override val notificationPermissionRequested: StateFlow<Boolean> = _notificationPermissionRequested.asStateFlow()
@@ -135,5 +158,7 @@ class LocalSettingsRepository(
         private const val KEY_REST_BETWEEN_SETS = "rest_between_sets_seconds"
         private const val KEY_REST_BETWEEN_EXERCISES = "rest_between_exercises_seconds"
         private const val KEY_NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested"
+        private const val KEY_HEALTH_SYNC = "health_connect_sync"
+        private const val KEY_LAST_HEALTH_SYNC = "health_connect_last_sync"
     }
 }
