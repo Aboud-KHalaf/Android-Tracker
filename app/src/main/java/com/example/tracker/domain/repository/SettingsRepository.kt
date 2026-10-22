@@ -42,6 +42,11 @@ interface SettingsRepository {
 
     suspend fun setLastHealthSync(at: Instant)
 
+    /** Whether onboarding was finished or skipped (or wasn't needed); see FirstLaunch. */
+    val onboardingDone: StateFlow<Boolean>
+
+    suspend fun setOnboardingDone()
+
     /** Whether the app has already asked for notification permission on its own (asked once). */
     val notificationPermissionRequested: StateFlow<Boolean>
 

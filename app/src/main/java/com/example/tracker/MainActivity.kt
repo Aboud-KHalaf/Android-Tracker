@@ -52,11 +52,14 @@ class MainActivity : ComponentActivity() {
             TrackerTheme(darkTheme = darkTheme, dynamicColor = dynamicColor) {
                 val workoutToOpen by appViewModel.workoutToOpen.collectAsStateWithLifecycle()
                 val screenToOpen by appViewModel.screenToOpen.collectAsStateWithLifecycle()
+                val showOnboarding by appViewModel.showOnboarding.collectAsStateWithLifecycle()
                 TrackerApp(
                     workoutToOpen = workoutToOpen,
                     onWorkoutOpened = appViewModel::onWorkoutOpened,
                     screenToOpen = screenToOpen,
                     onScreenOpened = appViewModel::onScreenOpened,
+                    showOnboarding = showOnboarding,
+                    onOnboardingShown = appViewModel::onOnboardingShown,
                 )
             }
         }

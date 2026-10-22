@@ -11,6 +11,7 @@ import com.example.tracker.ui.exercise.navigateToExerciseDetails
 import com.example.tracker.ui.exercises.exerciseListScreen
 import com.example.tracker.ui.history.historyScreen
 import com.example.tracker.ui.history.navigateToHistory
+import com.example.tracker.ui.onboarding.onboardingScreen
 import com.example.tracker.ui.home.HomeDestination
 import com.example.tracker.ui.home.homeScreen
 import com.example.tracker.ui.photos.navigateToPhotoCapture
@@ -61,6 +62,13 @@ fun TrackerNavHost(
             onOpenSettings = navController::navigateToSettings,
         )
         historyScreen(onBack = navController::popBackStack)
+        onboardingScreen(
+            // Onboarding sits over Home; a program made in it opens next, to add exercises.
+            onFinished = { programId ->
+                navController.popBackStack(HomeDestination, inclusive = false)
+                programId?.let(navController::navigateToProgram)
+            },
+        )
         exerciseListScreen(
             onOpenExercise = navController::navigateToExerciseDetails,
             onOpenHistory = navController::navigateToHistory,

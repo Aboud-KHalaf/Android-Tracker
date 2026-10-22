@@ -13,6 +13,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import com.example.tracker.MainActivity
 import com.example.tracker.TrackerApplication
+import com.example.tracker.testing.SkipOnboardingRule
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -30,7 +31,10 @@ import org.robolectric.annotation.Config
 @Config(sdk = [35])
 class StatsFlowTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
+    val skipOnboarding = SkipOnboardingRule()
+
+    @get:Rule(order = 1)
     val compose = createAndroidComposeRule<MainActivity>()
 
     private val container get() = ApplicationProvider.getApplicationContext<TrackerApplication>().container

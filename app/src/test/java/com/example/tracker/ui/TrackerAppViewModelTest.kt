@@ -98,4 +98,16 @@ class TrackerAppViewModelTest {
         viewModel.onShortcut(AppShortcuts.ACTION_LOG_STAT)
         assertEquals(AppScreen.STATS, viewModel.screenToOpen.value)
     }
+
+    @Test
+    fun freshLaunch_firstTime_showsOnboardingOnce() = runTest {
+        workouts.activeWorkout.value = null
+        val viewModel = TrackerAppViewModel(workouts, startNextWorkout = { nextWorkout }, needsOnboarding = { true })
+
+        viewModel.onFreshStart(requestedWorkoutId = null, restoreActiveWorkout = true)
+
+        assertEquals(true, viewModel.showOnboarding.value)
+        viewModel.onOnboardingShown()
+        assertEquals(false, viewModel.showOnboarding.value)
+    }
 }

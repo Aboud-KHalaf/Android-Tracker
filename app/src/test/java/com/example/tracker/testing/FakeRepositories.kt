@@ -313,6 +313,13 @@ class FakeSettingsRepository : SettingsRepository {
         lastHealthSync.value = at
     }
 
+    override val onboardingDone = MutableStateFlow(false)
+
+    override suspend fun setOnboardingDone() {
+        writeError?.let { throw it }
+        onboardingDone.value = true
+    }
+
     override val themeMode = MutableStateFlow(ThemeMode.SYSTEM)
     override val dynamicColor = MutableStateFlow(false)
 

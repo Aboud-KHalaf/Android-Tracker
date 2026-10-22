@@ -37,6 +37,21 @@
 
     <!-- Home -->
     <string name="home_title">Today</string>
+    <string name="onboarding_welcome_title">Welcome to Tracker</string>
+    <string name="onboarding_welcome_body">Your training, your body stats and your progress, in one place.</string>
+    <string name="onboarding_feature_plan">Plan your week with a workout program</string>
+    <string name="onboarding_feature_progress">Log every set and watch your lifts go up</string>
+    <string name="onboarding_feature_stats">Track weight, sleep or any number, plus progress photos</string>
+    <string name="onboarding_feature_private">Everything stays on this phone. No account needed.</string>
+    <string name="onboarding_get_started">Get started</string>
+    <string name="onboarding_skip">Skip for now</string>
+    <string name="onboarding_program_title">Plan your training</string>
+    <string name="onboarding_program_body">Pick a split and the days you train. You\'ll add exercises to each day next.</string>
+    <string name="onboarding_not_now">Not now</string>
+    <string name="onboarding_stats_title">What else will you track?</string>
+    <string name="onboarding_stats_body">Pick the stats to log each day. You can add, change or remove stats any time on the Stats tab.</string>
+    <string name="onboarding_finish">Start using Tracker</string>
+    <string name="onboarding_error_stats">Couldn\'t save. Try again.</string>
     <string name="home_error_load">Couldn\'t load your workouts.</string>
     <string name="home_error_start_workout">Couldn\'t start the workout. Try again.</string>
     <string name="home_up_next">Up next</string>

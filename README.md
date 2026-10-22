@@ -71,6 +71,7 @@ All data stays on your device, and you don't need an account. When you want your
 - **Up next widget**: your next training day (or the workout in progress) with a Start/Resume button, plus this week's workout count, in the app's colours and light/dark theme
 
 ### 🎨 Design
+- **Onboarding** on first launch: a short welcome, an optional first program from a split template, and the stats you want to track (every step can be skipped)
 - Material Design 3 with a blue brand theme, plus light and dark modes
 - Animated splash screen, screen transitions and list animations
 - Layouts adapt to larger screens

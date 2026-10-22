@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
 import com.example.tracker.MainActivity
 import com.example.tracker.TrackerApplication
+import com.example.tracker.testing.SkipOnboardingRule
 import com.example.tracker.data.repository.newDay
 import com.example.tracker.domain.model.ThemeMode
 import kotlinx.coroutines.flow.first
@@ -32,7 +33,10 @@ import org.robolectric.annotation.Config
 @Config(sdk = [35], qualifiers = "w411dp-h891dp-xxhdpi")
 class SettingsFlowTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
+    val skipOnboarding = SkipOnboardingRule()
+
+    @get:Rule(order = 1)
     val compose = createAndroidComposeRule<MainActivity>()
 
     private val container get() = ApplicationProvider.getApplicationContext<TrackerApplication>().container
