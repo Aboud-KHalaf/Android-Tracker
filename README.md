@@ -100,7 +100,7 @@ Get the latest APK from the [website](https://aboud-khalaf.github.io/Android-Tra
 | Widget | Jetpack Glance |
 | Background | AlarmManager for the daily stats reminder; an ongoing notification for the workout in progress |
 | Dependency injection | Manual (`AppContainer`) |
-| Testing | JUnit, Robolectric, Compose UI tests |
+| Testing | JUnit, Robolectric, Compose UI tests; device tests for every database migration and the workout journey (`./gradlew connectedDebugAndroidTest`) |
 | Code checks | Android lint and detekt, run in CI (`./gradlew lintDebug detekt`) |
 | Performance | Baseline Profile (`:baselineprofile` module): `./gradlew :app:generateReleaseBaselineProfile` on an Android 13+ device; startup benchmarks with `./gradlew :baselineprofile:connectedBenchmarkReleaseAndroidTest`. Build the app with `assembleDebug`/`assembleRelease`: a plain `assemble` also tries to generate the profile, which needs a device |
 

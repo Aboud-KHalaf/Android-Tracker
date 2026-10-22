@@ -37,6 +37,10 @@ jobs:
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest
 
+      # Device tests need an emulator, so CI only compiles them to keep them from breaking unnoticed.
+      - name: Compile device tests
+        run: ./gradlew assembleDebugAndroidTest
+
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
