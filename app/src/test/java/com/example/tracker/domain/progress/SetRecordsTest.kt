@@ -44,4 +44,11 @@ class SetRecordsTest {
         assertEquals(50.0, bestValue(ExerciseType.WEIGHT_REPS, benchHistory.toSessions())!!, 0.0)
         assertEquals(null, bestValue(ExerciseType.WEIGHT_REPS, emptyList()))
     }
+
+    @Test
+    fun recordSetIds_warmUpsAreNeverRecords() {
+        val warmUp = set("w", 120.0, 1).copy(type = com.example.tracker.domain.model.SetType.WARM_UP)
+
+        assertEquals(emptySet<String>(), recordSetIds(ExerciseType.WEIGHT_REPS, listOf(warmUp), previousBestValue = 100.0))
+    }
 }

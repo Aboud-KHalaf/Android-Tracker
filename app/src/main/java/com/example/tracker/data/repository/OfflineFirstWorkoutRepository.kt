@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /** Reads and writes the local database; every write is marked pending for a future sync. */
+@Suppress("TooManyFunctions") // Implements WorkoutRepository, one method per operation.
 class OfflineFirstWorkoutRepository(
     private val database: TrackerDatabase,
     private val time: TimeProvider,

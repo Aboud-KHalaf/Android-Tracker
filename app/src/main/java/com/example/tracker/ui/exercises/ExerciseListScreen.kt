@@ -77,7 +77,13 @@ fun ExerciseListScreen(
                     modifier = Modifier.padding(innerPadding),
                 )
 
-                is ExerciseListUiState.Success -> ExerciseList(state.exercises, state.muscleWeek, onOpenExercise, onOpenHistory, innerPadding)
+                is ExerciseListUiState.Success -> ExerciseList(
+                    exercises = state.exercises,
+                    muscleWeek = state.muscleWeek,
+                    onOpenExercise = onOpenExercise,
+                    onOpenHistory = onOpenHistory,
+                    contentPadding = innerPadding,
+                )
             }
         }
     }

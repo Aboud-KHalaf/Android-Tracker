@@ -86,6 +86,10 @@ class WorkoutJourneyTest {
         waitForNode(hasText("Finish") and hasAnyAncestor(isDialog()))
         compose.onNode(hasText("Finish") and hasAnyAncestor(isDialog())).performClick()
 
+        // The summary follows; Done returns Home.
+        waitForNode(hasText("Workout done. Nice work!"))
+        compose.onNodeWithText("Done").performClick()
+
         waitForNode(hasText("1 workout", substring = true))
         compose.onNodeWithContentDescription("Workout history").performClick()
         waitForNode(hasText("1 exercise", substring = true))

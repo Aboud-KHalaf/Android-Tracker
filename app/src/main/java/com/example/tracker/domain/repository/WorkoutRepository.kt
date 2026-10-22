@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.Flow
  * Write functions throw [IllegalArgumentException] for invalid input or unknown ids, and
  * [IllegalStateException] when the workout's state doesn't allow the change.
  */
+// One method per workout operation; the set operations are the piece to split out if it grows.
+@Suppress("TooManyFunctions")
 interface WorkoutRepository {
     /** The workout in progress, or null if none. */
     fun observeActiveWorkout(): Flow<Workout?>

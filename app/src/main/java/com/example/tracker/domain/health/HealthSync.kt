@@ -4,6 +4,7 @@ import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.StatEntry
 import com.example.tracker.domain.model.StatIcon
+import com.example.tracker.domain.progress.bodyweightStat
 import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.domain.repository.SettingsRepository
 import java.time.Duration
@@ -91,18 +92,18 @@ class HealthSync(
         /** Opening the app more often than this doesn't sync again. */
         val MIN_INTERVAL: Duration = Duration.ofMinutes(15)
 
-        /** The stat [metric] goes into: Steps, Sleep, or the bodyweight stat (scale icon, kg). */
-        fun List<CustomStat>.forMetric(metric: HealthMetric): CustomStat? = firstOrNull { stat ->
-            when (metric) {
-                HealthMetric.STEPS -> stat.icon == StatIcon.STEPS
-                HealthMetric.SLEEP -> stat.icon == StatIcon.SLEEP
-                HealthMetric.WEIGHT -> stat.icon == StatIcon.SCALE && stat.unit.trim().equals("kg", ignoreCase = true)
-            }
+        private const val DECIMAL_BASE = 10
+
+        /** The stat [metric] goes into: Steps, Sleep, or the [bodyweightStat] that × BW uses too. */
+        fun List<CustomStat>.forMetric(metric: HealthMetric): CustomStat? = when (metric) {
+            HealthMetric.STEPS -> firstOrNull { it.icon == StatIcon.STEPS }
+            HealthMetric.SLEEP -> firstOrNull { it.icon == StatIcon.SLEEP }
+            HealthMetric.WEIGHT -> bodyweightStat()
         }
 
         private fun Double.roundTo(decimals: Int): Double {
             var factor = 1.0
-            repeat(decimals) { factor *= 10 }
+            repeat(decimals) { factor *= DECIMAL_BASE }
             return round(this * factor) / factor
         }
     }

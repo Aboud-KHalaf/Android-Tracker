@@ -185,7 +185,9 @@ private fun SummaryContent(
                     ListItem(
                         headlineContent = { Text(best.exerciseName) },
                         supportingContent = { Text(best.value.text(), style = MaterialTheme.typography.bodyMedium.tabularNumbers()) },
-                        leadingContent = { Icon(Icons.Outlined.EmojiEvents, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary) },
+                        leadingContent = {
+                            Icon(Icons.Outlined.EmojiEvents, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
+                        },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     )
                 }
@@ -201,7 +203,9 @@ private fun SummaryContent(
                 ) {
                     ListItem(
                         headlineContent = { Text(exercise.name) },
-                        supportingContent = { Text(exercise.sets.compactText(), style = MaterialTheme.typography.bodyMedium.tabularNumbers()) },
+                        supportingContent = {
+                            Text(exercise.sets.compactText(), style = MaterialTheme.typography.bodyMedium.tabularNumbers())
+                        },
                         trailingContent = if (exercise.isPersonalBest) {
                             { PersonalRecordBadge(stringResource(R.string.exercise_pb_badge)) }
                         } else {

@@ -10,7 +10,7 @@ import java.time.Duration
 data class WorkoutRecap(
     val duration: Duration,
     val completedSetCount: Int,
-    /** Weight × reps over every completed set, kg. */
+    /** Weight × reps over every completed working set (not warm-ups), kg. */
     val volumeKg: Double,
     /** The same volume for the previous finished workout of the same training day, if any. */
     val previousVolumeKg: Double?,
@@ -47,4 +47,4 @@ fun recapOf(workout: Workout, personalBests: List<PersonalBest>, previous: Worko
 }
 
 private fun Workout.volumeKg(): Double =
-    exercises.flatMap { it.sets }.filter { it.isCompleted }.sumOf { (it.weightKg ?: 0.0) * (it.reps ?: 0) }
+    exercises.flatMap { it.sets }.filter { it.isCompleted && !it.type.isWarmUp }.sumOf { (it.weightKg ?: 0.0) * (it.reps ?: 0) }

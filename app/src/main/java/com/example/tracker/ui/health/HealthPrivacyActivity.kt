@@ -42,7 +42,8 @@ class HealthPrivacyActivity : ComponentActivity() {
         val settings = (application as TrackerApplication).container.settingsRepository
         setContent {
             val themeMode by settings.themeMode.collectAsStateWithLifecycle()
-            TrackerTheme(darkTheme = themeMode.isDark(systemIsDark = isSystemInDarkTheme())) {
+            val dynamicColor by settings.dynamicColor.collectAsStateWithLifecycle()
+            TrackerTheme(darkTheme = themeMode.isDark(systemIsDark = isSystemInDarkTheme()), dynamicColor = dynamicColor) {
                 Scaffold(
                     topBar = {
                         TopAppBar(
