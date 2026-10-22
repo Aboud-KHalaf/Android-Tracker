@@ -65,6 +65,7 @@ All data stays on your device, and you don't need an account. When you want your
 
 ### 📲 On your home screen
 - **App shortcuts**: long-press the app icon to start today's workout (or jump back into the one in progress), log a stat, or take progress photos
+- **Up next widget**: your next training day (or the workout in progress) with a Start/Resume button, plus this week's workout count, in the app's colours and light/dark theme
 
 ### 🎨 Design
 - Material Design 3 with a blue brand theme, plus light and dark modes
@@ -87,6 +88,7 @@ Get the latest APK from the [website](https://aboud-khalaf.github.io/Android-Tra
 | Camera | CameraX (`camera-view` with `LifecycleCameraController`) |
 | Images | Coil |
 | Storage | Room (with migrations and exported schemas) |
+| Widget | Jetpack Glance |
 | Background | AlarmManager for the daily stats reminder; an ongoing notification for the workout in progress |
 | Dependency injection | Manual (`AppContainer`) |
 | Testing | JUnit, Robolectric, Compose UI tests |

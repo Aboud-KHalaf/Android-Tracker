@@ -44,6 +44,18 @@
         </activity>
 
         <receiver
+            android:name=".widget.UpNextWidgetReceiver"
+            android:exported="true"
+            android:label="@string/home_up_next">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/up_next_widget_info" />
+        </receiver>
+        <receiver
             android:name=".reminder.DailyReminderReceiver"
             android:exported="false" />
         <receiver

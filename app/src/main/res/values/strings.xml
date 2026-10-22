@@ -21,6 +21,10 @@
         <item quantity="one">%d set</item>
         <item quantity="other">%d sets</item>
     </plurals>
+    <plurals name="widget_workouts_this_week">
+        <item quantity="one">%d workout this week</item>
+        <item quantity="other">%d workouts this week</item>
+    </plurals>
     <plurals name="workout_count">
         <item quantity="one">%d workout</item>
         <item quantity="other">%d workouts</item>
@@ -36,6 +40,13 @@
     <string name="home_error_load">Couldn\'t load your workouts.</string>
     <string name="home_error_start_workout">Couldn\'t start the workout. Try again.</string>
     <string name="home_up_next">Up next</string>
+    <string name="widget_description">Your next workout, ready to start</string>
+    <string name="widget_start">Start</string>
+    <string name="widget_resume">Resume</string>
+    <string name="widget_tomorrow">Tomorrow</string>
+    <string name="widget_nothing_to_start">Plan your training</string>
+    <string name="widget_nothing_to_start_body">Create a program and add exercises in the app.</string>
+    <string name="widget_error">Tap to open the app.</string>
     <string name="home_last_done">last done %1$s</string>
     <string name="home_never_done">not done yet</string>
     <string name="home_start_workout">Start workout</string>
