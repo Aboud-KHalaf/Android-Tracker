@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tracker — Workouts, Nutrition, Steps &amp; Weight</title>
-<meta name="description" content="Tracker is a free, offline-first Android app for logging workouts, calories, protein, daily steps, body weight and progress photos, with an online exercise catalog to build your plans. No account, no cloud — your data stays on your phone.">
+<title>Tracker — Workouts, Stats &amp; Progress Photos</title>
+<meta name="description" content="Tracker is a free, offline-first Android app for weekly workout programs, logging sets, any stat you measure (weight, calories, steps, sleep...) and progress photos, with an online exercise catalog to build your plans. No account, no cloud — your data stays on your phone.">
 <meta name="theme-color" content="#2A5FA8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Tracker — Workouts, Nutrition, Steps & Weight">
-<meta property="og:description" content="A free, offline-first Android app for workouts, nutrition, daily steps and body weight. No account needed.">
+<meta property="og:title" content="Tracker — Workouts, Stats & Progress Photos">
+<meta property="og:description" content="A free, offline-first Android app for workout programs, any stat you track and progress photos. No account needed.">
 <meta property="og:url" content="https://aboud-khalaf.github.io/Android-Tracker/">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&icon_names=accessibility_new,add,android,arrow_forward,check,check_circle,cloud_off,code,contrast,dark_mode,devices,directions_walk,download,emoji_events,fitness_center,history,home,info,insights,light_mode,lock,monitor_weight,no_accounts,notifications,palette,photo_camera,picture_as_pdf,play_arrow,qr_code_2,remove,restaurant,search,table_chart,timer,today,travel_explore,trending_down&display=block">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&icon_names=accessibility_new,add,android,arrow_forward,bolt,calendar_month,check,check_circle,cloud_off,code,contrast,dark_mode,devices,directions_walk,download,emoji_events,favorite,fitness_center,history,home,info,insights,light_mode,link,local_fire_department,lock,monitor_weight,no_accounts,notifications,palette,photo_camera,picture_as_pdf,play_arrow,qr_code_2,query_stats,remove,restaurant,search,settings_backup_restore,summarize,table_chart,timer,today,translate,travel_explore,trending_down,wallpaper,widgets&display=block">
 <style>
 /* ---------- Design tokens: mirrors app/src/main/java/.../ui/theme ---------- */
 :root, .scheme-light {
@@ -280,14 +280,6 @@ img,svg { display:block; }
 .nav-item.on { color:var(--on-surface); }
 .nav-item.on .pill::before { transform:none; opacity:1; }
 .nav-item.on .icon { font-variation-settings:"FILL" 1, "wght" 400, "opsz" 24; color:var(--on-secondary-container); }
-.ring-wrap { position:relative; width:150px; height:150px; margin:4px auto 14px; }
-.ring-wrap svg { width:100%; height:100%; transform:rotate(-90deg); }
-.ring-wrap .c { position:absolute; inset:0; display:grid; place-content:center; text-align:center; }
-.ring-wrap .c b { font-size:26px; font-weight:600; }
-.ring-wrap .c small { font-size:11px; color:var(--on-surface-variant); }
-.ring-track { fill:none; stroke:var(--sc-highest); stroke-width:12; }
-.ring-val { fill:none; stroke:var(--primary); stroke-width:12; stroke-linecap:round; stroke-dasharray:1; stroke-dashoffset:1;
-  transition: stroke-dashoffset 1400ms var(--ease-emph); }
 .macro { margin-bottom:12px; }
 .macro .top { display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; }
 .macro .top span:last-child { color:var(--on-surface-variant); }
@@ -671,15 +663,15 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
   <div class="wrap hero-grid">
     <div>
       <a class="chip fade-up" style="--delay:0ms" href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest" target="_blank" rel="noopener">
-        <span class="icon fill">android</span><span data-version>v1.2</span> is out — free &amp; open source<span class="pulse"></span>
+        <span class="icon fill">android</span><span data-version>v1.2.1</span> is out — free &amp; open source<span class="pulse"></span>
       </a>
-      <h1 class="display-l" aria-label="Train. Eat. Track. All on your phone.">
-        <span class="word"><span style="--i:0">Train.</span></span>
-        <span class="word"><span style="--i:1">Eat.</span></span>
+      <h1 class="display-l" aria-label="Plan. Train. Track. All on your phone.">
+        <span class="word"><span style="--i:0">Plan.</span></span>
+        <span class="word"><span style="--i:1">Train.</span></span>
         <span class="word"><span style="--i:2">Track.</span></span><br>
         <span class="word"><span style="--i:3" class="grad-text">All on your phone.</span></span>
       </h1>
-      <p class="body-l fade-up" style="--delay:500ms">Tracker brings your <strong>workouts</strong>, a <strong>daily log</strong> of calories, protein and steps, your <strong>body weight</strong> and <strong>progress photos</strong> into one beautiful Android app. It's offline-first: you don't need an account, and only the optional exercise catalog uses the internet.</p>
+      <p class="body-l fade-up" style="--delay:500ms">Tracker brings your <strong>weekly training program</strong>, every <strong>set you log</strong>, any <strong>stat you measure</strong> (weight, calories, steps, sleep...) and <strong>progress photos</strong> into one beautiful Android app. It's offline-first: you don't need an account, and only the optional exercise catalog uses the internet.</p>
       <div class="cta-row fade-up" style="--delay:650ms">
         <a class="btn lg" data-apk href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest/download/app-release.apk">
           <span class="icon">download</span>Download APK
@@ -699,10 +691,10 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     <div class="phone-stage" id="phoneStage">
       <div class="phone-wrap" id="phoneWrap">
         <div class="floater f1 pop-in" style="--delay:900ms"><div class="ic pb"><span class="icon fill">emoji_events</span></div><div><b>New personal best</b><span class="s">Bench Press · 82.5 kg</span></div></div>
-        <div class="floater f2 pop-in" style="--delay:1100ms"><div class="ic"><span class="icon">restaurant</span></div><div><b class="num"><span data-count="142">0</span> g protein</b><span class="s">89% of today's goal</span></div></div>
-        <div class="floater f3 pop-in" style="--delay:1300ms"><div class="ic"><span class="icon">trending_down</span></div><div><b>−1.2 kg</b><span class="s">this month</span></div></div>
+        <div class="floater f2 pop-in" style="--delay:1100ms"><div class="ic"><span class="icon fill">local_fire_department</span></div><div><b class="num"><span data-count="8">0</span>-week streak</b><span class="s">trained every week</span></div></div>
+        <div class="floater f3 pop-in" style="--delay:1300ms"><div class="ic"><span class="icon">trending_down</span></div><div><b>−1.2 kg</b><span class="s">Weight · this month</span></div></div>
 
-        <div class="phone" role="img" aria-label="Tracker app preview cycling through the Home, Progress, Daily log and Weight screens">
+        <div class="phone" role="img" aria-label="Tracker app preview cycling through the Home, Progress and Stats screens">
           <div class="screen">
             <div class="statusbar"><span class="num" id="clock">9:41</span><span class="sys"><i></i><i></i></span></div>
             <div class="views" aria-hidden="true">
@@ -718,16 +710,16 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
                 </div>
                 <div class="m-row">
                   <div class="m-card m-stat"><span class="icon">fitness_center</span><div class="v num">4</div><div class="k">workouts this week</div></div>
-                  <div class="m-card m-stat"><span class="icon fill pb">emoji_events</span><div class="v num">12</div><div class="k">PRs this month</div></div>
+                  <div class="m-card m-stat"><span class="icon fill pb">local_fire_department</span><div class="v num">8</div><div class="k">week streak</div></div>
                 </div>
                 <div class="m-list-item"><div class="m-avatar"><span class="icon">fitness_center</span></div><div><div class="t">Pull Day</div><div class="s">Tue · 52 min · 18 sets</div></div></div>
                 <div class="m-list-item"><div class="m-avatar"><span class="icon">fitness_center</span></div><div><div class="t">Legs</div><div class="s">Sun · 61 min · 21 sets</div></div></div>
               </div>
               <!-- Progress -->
-              <div class="view" data-tab="2">
+              <div class="view" data-tab="1">
                 <p class="app-sub">Exercise</p>
                 <p class="app-title">Bench Press</p>
-                <div class="m-chips"><span class="m-chip on"><span class="icon">check</span>Est. 1RM</span><span class="m-chip">Max weight</span><span class="m-chip">Volume</span></div>
+                <div class="m-chips"><span class="m-chip on"><span class="icon">check</span>Est. 1RM</span><span class="m-chip">Max weight</span><span class="m-chip">× BW</span></div>
                 <div class="m-card">
                   <div class="m-label" style="color:var(--on-surface-variant)">Estimated 1RM</div>
                   <div class="m-big num">103<small>kg</small></div>
@@ -735,20 +727,18 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
                 </div>
                 <div class="m-list-item"><div class="m-avatar" style="background:var(--tertiary-container);color:var(--on-tertiary-container)"><span class="icon fill">emoji_events</span></div><div><div class="t">82.5 kg × 6</div><div class="s">Personal best · today</div></div></div>
               </div>
-              <!-- Daily log -->
-              <div class="view" data-tab="3">
-                <p class="app-sub">Daily log</p>
+              <!-- Stats -->
+              <div class="view" data-tab="2">
+                <p class="app-sub">Stats</p>
                 <p class="app-title">Today</p>
-                <div class="ring-wrap">
-                  <svg viewBox="0 0 120 120"><circle class="ring-track" cx="60" cy="60" r="50"/><circle class="ring-val" cx="60" cy="60" r="50" pathLength="1" data-ring="0.77"/></svg>
-                  <div class="c"><b class="num">1,840</b><small>of 2,400 kcal</small></div>
-                </div>
+                <div class="macro"><div class="top"><span>Steps</span><span class="num">8,240 / 10,000</span></div><div class="lp"><div class="f" data-w="82"></div><div class="t"></div></div></div>
                 <div class="macro"><div class="top"><span>Protein</span><span class="num">142 / 160 g</span></div><div class="lp"><div class="f" data-w="89"></div><div class="t"></div></div></div>
-                <div class="macro"><div class="top"><span>Steps</span><span class="num">8,240 steps</span></div></div>
+                <div class="macro"><div class="top"><span>Sleep</span><span class="num">7.4 / 8 h</span></div><div class="lp"><div class="f" data-w="92"></div><div class="t"></div></div></div>
+                <div class="m-list-item"><div class="m-avatar"><span class="icon">monitor_weight</span></div><div><div class="t num">Weight · 78.4 kg</div><div class="s">Today · −1.2 kg this month</div></div></div>
               </div>
-              <!-- Weight -->
-              <div class="view" data-tab="4">
-                <p class="app-sub">Body weight</p>
+              <!-- Stat details: Weight -->
+              <div class="view" data-tab="2">
+                <p class="app-sub">Stats</p>
                 <p class="app-title">Weight</p>
                 <div class="m-card">
                   <div class="m-label" style="color:var(--on-surface-variant)">Current</div>
@@ -762,10 +752,8 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
             <div class="fab" id="fab"><span class="icon">add</span></div>
             <div class="navbar" aria-hidden="true">
               <div class="nav-item" data-nav="0"><div class="pill"><span class="icon">home</span></div>Home</div>
-              <div class="nav-item" data-nav="1"><div class="pill"><span class="icon">history</span></div>History</div>
-              <div class="nav-item" data-nav="2"><div class="pill"><span class="icon">insights</span></div>Progress</div>
-              <div class="nav-item" data-nav="3"><div class="pill"><span class="icon">today</span></div>Daily</div>
-              <div class="nav-item" data-nav="4"><div class="pill"><span class="icon">monitor_weight</span></div>Weight</div>
+              <div class="nav-item" data-nav="1"><div class="pill"><span class="icon">insights</span></div>Progress</div>
+              <div class="nav-item" data-nav="2"><div class="pill"><span class="icon">query_stats</span></div>Stats</div>
             </div>
           </div>
         </div>
@@ -777,18 +765,20 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
 <!-- ================= MARQUEE ================= -->
 <div class="strip" aria-hidden="true">
   <div class="marquee" id="marquee">
-    <span><span class="icon">fitness_center</span>Workout plans</span>
+    <span><span class="icon">calendar_month</span>Weekly programs</span>
     <span><span class="icon">travel_explore</span>Exercise catalog</span>
-    <span><span class="icon">timer</span>Hold timer</span>
-    <span><span class="icon">insights</span>Progress charts</span>
+    <span><span class="icon">fitness_center</span>Warm-ups, drop sets &amp; RPE</span>
+    <span><span class="icon">link</span>Supersets</span>
+    <span><span class="icon">timer</span>Rest &amp; hold timers</span>
+    <span><span class="icon">insights</span>Estimated 1RM</span>
     <span><span class="icon fill" style="color:var(--tertiary)">emoji_events</span>Personal bests</span>
-    <span><span class="icon">restaurant</span>Nutrition targets</span>
-    <span><span class="icon">directions_walk</span>Daily steps</span>
-    <span><span class="icon">monitor_weight</span>Body weight</span>
+    <span><span class="icon">local_fire_department</span>Week streaks</span>
+    <span><span class="icon">query_stats</span>Any stat you measure</span>
     <span><span class="icon">photo_camera</span>Progress photos</span>
-    <span><span class="icon">notifications</span>Daily reminder</span>
-    <span><span class="icon">dark_mode</span>Light &amp; dark themes</span>
-    <span><span class="icon">devices</span>Adaptive layouts</span>
+    <span><span class="icon">favorite</span>Health Connect</span>
+    <span><span class="icon">settings_backup_restore</span>Backup &amp; restore</span>
+    <span><span class="icon">widgets</span>Home screen widget</span>
+    <span><span class="icon">translate</span>English &amp; العربية</span>
     <span><span class="icon">lock</span>100% on-device</span>
   </div>
 </div>
@@ -799,7 +789,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     <div class="section-head reveal">
       <p class="overline">Features</p>
       <h2 class="display-s">Everything you need to make progress</h2>
-      <p class="body-l">Build a plan from hundreds of exercises, log a set in seconds, see your strength go up, hit your macros, watch your weight trend and see your body change in progress photos. Then export any of it as a PDF or Excel file.</p>
+      <p class="body-l">Plan your week, log a set in seconds, see your strength go up, track any number that matters to you and see your body change in progress photos. Then export any of it as a PDF or Excel file, or back it all up to move to a new phone.</p>
     </div>
 
     <div class="bento">
@@ -807,8 +797,8 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
       <article class="card span-6 catalog-card reveal" data-demo="catalog">
         <div>
           <div class="feat-ic"><span class="icon">travel_explore</span></div>
-          <h3 class="title-l">Build plans from hundreds of exercises</h3>
-          <p class="body-m">Search the free wger exercise catalog while you build a plan. Each exercise shows a picture, the muscles it works, the equipment and how to do it. Add it with one tap, and it's set to weight × reps or a timed hold for you.</p>
+          <h3 class="title-l">Plan your week from hundreds of exercises</h3>
+          <p class="body-m">Start a program from a <strong>Full Body</strong>, <strong>Upper/Lower</strong> or <strong>Push/Pull/Legs</strong> template, pick your training days, and Home shows today's workout. Fill each day from the free wger exercise catalog: every exercise shows a picture, the muscles it works, the equipment and how to do it. Set targets, reorder by dragging, or pair two exercises as a superset.</p>
           <p class="body-m catalog-note"><span class="icon">info</span>Needs a connection only while you browse. Exercise data from wger.de, licensed CC-BY-SA.</p>
         </div>
         <div class="demo surface" aria-hidden="true">
@@ -826,7 +816,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
       <article class="card span-3 reveal" data-demo="sets">
         <div class="feat-ic"><span class="icon">fitness_center</span></div>
         <h3 class="title-l">Log sets in seconds</h3>
-        <p class="body-m">Create plans, and the Home screen tells you what to train next. Large −/+ steppers make logging weight and reps easy, even mid-set.</p>
+        <p class="body-m">Large −/+ steppers make logging weight and reps easy, even mid-set. Mark warm-ups, drop sets and sets to failure, rate the effort (RPE), see the plates for each side of the bar, and celebrate a new personal best the moment you hit it.</p>
         <div class="demo surface" aria-hidden="true">
           <div class="set-head"><span class="title-m">Bench Press</span><span class="timer num"><span class="icon">timer</span><span id="wkTimer">24:13</span></span></div>
           <div class="sets" id="sets"></div>
@@ -842,7 +832,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
       <article class="card span-3 reveal" style="--d:100ms" data-demo="progress">
         <div class="feat-ic pb"><span class="icon fill">insights</span></div>
         <h3 class="title-l">See your strength climb</h3>
-        <p class="body-m">Every exercise has its own progress chart and full history. Switch metrics and time ranges, and personal bests are highlighted.</p>
+        <p class="body-m">Every exercise has its own chart and full history. Switch between top set, estimated one-rep max, reps, volume and strength per kilo of bodyweight (× BW), and see this week's working sets for each muscle group.</p>
         <div class="demo surface">
           <div class="seg" role="group" aria-label="Progress metric">
             <button type="button" class="on" data-metric="orm"><span class="icon">check</span>Est. 1RM</button>
@@ -857,8 +847,8 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
       <!-- Hold timer -->
       <article class="card span-2 reveal" data-demo="hold">
         <div class="feat-ic"><span class="icon">timer</span></div>
-        <h3 class="title-l">Built-in hold timer</h3>
-        <p class="body-m">For timed sets like planks and holds. Start it and keep your focus.</p>
+        <h3 class="title-l">Rest and hold timers</h3>
+        <p class="body-m">A rest countdown starts after each set and lets you know when it's over, even with the app closed. Timed sets like planks get their own hold timer.</p>
         <div class="demo hold" aria-hidden="true">
           <div class="hold-ring" id="holdRing">
             <svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="52"/><circle class="val" id="holdVal" cx="60" cy="60" r="52" pathLength="1" style="stroke-dashoffset:0"/></svg>
@@ -867,26 +857,28 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         </div>
       </article>
 
-      <!-- Daily log -->
-      <article class="card span-2 reveal" style="--d:100ms" data-demo="nutrition">
-        <div class="feat-ic"><span class="icon">today</span></div>
-        <h3 class="title-l">Log your whole day</h3>
-        <p class="body-m">Track calories and protein against your goals, add your steps, and edit any past day.</p>
+      <!-- Stats -->
+      <article class="card span-2 reveal" style="--d:100ms" data-demo="stats">
+        <div class="feat-ic"><span class="icon">query_stats</span></div>
+        <h3 class="title-l">Track any number</h3>
+        <p class="body-m">Weight, body fat, waist, calories, protein, steps, sleep or your own: each stat gets a target, a chart and its full history.</p>
         <div class="demo" aria-hidden="true">
-          <div class="macro"><div class="top"><span>Calories</span><span class="num"><span data-count="1840">0</span> / 2,400</span></div><div class="lp"><div class="f" data-w="77"></div><div class="t"></div></div></div>
+          <div class="macro"><div class="top"><span>Water</span><span class="num"><span data-count="2.1" data-dec="1">0</span> / 3 L</span></div><div class="lp"><div class="f" data-w="70"></div><div class="t"></div></div></div>
           <div class="macro"><div class="top"><span>Protein</span><span class="num"><span data-count="142">0</span> / 160 g</span></div><div class="lp"><div class="f" data-w="89"></div><div class="t"></div></div></div>
-          <div class="macro"><div class="top"><span>Steps</span><span class="num"><span data-count="8240">0</span> steps</span></div></div>
+          <div class="macro"><div class="top"><span>Steps</span><span class="num"><span data-count="8240">0</span> / 10,000</span></div><div class="lp"><div class="f" data-w="82"></div><div class="t"></div></div></div>
         </div>
       </article>
 
-      <!-- Weight -->
-      <article class="card span-2 reveal span-wide-md" style="--d:200ms" data-demo="weight">
-        <div class="feat-ic"><span class="icon">monitor_weight</span></div>
-        <h3 class="title-l">Watch the trend</h3>
-        <p class="body-m">Your current weight, a clear chart and your full history.</p>
-        <div class="demo" aria-hidden="true">
-          <div style="display:flex;align-items:center;gap:10px"><span class="m-big num"><span data-count="78.4" data-dec="1">0</span><small>kg</small></span><span class="delta"><span class="icon">trending_down</span>1.2 kg</span></div>
-          <svg class="mini-chart" viewBox="0 0 240 110" preserveAspectRatio="none" data-chart="weight"></svg>
+      <!-- Workout summary -->
+      <article class="card span-2 reveal span-wide-md" style="--d:200ms">
+        <div class="feat-ic pb"><span class="icon">summarize</span></div>
+        <h3 class="title-l">Every workout, summed up</h3>
+        <p class="body-m">Finish and see your time, sets, volume against last time and the personal bests you set. Home shows your week streak and a 12-week calendar.</p>
+        <div class="demo surface" aria-hidden="true">
+          <div class="set-head"><span class="title-m">Push Day</span><span class="timer num"><span class="icon">timer</span>52 min</span></div>
+          <div class="macro"><div class="top"><span>Volume</span><span class="num">8,420 kg · +6%</span></div></div>
+          <div class="macro"><div class="top"><span>Sets</span><span class="num">18 working · 4 warm-up</span></div></div>
+          <div class="m-list-item"><div class="m-avatar" style="background:var(--tertiary-container);color:var(--on-tertiary-container)"><span class="icon fill">emoji_events</span></div><div><div class="t">2 personal bests</div><div class="s">Bench Press · Overhead Press</div></div></div>
         </div>
       </article>
 
@@ -895,7 +887,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         <div>
           <div class="feat-ic pb"><span class="icon">photo_camera</span></div>
           <h3 class="title-l">See the change the scale misses</h3>
-          <p class="body-m">Take a front, side and back photo in a few taps. A body outline with head and feet lines shows where to stand, your last photo appears faintly over the camera so you can line up in the same spot, and a self-timer gives you time to step back. Then compare your first and latest photo side by side.</p>
+          <p class="body-m">Take a front, side and back photo in a few taps. A body outline with head, shoulder, waist, hip and knee marks shows where to stand, your last photo appears faintly over the camera so you can line up in the same spot, and a self-timer gives you time to step back. Note measurements with each session, then compare your first and latest photo side by side.</p>
           <p class="body-m catalog-note"><span class="icon">lock</span>Photos are stored only inside the app on your phone. They aren't added to your gallery or uploaded to cloud backups.</p>
         </div>
         <div class="demo surface ph-demo" aria-hidden="true">
@@ -926,17 +918,38 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         </div>
       </article>
 
+      <!-- Background workouts -->
+      <article class="card span-2 reveal">
+        <div class="feat-ic"><span class="icon">bolt</span></div>
+        <h3 class="title-l">A workout you can't lose</h3>
+        <p class="body-m">Every set is saved the moment you log it. Leave the app, lock the phone or restart it: the workout comes back where you were, and a notification keeps the clock running.</p>
+      </article>
+
+      <!-- Health Connect -->
+      <article class="card span-2 reveal" style="--d:100ms">
+        <div class="feat-ic"><span class="icon">favorite</span></div>
+        <h3 class="title-l">Health Connect, if you like</h3>
+        <p class="body-m">Fill your Steps, Weight and Sleep stats from Health Connect instead of typing them. It's optional, reads only, and nothing leaves your phone.</p>
+      </article>
+
+      <!-- Backup -->
+      <article class="card span-2 reveal span-wide-md" style="--d:200ms">
+        <div class="feat-ic"><span class="icon">settings_backup_restore</span></div>
+        <h3 class="title-l">Move phones in one file</h3>
+        <p class="body-m">Back up everything, progress photos included, to a single .zip and restore it on your new phone. You choose where the file goes.</p>
+      </article>
+
       <!-- Reminder -->
       <article class="card span-3 reveal" data-demo="reminder">
         <div class="feat-ic"><span class="icon">notifications</span></div>
         <h3 class="title-l">A gentle nudge, when you want it</h3>
-        <p class="body-m">If you haven't filled in today's log yet, an optional daily reminder helps you keep your streak. Pick its time, or turn it off, in Settings.</p>
+        <p class="body-m">If you haven't logged today's stats yet, an optional daily reminder helps you keep your streak. Pick its time, or turn it off, in Settings.</p>
         <div class="demo lock" aria-hidden="true">
           <div class="clock num">9:00</div>
           <div class="date">Saturday, October 3</div>
           <div class="notif" id="notif">
             <div class="app-ic"><svg viewBox="0 0 108 108"><use href="#appIcon"/></svg></div>
-            <div><b>Fill in today's log</b><span>You haven't added today's calories, protein and steps yet.</span></div>
+            <div><b>Log today's stats</b><span>You haven't logged your weight, protein and steps today.</span></div>
             <div class="when">now</div>
           </div>
         </div>
@@ -945,8 +958,8 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
       <!-- Themes -->
       <article class="card span-3 reveal" style="--d:100ms" data-demo="theme">
         <div class="feat-ic"><span class="icon">palette</span></div>
-        <h3 class="title-l">Light, dark or system</h3>
-        <p class="body-m">Material Design 3 with a calm blue theme, smooth transitions and layouts that adapt to tablets and larger screens.</p>
+        <h3 class="title-l">Light, dark or your wallpaper</h3>
+        <p class="body-m">Material Design 3 with a calm blue theme, or colors from your wallpaper on Android 12+. Smooth transitions, and layouts that adapt to tablets and larger screens.</p>
         <div class="demo theme-demo" aria-hidden="true">
           <div class="pane scheme-light">
             <div class="m-card primary" style="margin:0 0 10px"><div class="m-label">Up next</div><div class="m-title">Leg Day</div><div class="m-meta">5 exercises</div><div class="m-btn"><span class="icon fill">play_arrow</span>Start workout</div></div>
@@ -965,12 +978,26 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         </div>
       </article>
 
+      <!-- Home screen -->
+      <article class="card span-3 reveal">
+        <div class="feat-ic"><span class="icon">widgets</span></div>
+        <h3 class="title-l">Right on your home screen</h3>
+        <p class="body-m">The <strong>Up next</strong> widget shows your next training day with a Start button and this week's workouts. Long-press the app icon to start a workout, log a stat or take progress photos.</p>
+      </article>
+
+      <!-- Language and onboarding -->
+      <article class="card span-3 reveal" style="--d:100ms">
+        <div class="feat-ic"><span class="icon">translate</span></div>
+        <h3 class="title-l">In English and العربية</h3>
+        <p class="body-m">The whole app is translated into Arabic with a right-to-left layout, and numbers typed in Arabic digits just work. On first launch, a short welcome sets up your first program and stats, or skip it.</p>
+      </article>
+
       <!-- Export -->
       <article class="card span-6 export-card reveal" data-demo="export">
         <div>
           <div class="feat-ic"><span class="icon">download</span></div>
           <h3 class="title-l">Take your numbers anywhere</h3>
-          <p class="body-m">Export what you're looking at as a PDF or an Excel file: an exercise's progress, a period of your daily log, or your weight trend. Exports follow the metric, range or period you picked. Or save everything at once from Settings.</p>
+          <p class="body-m">Export what you're looking at as a PDF or an Excel file: an exercise's progress or a period of any stat. Exports follow the metric, range or period you picked. Or save everything at once from Settings.</p>
           <p class="body-m catalog-note"><span class="icon">info</span>Files are made on your phone and saved wherever you choose. Nothing is uploaded.</p>
         </div>
         <div class="demo export-demo" aria-hidden="true">
@@ -1021,7 +1048,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
       <div class="step" style="--sd:1600ms">
         <div class="num-c"><span class="icon fill">fitness_center</span></div>
         <h3 class="title-l">Start training</h3>
-        <p class="body-m">Open Tracker, create your first plan and log your first set. No sign-up needed.</p>
+        <p class="body-m">Open Tracker, pick a program template (or skip it) and log your first set. No sign-up needed.</p>
       </div>
     </div>
     <div class="note reveal"><span class="icon">android</span><span>Requires <strong>Android 7.0 (API 24)</strong> or newer. Updates are published on the <a href="https://github.com/Aboud-KHalaf/Android-Tracker/releases" target="_blank" rel="noopener">Releases page</a>. To update, download the new APK and install it over the old one. Your data is kept.</span></div>
@@ -1034,7 +1061,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     <div class="reveal">
       <p class="overline">Privacy</p>
       <h2 class="display-s">Your data never leaves your phone</h2>
-      <p class="body-l" style="margin:16px 0 32px">There are no accounts, no cloud sync, no ads and no analytics. Everything you log, progress photos included, is stored on your device. From Settings you can export your logs as a PDF or Excel file, or delete everything with one tap. The app only goes online when you browse the exercise catalog, and then it sends just your search to wger.de.</p>
+      <p class="body-l" style="margin:16px 0 32px">There are no accounts, no cloud sync, no ads and no analytics. Everything you log, progress photos included, is stored on your device. From Settings you can export your data as a PDF or Excel file, back it all up to a file you keep, or delete everything with one tap. Health Connect sync is optional and only reads what's already on your phone. The app only goes online when you browse the exercise catalog, and then it sends just your search to wger.de.</p>
       <div class="stats">
         <div class="stat"><span class="icon">no_accounts</span><b class="num"><span data-count="0">0</span></b><span>accounts needed</span></div>
         <div class="stat"><span class="icon">cloud_off</span><b class="num"><span data-count="0">0</span></b><span>servers storing your data</span></div>
@@ -1066,8 +1093,8 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     </div>
     <div class="tech reveal">
       <span class="chip">Kotlin</span><span class="chip">Jetpack Compose</span><span class="chip">Material 3</span><span class="chip">MVVM</span>
-      <span class="chip">StateFlow</span><span class="chip">Navigation Compose</span><span class="chip">Room</span><span class="chip">kotlinx.serialization</span><span class="chip">Coil</span><span class="chip">wger REST API</span>
-      <span class="chip">AlarmManager</span><span class="chip">JUnit</span><span class="chip">Robolectric</span><span class="chip">Compose UI tests</span>
+      <span class="chip">StateFlow</span><span class="chip">Navigation Compose</span><span class="chip">Room</span><span class="chip">kotlinx.serialization</span><span class="chip">Coil</span><span class="chip">CameraX</span><span class="chip">Jetpack Glance</span><span class="chip">Health Connect</span><span class="chip">wger REST API</span>
+      <span class="chip">AlarmManager</span><span class="chip">JUnit</span><span class="chip">Robolectric</span><span class="chip">Compose UI tests</span><span class="chip">detekt</span><span class="chip">Baseline Profile</span>
     </div>
     <div class="cta-row reveal" style="justify-content:center">
       <a class="btn tonal" href="https://github.com/Aboud-KHalaf/Android-Tracker" target="_blank" rel="noopener"><span class="icon">code</span>Browse the code<span class="icon">arrow_forward</span></a>
@@ -1083,7 +1110,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         <h2 class="display-s">Start tracking today</h2>
         <p class="body-l">It's free, open source and private by design. Download the latest release and log your first workout in under a minute.</p>
         <div class="cta-row">
-          <a class="btn lg" data-apk href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest/download/app-release.apk"><span class="icon">download</span>Download <span data-version>v1.2</span></a>
+          <a class="btn lg" data-apk href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest/download/app-release.apk"><span class="icon">download</span>Download <span data-version>v1.2.1</span></a>
           <a class="btn lg text" href="https://github.com/Aboud-KHalaf/Android-Tracker/releases" target="_blank" rel="noopener">All releases<span class="icon">arrow_forward</span></a>
         </div>
       </div>
@@ -1222,13 +1249,14 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     setTimeout(() => views.forEach(v => v.classList.remove("leaving")), 420);
     const tab = +views[i].dataset.tab;
     navs.forEach(n => n.classList.toggle("on", +n.dataset.nav === tab));
-    fab.classList.toggle("show", tab === 3 || tab === 4);
+    fab.classList.toggle("show", tab === 2);
     const v = views[i];
-    if (tab === 2) renderChart($("[data-chart=phone-progress]", v), DATA.orm.v, { w:240, h:110, pad:6 });
-    if (tab === 4) renderChart($("[data-chart=phone-weight]", v), DATA.weight, { w:240, h:110, pad:6 });
-    if (tab === 3) {
-      $$(".lp .f", v).forEach(f => f.style.width = 0); const ring = $(".ring-val", v); ring.style.strokeDashoffset = 1;
-      requestAnimationFrame(() => requestAnimationFrame(() => { fillBars(v); ring.style.strokeDashoffset = 1 - ring.dataset.ring; }));
+    const progress = $("[data-chart=phone-progress]", v), weight = $("[data-chart=phone-weight]", v);
+    if (progress) renderChart(progress, DATA.orm.v, { w:240, h:110, pad:6 });
+    if (weight) renderChart(weight, DATA.weight, { w:240, h:110, pad:6 });
+    if ($(".lp", v)) {
+      $$(".lp .f", v).forEach(f => f.style.width = 0);
+      requestAnimationFrame(() => requestAnimationFrame(() => fillBars(v)));
     }
   }
   showView(0);
@@ -1333,8 +1361,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         await sleep(3200);
       }
     },
-    nutrition(card) { fillBars(card); $$("[data-count]", card).forEach(countUp); },
-    weight(card) { renderChart($("[data-chart=weight]", card), DATA.weight, { w:240, h:110, pad:6 }); $$("[data-count]", card).forEach(countUp); },
+    stats(card) { fillBars(card); $$("[data-count]", card).forEach(countUp); },
     async reminder() {
       const n = $("#notif");
       while (true) { n.classList.remove("show"); void n.offsetWidth; n.classList.add("show"); await sleep(6000); }
