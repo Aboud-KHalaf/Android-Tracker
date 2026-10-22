@@ -44,4 +44,36 @@ class SessionStatsTest {
         assertEquals(listOf("early", "early", "late"), sessions.map { it.workoutId })
         assertEquals(setOf("bench", "row"), sessions.take(2).map { it.exerciseId }.toSet())
     }
+
+    @Test
+    fun stats_weightSession_estimatesOneRepMaxFromItsBestSet() {
+        // 45 × 10 estimates 60 kg; 50 × 8 estimates more.
+        val stats = benchHistory.toSessions().last().stats()
+
+        assertEquals(50.0 * (1 + 8 / 30.0), stats.estimatedOneRepMaxKg!!, 1e-9)
+    }
+
+    @Test
+    fun estimatedOneRepMaxKg_usesEpley() {
+        assertEquals(100.0, estimatedOneRepMaxKg(75.0, 10)!!, 1e-9)
+    }
+
+    @Test
+    fun estimatedOneRepMaxKg_singleIsTheWeightItself() {
+        assertEquals(140.0, estimatedOneRepMaxKg(140.0, 1)!!, 0.0)
+    }
+
+    @Test
+    fun estimatedOneRepMaxKg_noEstimateWithoutRepsOrWeightOrPastTwelveReps() {
+        assertNull(estimatedOneRepMaxKg(60.0, 0))
+        assertNull(estimatedOneRepMaxKg(0.0, 5))
+        assertNull(estimatedOneRepMaxKg(20.0, 13))
+    }
+
+    @Test
+    fun stats_durationSession_hasNoOneRepMax() {
+        val stats = listOf(holdSet("w1", 0, 45)).toSessions().single().stats()
+
+        assertNull(stats.estimatedOneRepMaxKg)
+    }
 }

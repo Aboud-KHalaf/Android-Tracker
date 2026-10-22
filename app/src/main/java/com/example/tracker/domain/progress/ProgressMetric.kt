@@ -10,6 +10,9 @@ enum class ProgressMetric {
     /** Heaviest set's weight, kg. */
     WEIGHT,
 
+    /** Best estimated one-rep max, kg. */
+    ONE_REP_MAX,
+
     /** Reps over all sets. */
     REPS,
 
@@ -24,6 +27,7 @@ enum class ProgressMetric {
         val stats = session.stats()
         return when (this) {
             WEIGHT -> stats.topWeightKg
+            ONE_REP_MAX -> stats.estimatedOneRepMaxKg
             REPS -> stats.totalReps.takeIf { it > 0 }?.toDouble()
             VOLUME -> stats.volumeKg.takeIf { it > 0 }
             HOLD -> stats.longestHoldSeconds?.toDouble()
@@ -33,7 +37,7 @@ enum class ProgressMetric {
     companion object {
         /** The metrics that apply to an exercise type, the default first. */
         fun forType(type: ExerciseType): List<ProgressMetric> = when (type) {
-            ExerciseType.WEIGHT_REPS -> listOf(WEIGHT, REPS, VOLUME)
+            ExerciseType.WEIGHT_REPS -> listOf(WEIGHT, ONE_REP_MAX, REPS, VOLUME)
             ExerciseType.DURATION -> listOf(HOLD)
         }
     }

@@ -67,7 +67,7 @@ class ExerciseDetailsViewModelTest {
         val state = collectState(createViewModel())().success()
 
         assertEquals("Bench Press", state.name)
-        assertEquals(listOf(ProgressMetric.WEIGHT, ProgressMetric.REPS, ProgressMetric.VOLUME), state.metrics)
+        assertEquals(listOf(ProgressMetric.WEIGHT, ProgressMetric.ONE_REP_MAX, ProgressMetric.REPS, ProgressMetric.VOLUME), state.metrics)
         assertEquals(ProgressMetric.WEIGHT, state.metric)
         assertEquals(TimeRange.THREE_MONTHS, state.range)
 

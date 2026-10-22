@@ -37,7 +37,7 @@ class ProgressMetricTest {
     @Test
     fun forType_listsDefaultFirst() {
         assertEquals(
-            listOf(ProgressMetric.WEIGHT, ProgressMetric.REPS, ProgressMetric.VOLUME),
+            listOf(ProgressMetric.WEIGHT, ProgressMetric.ONE_REP_MAX, ProgressMetric.REPS, ProgressMetric.VOLUME),
             ProgressMetric.forType(ExerciseType.WEIGHT_REPS),
         )
         assertEquals(listOf(ProgressMetric.HOLD), ProgressMetric.forType(ExerciseType.DURATION))

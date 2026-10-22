@@ -238,10 +238,12 @@
     <string name="exercise_tab_progress">Progress</string>
     <string name="exercise_tab_history">History</string>
     <string name="metric_weight">Weight</string>
+    <string name="metric_one_rep_max">1RM</string>
     <string name="metric_reps">Reps</string>
     <string name="metric_volume">Volume</string>
     <string name="metric_hold">Longest hold</string>
     <string name="metric_weight_since">Top set weight since %1$s</string>
+    <string name="metric_one_rep_max_since">Estimated one-rep max since %1$s</string>
     <string name="metric_reps_since">Total reps per session since %1$s</string>
     <string name="metric_volume_since">Session volume (kg × reps) since %1$s</string>
     <string name="metric_hold_since">Longest hold since %1$s</string>
@@ -400,6 +402,7 @@
     <string name="export_column_hold_seconds">Hold (s)</string>
     <string name="export_column_top_weight_kg">Top set weight (kg)</string>
     <string name="export_column_top_set_reps">Top set reps</string>
+    <string name="export_column_one_rep_max_kg">Estimated 1RM (kg)</string>
     <string name="export_column_total_reps">Total reps</string>
     <string name="export_column_volume_kg">Volume (kg)</string>
     <string name="export_column_longest_hold_seconds">Longest hold (s)</string>
