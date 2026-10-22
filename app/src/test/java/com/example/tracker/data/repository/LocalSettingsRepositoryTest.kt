@@ -162,4 +162,15 @@ class LocalSettingsRepositoryTest {
         assertTrue(photos.observeCheckIns().first().isEmpty())
         assertFalse(java.io.File(saved.filePath).exists())
     }
+
+    @Test
+    fun dynamicColor_defaultsOffAndPersists() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val settings = LocalSettingsRepository(preferences, database, photoStore, dispatcher)
+        assertFalse(settings.dynamicColor.value)
+
+        settings.setDynamicColor(true)
+
+        assertTrue(LocalSettingsRepository(preferences, database, photoStore, dispatcher).dynamicColor.value)
+    }
 }

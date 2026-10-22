@@ -63,14 +63,15 @@ class SettingsViewModel(
 
     val uiState: StateFlow<SettingsUiState> =
         combine(
-            settingsRepository.themeMode,
+            combine(settingsRepository.themeMode, settingsRepository.dynamicColor, ::Pair),
             dataOperation,
             settingsRepository.reminderEnabled,
             settingsRepository.reminderTime,
             settingsRepository.restTimes,
-        ) { themeMode, operation, reminder, reminderTime, restTimes ->
+        ) { (themeMode, dynamicColor), operation, reminder, reminderTime, restTimes ->
             SettingsUiState(
                 themeMode = themeMode,
+                dynamicColor = dynamicColor,
                 isDeletingData = operation == DataOperation.DELETE,
                 isExportingData = operation == DataOperation.EXPORT,
                 isBackingUp = operation == DataOperation.BACK_UP,
@@ -84,6 +85,7 @@ class SettingsViewModel(
             SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
             SettingsUiState(
                 themeMode = settingsRepository.themeMode.value,
+                dynamicColor = settingsRepository.dynamicColor.value,
                 reminderEnabled = settingsRepository.reminderEnabled.value,
                 reminderTime = settingsRepository.reminderTime.value,
                 restTimes = settingsRepository.restTimes.value,
@@ -93,6 +95,12 @@ class SettingsViewModel(
     fun onSelectThemeMode(mode: ThemeMode) {
         viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_theme) }) {
             settingsRepository.setThemeMode(mode)
+        }
+    }
+
+    fun onSetDynamicColor(enabled: Boolean) {
+        viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_theme) }) {
+            settingsRepository.setDynamicColor(enabled)
         }
     }
 

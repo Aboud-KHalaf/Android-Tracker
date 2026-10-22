@@ -8,6 +8,7 @@ import java.time.LocalTime
 /** Settings are read synchronously, so the screen has no loading or error state. */
 data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val dynamicColor: Boolean = false,
     val isDeletingData: Boolean = false,
     val isExportingData: Boolean = false,
     val isBackingUp: Boolean = false,

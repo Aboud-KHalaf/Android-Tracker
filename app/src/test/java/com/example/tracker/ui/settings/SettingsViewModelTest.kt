@@ -303,4 +303,15 @@ class SettingsViewModelTest {
         assertTrue(backup.restores.isEmpty())
         assertEquals(0, settings.deleteAllDataCalls)
     }
+
+    @Test
+    fun onSetDynamicColor_savesItAndShowsIt() = runTest {
+        val viewModel = createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+
+        viewModel.onSetDynamicColor(true)
+
+        assertEquals(true, settings.dynamicColor.value)
+        assertEquals(true, viewModel.uiState.value.dynamicColor)
+    }
 }
