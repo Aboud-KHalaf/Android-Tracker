@@ -136,7 +136,7 @@ private fun TrainingCalendar(weeks: List<List<CalendarDayUi>>) {
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            (0..2).forEach { count ->
+            for (count in 0..2) {
                 Box(Modifier.size(LegendCellSize).background(cellColor(count), CellShape))
             }
             Text(

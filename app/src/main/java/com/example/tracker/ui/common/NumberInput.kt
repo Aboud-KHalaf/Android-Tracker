@@ -8,8 +8,8 @@ package com.example.tracker.ui.common
 fun String.toWesternDigits(): String = buildString(length) {
     for (char in this@toWesternDigits) {
         when (char) {
-            in ARABIC_INDIC_ZERO..ARABIC_INDIC_ZERO + 9 -> append('0' + (char - ARABIC_INDIC_ZERO))
-            in EASTERN_ARABIC_INDIC_ZERO..EASTERN_ARABIC_INDIC_ZERO + 9 -> append('0' + (char - EASTERN_ARABIC_INDIC_ZERO))
+            in ARABIC_INDIC_ZERO..ARABIC_INDIC_NINE -> append('0' + (char - ARABIC_INDIC_ZERO))
+            in EASTERN_ARABIC_INDIC_ZERO..EASTERN_ARABIC_INDIC_NINE -> append('0' + (char - EASTERN_ARABIC_INDIC_ZERO))
             ARABIC_DECIMAL_SEPARATOR -> append('.')
             ARABIC_THOUSANDS_SEPARATOR -> Unit
             else -> append(char)
@@ -18,6 +18,8 @@ fun String.toWesternDigits(): String = buildString(length) {
 }
 
 private const val ARABIC_INDIC_ZERO = '٠'
+private const val ARABIC_INDIC_NINE = '٩'
 private const val EASTERN_ARABIC_INDIC_ZERO = '۰'
+private const val EASTERN_ARABIC_INDIC_NINE = '۹'
 private const val ARABIC_DECIMAL_SEPARATOR = '٫'
 private const val ARABIC_THOUSANDS_SEPARATOR = '٬'

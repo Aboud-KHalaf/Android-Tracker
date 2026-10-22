@@ -2,6 +2,7 @@ package com.example.tracker.widget
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +40,7 @@ import com.example.tracker.ui.theme.LightColorScheme
 import java.time.LocalDate
 import java.time.format.TextStyle as DateTextStyle
 import java.util.Locale
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 
 /**
@@ -56,6 +58,8 @@ class UpNextWidget : GlanceAppWidget() {
         }
     }
 
+    // A widget must render whatever loading throws, so any failure falls back to opening the app.
+    @Suppress("TooGenericExceptionCaught")
     private suspend fun loadState(context: Context): UpNextWidgetState? {
         val container = (context.applicationContext as TrackerApplication).container
         return try {
@@ -67,8 +71,11 @@ class UpNextWidget : GlanceAppWidget() {
                 programs = container.programRepository.observePrograms().first(),
                 history = container.workoutRepository.observeHistory().first(),
             )
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             // The widget then just opens the app, which shows the error properly.
+            Log.w(TAG, "Couldn't load the widget's workout", e)
             null
         }
     }
@@ -151,6 +158,7 @@ class UpNextWidget : GlanceAppWidget() {
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
 
     private companion object {
+        const val TAG = "UpNextWidget"
         val WidgetColors = ColorProviders(light = LightColorScheme, dark = DarkColorScheme)
         val CornerRadius = 24.dp
         val Padding = 16.dp

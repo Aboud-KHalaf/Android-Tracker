@@ -103,45 +103,52 @@ class LocalBackupRepository(
 
     /** Keeps only the database and plainly named photos; anything else in the zip is ignored. */
     private fun unzip(input: InputStream, databaseFile: File, photosDirectory: File) {
-        var hasDatabase = false
-        try {
-            ZipInputStream(input.buffered()).use { zip ->
-                generateSequence { zip.nextEntry }.filterNot { it.isDirectory }.forEach { entry ->
-                    val target = when {
-                        entry.name == DATABASE_ENTRY -> databaseFile.also { hasDatabase = true }
-                        entry.name.startsWith(PHOTOS_FOLDER) -> entry.name.removePrefix(PHOTOS_FOLDER)
-                            .takeIf { it.matches(PHOTO_NAME) }
-                            ?.let { File(photosDirectory.apply { mkdirs() }, it) }
-                        else -> null
-                    }
-                    target?.outputStream()?.use { zip.copyTo(it) }
-                }
-            }
+        val hasDatabase = try {
+            ZipInputStream(input.buffered()).use { zip -> extractEntries(zip, databaseFile, photosDirectory) }
         } catch (e: ZipException) {
             throw InvalidBackupException(e)
         }
         if (!hasDatabase) throw InvalidBackupException()
     }
 
+    /** Writes each entry to its [entryTarget]; true if the database was among them. */
+    private fun extractEntries(zip: ZipInputStream, databaseFile: File, photosDirectory: File): Boolean {
+        var hasDatabase = false
+        generateSequence { zip.nextEntry }.filterNot { it.isDirectory }.forEach { entry ->
+            val target = entryTarget(entry.name, databaseFile, photosDirectory) ?: return@forEach
+            if (target == databaseFile) hasDatabase = true
+            target.outputStream().use { zip.copyTo(it) }
+        }
+        return hasDatabase
+    }
+
+    /** Where a backup entry goes: the database, a progress photo, or nowhere for anything else. */
+    private fun entryTarget(name: String, databaseFile: File, photosDirectory: File): File? = when {
+        name == DATABASE_ENTRY -> databaseFile
+        name.startsWith(PHOTOS_FOLDER) -> name.removePrefix(PHOTOS_FOLDER)
+            .takeIf { it.matches(PHOTO_NAME) }
+            ?.let { File(photosDirectory.apply { mkdirs() }, it) }
+        else -> null
+    }
+
     /** Rejects files that aren't this app's database, and backups from a newer version. */
     private fun checkVersion(databaseFile: File) {
-        val version = try {
-            SQLiteDatabase.openDatabase(databaseFile.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
-                val isRoom = DatabaseUtils.longForQuery(
-                    db,
-                    "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'room_master_table'",
-                    null,
-                ) > 0
-                if (!isRoom) throw InvalidBackupException()
-                db.version
-            }
-        } catch (e: SQLiteException) {
-            throw InvalidBackupException(e)
+        val version = schemaVersion(databaseFile) ?: throw InvalidBackupException()
+        if (version > database.openHelper.readableDatabase.version) throw NewerBackupException()
+    }
+
+    /** The Room schema version of [databaseFile]; null if it isn't a Room database. */
+    private fun schemaVersion(databaseFile: File): Int? = try {
+        SQLiteDatabase.openDatabase(databaseFile.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
+            val isRoom = DatabaseUtils.longForQuery(
+                db,
+                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'room_master_table'",
+                null,
+            ) > 0
+            db.version.takeIf { isRoom && it >= 1 }
         }
-        when {
-            version < 1 -> throw InvalidBackupException()
-            version > database.openHelper.readableDatabase.version -> throw NewerBackupException()
-        }
+    } catch (e: SQLiteException) {
+        throw InvalidBackupException(e)
     }
 
     /**

@@ -136,7 +136,12 @@ class LocalBackupRepositoryTest {
         device.exercises.createExercise("Squat", ExerciseType.WEIGHT_REPS)
         File(device.photosDirectory, "p1.jpg").writeText("front")
 
-        for (file in listOf("not a zip".toByteArray(), zipOf("notes.txt" to "hi".toByteArray()), zipOf("tracker.db" to "junk".toByteArray()))) {
+        val invalidFiles = listOf(
+            "not a zip".toByteArray(),
+            zipOf("notes.txt" to "hi".toByteArray()),
+            zipOf("tracker.db" to "junk".toByteArray()),
+        )
+        for (file in invalidFiles) {
             val error = runCatching { device.restore(file) }.exceptionOrNull()
             assertTrue("$error", error is InvalidBackupException)
         }
