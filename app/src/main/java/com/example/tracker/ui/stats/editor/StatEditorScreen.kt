@@ -218,7 +218,12 @@ private fun StatForm(
         ) {
             // How the stat will look on the Stats tab.
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing.lg)) {
-                IconAvatar(icon = form.icon.imageVector, containerColor = accent.container, contentColor = accent.content, size = Dimens.minTouchTarget)
+                IconAvatar(
+                    icon = form.icon.imageVector,
+                    containerColor = accent.container,
+                    contentColor = accent.content,
+                    size = Dimens.minTouchTarget,
+                )
                 Text(
                     text = form.name.ifBlank { stringResource(R.string.stat_name_placeholder) },
                     style = MaterialTheme.typography.titleLarge,

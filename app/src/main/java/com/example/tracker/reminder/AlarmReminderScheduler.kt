@@ -25,7 +25,7 @@ class AlarmReminderScheduler(private val context: Context) : ReminderScheduler {
             try {
                 manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent())
                 return
-            } catch (e: SecurityException) {
+            } catch (ignored: SecurityException) {
                 // Exact alarm access was revoked after the check; fall back to an inexact alarm.
             }
         }

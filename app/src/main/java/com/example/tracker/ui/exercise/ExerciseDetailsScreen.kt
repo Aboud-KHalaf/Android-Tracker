@@ -123,32 +123,14 @@ fun ExerciseDetailsScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            Column {
-                ExerciseDetailsTopBar(
-                    title = success?.name.orEmpty(),
-                    subtitle = success?.type?.label(),
-                    onBack = actions.onBack,
-                    onRename = if (success != null) ({ showRename = true }) else null,
-                    exportButton = { if (success != null) exportButton() },
-                )
-                if (success != null) {
-                    PrimaryTabRow(selectedTabIndex = tab.ordinal) {
-                        ExerciseTab.entries.forEach { option ->
-                            Tab(
-                                selected = tab == option,
-                                onClick = { tab = option },
-                                text = {
-                                    Text(
-                                        stringResource(
-                                            if (option == ExerciseTab.PROGRESS) R.string.exercise_tab_progress else R.string.exercise_tab_history,
-                                        ),
-                                    )
-                                },
-                            )
-                        }
-                    }
-                }
-            }
+            ExerciseDetailsHeader(
+                success = success,
+                tab = tab,
+                onSelectTab = { tab = it },
+                onBack = actions.onBack,
+                onRename = { showRename = true },
+                exportButton = exportButton,
+            )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
@@ -204,6 +186,70 @@ fun ExerciseDetailsScreen(
     }
 }
 
+/** The app bar, with the Progress and History tabs once the exercise has loaded. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ExerciseDetailsHeader(
+    success: ExerciseDetailsUiState.Success?,
+    tab: ExerciseTab,
+    onSelectTab: (ExerciseTab) -> Unit,
+    onBack: () -> Unit,
+    onRename: () -> Unit,
+    exportButton: @Composable () -> Unit,
+) {
+    Column {
+        ExerciseDetailsTopBar(
+            title = success?.name.orEmpty(),
+            subtitle = success?.type?.label(),
+            onBack = onBack,
+            onRename = if (success != null) onRename else null,
+            exportButton = { if (success != null) exportButton() },
+        )
+        if (success != null) {
+            PrimaryTabRow(selectedTabIndex = tab.ordinal) {
+                ExerciseTab.entries.forEach { option ->
+                    Tab(
+                        selected = tab == option,
+                        onClick = { onSelectTab(option) },
+                        text = { Text(stringResource(option.labelRes)) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+private val ExerciseTab.labelRes: Int
+    get() = when (this) {
+        ExerciseTab.PROGRESS -> R.string.exercise_tab_progress
+        ExerciseTab.HISTORY -> R.string.exercise_tab_history
+    }
+
+/** The trend and chart for the chosen metric, or a note that the range has no sessions. */
+@Composable
+private fun ProgressSection(state: ExerciseDetailsUiState.Success, modifier: Modifier = Modifier) {
+    val progress = state.progress
+    if (progress != null) {
+        Column(modifier = modifier) {
+            TrendHeadline(progress, state.metric)
+            LineChart(
+                chart = progress.chart,
+                label = state.metric.label(),
+                valueText = { state.metric.valueText(it) },
+                axisText = { state.metric.axisText(it) },
+                modifier = Modifier.padding(top = MaterialTheme.spacing.lg),
+            )
+        }
+    } else {
+        Text(
+            text = stringResource(R.string.exercise_no_sessions_in_range),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = modifier,
+        )
+    }
+}
+
 private fun LazyListScope.progressTab(
     state: ExerciseDetailsUiState.Success,
     actions: ExerciseDetailsActions,
@@ -215,34 +261,20 @@ private fun LazyListScope.progressTab(
                 metrics = state.metrics,
                 selected = state.metric,
                 onSelect = actions.onSelectMetric,
-                modifier = Modifier.padding(start = MaterialTheme.spacing.lg, end = MaterialTheme.spacing.lg, top = MaterialTheme.spacing.lg),
+                modifier = Modifier
+                    .padding(horizontal = MaterialTheme.spacing.lg)
+                    .padding(top = MaterialTheme.spacing.lg),
             )
         }
     }
     item(key = "progress") {
-        val sectionModifier = Modifier
-            .fillMaxWidth()
-            .padding(start = MaterialTheme.spacing.lg, end = MaterialTheme.spacing.lg, top = MaterialTheme.spacing.xl)
-        val progress = state.progress
-        if (progress != null) {
-            Column(modifier = sectionModifier) {
-                TrendHeadline(progress, state.metric)
-                LineChart(
-                    chart = progress.chart,
-                    label = state.metric.label(),
-                    valueText = { state.metric.valueText(it) },
-                    axisText = { state.metric.axisText(it) },
-                    modifier = Modifier.padding(top = MaterialTheme.spacing.lg),
-                )
-            }
-        } else {
-            Text(
-                text = stringResource(R.string.exercise_no_sessions_in_range),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = sectionModifier,
-            )
-        }
+        ProgressSection(
+            state = state,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = MaterialTheme.spacing.lg)
+                .padding(top = MaterialTheme.spacing.xl),
+        )
     }
     item(key = "range") {
         RangeChips(
@@ -259,7 +291,9 @@ private fun LazyListScope.progressTab(
                 personalBest = best,
                 sessionCount = state.sessionCount,
                 firstSessionOn = firstSession,
-                modifier = Modifier.padding(start = MaterialTheme.spacing.lg, end = MaterialTheme.spacing.lg, top = MaterialTheme.spacing.xl),
+                modifier = Modifier
+                    .padding(horizontal = MaterialTheme.spacing.lg)
+                    .padding(top = MaterialTheme.spacing.xl),
             )
         }
     }

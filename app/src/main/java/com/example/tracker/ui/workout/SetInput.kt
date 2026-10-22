@@ -12,6 +12,9 @@ internal object SetInput {
     private const val MAX_WEIGHT_KG = 1_000.0
     private const val MAX_REPS = 999
 
+    /** Weights show at most two decimals. */
+    private const val HUNDREDTHS = 100.0
+
     /** Kilograms ≥ 0, accepting "," or "." as the decimal separator; null if invalid. */
     fun parseWeight(text: String): Double? =
         text.trim().replace(',', '.').toDoubleOrNull()?.takeIf { it in 0.0..MAX_WEIGHT_KG }
@@ -24,7 +27,7 @@ internal object SetInput {
     fun formatWeight(kg: Double?): String = when {
         kg == null -> ""
         kg % 1.0 == 0.0 -> kg.toLong().toString()
-        else -> ((kg * 100).roundToInt() / 100.0).toString()
+        else -> ((kg * HUNDREDTHS).roundToInt() / HUNDREDTHS).toString()
     }
 
     fun formatReps(reps: Int?): String = reps?.toString().orEmpty()

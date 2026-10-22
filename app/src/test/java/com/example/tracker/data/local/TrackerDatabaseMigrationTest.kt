@@ -230,7 +230,10 @@ class TrackerDatabaseMigrationTest {
             }
             // A second session the same day can now hold its own front photo.
             db.execSQL("INSERT INTO photo_session (id, epoch_day, taken_at) VALUES ('later', 20000, 1000)")
-            db.execSQL("INSERT INTO progress_photo (id, session_id, pose, file_name, created_at) VALUES ('f3', 'later', 'FRONT', 'f3.jpg', 1000)")
+            db.execSQL(
+                "INSERT INTO progress_photo (id, session_id, pose, file_name, created_at) " +
+                    "VALUES ('f3', 'later', 'FRONT', 'f3.jpg', 1000)",
+            )
             db.execSQL("INSERT INTO photo_measurement (session_id, position, name, unit, value) VALUES ('later', 0, 'Waist', 'cm', 84.5)")
         }
     }
@@ -267,7 +270,9 @@ class TrackerDatabaseMigrationTest {
         helper.runMigrationsAndValidate(DB_NAME, 9, true, LegacyLogsMigration).use { db ->
             db.query("SELECT id, name, unit, decimals FROM custom_stats ORDER BY created_at").use { cursor ->
                 val stats = buildList {
-                    while (cursor.moveToNext()) add("${cursor.getString(0)} ${cursor.getString(1)} ${cursor.getString(2)} ${cursor.getInt(3)}")
+                    while (cursor.moveToNext()) {
+                        add("${cursor.getString(0)} ${cursor.getString(1)} ${cursor.getString(2)} ${cursor.getInt(3)}")
+                    }
                 }
                 // No steps were logged, so there is no Steps stat.
                 assertEquals(

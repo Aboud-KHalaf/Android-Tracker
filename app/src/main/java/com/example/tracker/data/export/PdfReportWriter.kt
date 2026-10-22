@@ -99,7 +99,7 @@ class PdfReportWriter(
 
         fun drawSection(section: ReportSection) {
             // Keep a heading with at least its first lines.
-            ensureSpace(HEADING_SIZE + LINE_GAP + ROW_HEIGHT * 3)
+            ensureSpace(HEADING_SIZE + LINE_GAP + ROW_HEIGHT * HEADING_MIN_ROWS)
             y += HEADING_SIZE
             drawLine(resolve(section.title), MARGIN, CONTENT_WIDTH, headingPaint)
             y += LINE_GAP * 2
@@ -199,6 +199,7 @@ class PdfReportWriter(
         private const val ROW_PADDING = 5f
         private const val CELL_PADDING = 6f
         private const val SUMMARY_LABEL_SHARE = 0.45f
+        private const val HEADING_MIN_ROWS = 3
 
         // The app's blue brand, on white paper whatever the app theme.
         private val BRAND = Color.rgb(0x15, 0x65, 0xC0)

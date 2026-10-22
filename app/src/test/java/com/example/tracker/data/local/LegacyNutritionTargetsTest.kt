@@ -33,7 +33,9 @@ class LegacyNutritionTargetsTest {
     }
 
     private suspend fun insertMigratedStat(stat: LegacyLogsMigration.LegacyStat, target: Double? = null) {
-        dao.upsertStat(CustomStatEntity(stat.id, stat.name, stat.unit, stat.decimals, target, stat.icon, stat.color, SyncMetadata.created(0)))
+        dao.upsertStat(
+            CustomStatEntity(stat.id, stat.name, stat.unit, stat.decimals, target, stat.icon, stat.color, SyncMetadata.created(0)),
+        )
     }
 
     @Test

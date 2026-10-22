@@ -193,50 +193,11 @@ fun ActiveWorkoutScreen(
             }
         },
         bottomBar = {
-            if (success != null) {
-                Column {
-                    // Keeps the last rest while it slides away, since the state drops it at once.
-                    var shownRest by remember { mutableStateOf(success.rest) }
-                    if (success.rest != null) shownRest = success.rest
-                    AnimatedVisibility(
-                        visible = success.rest != null,
-                        enter = expandVertically(),
-                        exit = shrinkVertically(),
-                    ) {
-                        shownRest?.let { RestTimerBar(it, actions.rest) }
-                    }
-                    WorkoutFooter(
-                        hasPrevious = success.previousExerciseName != null,
-                        nextExerciseName = success.nextExerciseName,
-                        isFinishing = success.isFinishing,
-                        onPrevious = actions.onPreviousExercise,
-                        onNext = actions.onNextExercise,
-                        onFinish = requestFinish,
-                    )
-                }
-            }
+            if (success != null) WorkoutBottomBar(success, actions, onFinish = requestFinish)
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        StateCrossfade(uiState) { state ->
-            when (state) {
-                ActiveWorkoutUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
-                ActiveWorkoutUiState.Error -> ErrorContent(
-                    message = stringResource(R.string.workout_error_load),
-                    onRetry = actions.onRetry,
-                    modifier = Modifier.padding(innerPadding),
-                )
-
-                ActiveWorkoutUiState.NotFound -> MessageContent(stringResource(R.string.workout_not_found), Modifier.padding(innerPadding))
-                // Moving to the next exercise slides forward; to the previous one, back.
-                is ActiveWorkoutUiState.Success -> AnimatedContent(
-                    targetState = state,
-                    transitionSpec = { sharedAxisX(forward = targetState.exerciseIndex > initialState.exerciseIndex) },
-                    contentKey = { it.exerciseIndex },
-                    label = "exercise",
-                ) { WorkoutContent(it, actions, innerPadding) }
-            }
-        }
+        WorkoutStateContent(uiState, actions, innerPadding)
     }
 
     if (showEndDialog && success != null) {
@@ -258,6 +219,62 @@ fun ActiveWorkoutScreen(
                 },
                 onDismiss = dismiss,
             )
+        }
+    }
+}
+
+/** The rest countdown, while there is one, above the exercise navigation. */
+@Composable
+private fun WorkoutBottomBar(
+    state: ActiveWorkoutUiState.Success,
+    actions: ActiveWorkoutActions,
+    onFinish: () -> Unit,
+) {
+    Column {
+        // Keeps the last rest while it slides away, since the state drops it at once.
+        var shownRest by remember { mutableStateOf(state.rest) }
+        if (state.rest != null) shownRest = state.rest
+        AnimatedVisibility(
+            visible = state.rest != null,
+            enter = expandVertically(),
+            exit = shrinkVertically(),
+        ) {
+            shownRest?.let { RestTimerBar(it, actions.rest) }
+        }
+        WorkoutFooter(
+            hasPrevious = state.previousExerciseName != null,
+            nextExerciseName = state.nextExerciseName,
+            isFinishing = state.isFinishing,
+            onPrevious = actions.onPreviousExercise,
+            onNext = actions.onNextExercise,
+            onFinish = onFinish,
+        )
+    }
+}
+
+@Composable
+private fun WorkoutStateContent(
+    uiState: ActiveWorkoutUiState,
+    actions: ActiveWorkoutActions,
+    innerPadding: PaddingValues,
+) {
+    StateCrossfade(uiState) { state ->
+        when (state) {
+            ActiveWorkoutUiState.Loading -> LoadingContent(Modifier.padding(innerPadding))
+            ActiveWorkoutUiState.Error -> ErrorContent(
+                message = stringResource(R.string.workout_error_load),
+                onRetry = actions.onRetry,
+                modifier = Modifier.padding(innerPadding),
+            )
+
+            ActiveWorkoutUiState.NotFound -> MessageContent(stringResource(R.string.workout_not_found), Modifier.padding(innerPadding))
+            // Moving to the next exercise slides forward; to the previous one, back.
+            is ActiveWorkoutUiState.Success -> AnimatedContent(
+                targetState = state,
+                transitionSpec = { sharedAxisX(forward = targetState.exerciseIndex > initialState.exerciseIndex) },
+                contentKey = { it.exerciseIndex },
+                label = "exercise",
+            ) { WorkoutContent(it, actions, innerPadding) }
         }
     }
 }

@@ -9,7 +9,7 @@ import java.time.ZoneId
 /** Summarizes the finished workouts that started in the 7 days from [weekStart] in [zone]. */
 fun summarizeWeek(workouts: List<WorkoutSummary>, weekStart: LocalDate, zone: ZoneId): WeekSummary {
     val from = weekStart.atStartOfDay(zone).toInstant()
-    val to = weekStart.plusDays(7).atStartOfDay(zone).toInstant()
+    val to = weekStart.plusWeeks(1).atStartOfDay(zone).toInstant()
     val inWeek = workouts.filter { it.startedAt >= from && it.startedAt < to }
     return WeekSummary(
         workoutCount = inWeek.size,

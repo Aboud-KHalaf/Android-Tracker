@@ -59,7 +59,7 @@ class AndroidActiveWorkoutNotifier(private val context: Context) : ActiveWorkout
             .build()
         try {
             manager.notify(NOTIFICATION_ID, notification)
-        } catch (e: SecurityException) {
+        } catch (ignored: SecurityException) {
             // Permission revoked between the check and the post; nothing to show.
         }
     }

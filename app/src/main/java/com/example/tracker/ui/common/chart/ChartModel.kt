@@ -17,8 +17,14 @@ data class ChartModel(val points: List<ChartPoint>, val ticks: List<AxisTick>) {
 
     companion object {
         /** Round step sizes for the y-axis, smallest first. */
-        private val STEPS = listOf(0.5, 1.0, 2.0, 2.5, 5.0, 10.0, 20.0, 25.0, 50.0, 100.0, 200.0, 250.0, 500.0, 1_000.0, 2_000.0, 2_500.0, 5_000.0, 10_000.0)
+        private val STEPS = listOf(
+            0.5, 1.0, 2.0, 2.5, 5.0, 10.0, 20.0, 25.0, 50.0,
+            100.0, 200.0, 250.0, 500.0, 1_000.0, 2_000.0, 2_500.0, 5_000.0, 10_000.0,
+        )
         private const val TARGET_INTERVALS = 3
+
+        /** A single point sits in the middle of the x axis. */
+        private const val SINGLE_POINT_X = 0.5f
 
         /**
          * Spaces [values] (oldest first) evenly along x and scales y between round-number
@@ -36,7 +42,7 @@ data class ChartModel(val points: List<ChartPoint>, val ticks: List<AxisTick>) {
 
             val lastIndex = values.lastIndex
             val points = values.mapIndexed { i, (date, value) ->
-                val x = if (lastIndex == 0) 0.5f else i.toFloat() / lastIndex
+                val x = if (lastIndex == 0) SINGLE_POINT_X else i.toFloat() / lastIndex
                 ChartPoint(x, ((value - low) / span).toFloat(), value, date)
             }
             val tickCount = Math.round(span / step).toInt()

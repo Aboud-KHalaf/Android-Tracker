@@ -12,10 +12,10 @@ import com.example.tracker.domain.program.nameTrainingDays
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.ProgramRepository
 import com.example.tracker.domain.repository.WorkoutRepository
+import com.example.tracker.ui.common.launchCatching
 import com.example.tracker.ui.program.ProgramSetup
 import java.time.format.TextStyle
 import java.util.Locale
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 /**
  * Home screen: the next workout from the active program, this week's training, programs and
@@ -69,18 +68,10 @@ class HomeViewModel(
     fun onStartWorkout(planId: String) {
         if (isStartingWorkout.value) return
         isStartingWorkout.value = true
-        viewModelScope.launch {
-            try {
-                val workoutId = workoutRepository.startWorkout(planId)
-                _events.send(HomeEvent.OpenWorkout(workoutId))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _events.send(HomeEvent.ShowMessage(R.string.home_error_start_workout))
-            } finally {
-                isStartingWorkout.value = false
-            }
-        }
+        viewModelScope.launchCatching(onError = { _events.send(HomeEvent.ShowMessage(R.string.home_error_start_workout)) }) {
+            val workoutId = workoutRepository.startWorkout(planId)
+            _events.send(HomeEvent.OpenWorkout(workoutId))
+        }.invokeOnCompletion { isStartingWorkout.value = false }
     }
 
     /** Creates a program with one empty day per chosen weekday, named after the split's days. */
@@ -88,15 +79,9 @@ class HomeViewModel(
         val name = setup.name.trim()
         if (name.isEmpty()) return
         val schedule = nameTrainingDays(setup.dayLabels, setup.days) { it.getDisplayName(TextStyle.FULL, locale()) }
-        viewModelScope.launch {
-            try {
-                val programId = programRepository.createProgram(name, schedule)
-                _events.send(HomeEvent.OpenProgram(programId))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _events.send(HomeEvent.ShowMessage(R.string.home_error_create_program))
-            }
+        viewModelScope.launchCatching(onError = { _events.send(HomeEvent.ShowMessage(R.string.home_error_create_program)) }) {
+            val programId = programRepository.createProgram(name, schedule)
+            _events.send(HomeEvent.OpenProgram(programId))
         }
     }
 
@@ -115,7 +100,7 @@ class HomeViewModel(
             personalBestsWithNames,
             workoutRepository.observeHistory(),
         ) { active, programs, week, (bests, exercises), history ->
-            mapper.map(today, active, programs, week, bests, exercises, history)
+            mapper.map(today, HomeSources(active, programs, week, bests, exercises, history))
         }
     }
 

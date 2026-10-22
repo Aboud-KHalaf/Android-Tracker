@@ -62,7 +62,13 @@ private fun ExerciseDetailsHistoryPreview() {
 private fun ExerciseDetailsEmptyPreview() {
     TrackerTheme {
         ExerciseDetailsScreen(
-            uiState = previewState.copy(progress = null, personalBest = null, sessionCount = 0, firstSessionOn = null, sessions = emptyList()),
+            uiState = previewState.copy(
+                progress = null,
+                personalBest = null,
+                sessionCount = 0,
+                firstSessionOn = null,
+                sessions = emptyList(),
+            ),
             actions = ExerciseDetailsActions(),
         )
     }

@@ -9,6 +9,8 @@ import kotlinx.coroutines.launch
  * Launches [block] and hands any failure to [onError], so a failed user action becomes an
  * error message instead of a crash. Cancellation is never treated as a failure.
  */
+// The one place a user action's failure of any kind becomes a message.
+@Suppress("TooGenericExceptionCaught")
 fun CoroutineScope.launchCatching(
     onError: suspend (Exception) -> Unit,
     block: suspend CoroutineScope.() -> Unit,

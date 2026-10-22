@@ -100,45 +100,14 @@ fun PhotoCaptureRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    var hasPermission by remember { mutableStateOf(context.hasCameraPermission()) }
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-        hasPermission = it
-    }
-    // Asks once on opening; after that the permission screen offers to ask again.
-    var askedForPermission by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        if (!hasPermission && !askedForPermission) {
-            askedForPermission = true
-            permissionLauncher.launch(Manifest.permission.CAMERA)
-        }
-    }
-    // The user may have allowed the camera in system settings meanwhile.
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { hasPermission = context.hasCameraPermission() }
-
+    val permission = rememberCameraPermission()
+    val hasPermission = permission.granted
     val controller = remember { createCameraController(context) }
-    var lenses by remember { mutableStateOf<Lenses?>(null) }
-    DisposableEffect(hasPermission, lifecycleOwner) {
-        if (hasPermission) {
-            controller.bindToLifecycle(lifecycleOwner)
-            val initialization = controller.initializationFuture
-            initialization.addListener(
-                { lenses = if (runCatching { initialization.get() }.isSuccess) Lenses.of(controller) else Lenses.NONE },
-                ContextCompat.getMainExecutor(context),
-            )
-        }
-        onDispose { controller.unbind() }
-    }
-    val available = lenses
-    LaunchedEffect(uiState.useFrontCamera, available) {
-        if (available == null || !available.any) return@LaunchedEffect
-        val front = if (uiState.useFrontCamera) available.front else !available.back
-        val selector = if (front) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
-        if (controller.cameraSelector != selector) controller.cameraSelector = selector
-    }
+    val available = rememberLenses(controller, hasPermission)
+    SelectCamera(controller, available, useFrontCamera = uiState.useFrontCamera)
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
@@ -189,12 +158,66 @@ fun PhotoCaptureRoute(
         onSwitchCamera = viewModel::onSwitchCamera,
         onRetake = viewModel::onRetake,
         onUsePhoto = viewModel::onUsePhoto,
-        onRequestPermission = { permissionLauncher.launch(Manifest.permission.CAMERA) },
+        onRequestPermission = permission.request,
         onOpenAppSettings = { context.openAppSettings() },
         snackbarHostState = snackbarHostState,
         modifier = modifier,
         viewfinder = { CameraViewfinder(controller, it) },
     )
+}
+
+/** Whether the camera may be used, and how to ask for it. */
+private class CameraPermission(val granted: Boolean, val request: () -> Unit)
+
+@Composable
+private fun rememberCameraPermission(): CameraPermission {
+    val context = LocalContext.current
+    var hasPermission by remember { mutableStateOf(context.hasCameraPermission()) }
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        hasPermission = it
+    }
+    // Asks once on opening; after that the permission screen offers to ask again.
+    var askedForPermission by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (!hasPermission && !askedForPermission) {
+            askedForPermission = true
+            permissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+    // The user may have allowed the camera in system settings meanwhile.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { hasPermission = context.hasCameraPermission() }
+    return CameraPermission(hasPermission) { permissionLauncher.launch(Manifest.permission.CAMERA) }
+}
+
+/** Binds [controller] while the camera is allowed; null until it knows which lenses there are. */
+@Composable
+private fun rememberLenses(controller: LifecycleCameraController, hasPermission: Boolean): Lenses? {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var lenses by remember { mutableStateOf<Lenses?>(null) }
+    DisposableEffect(hasPermission, lifecycleOwner) {
+        if (hasPermission) {
+            controller.bindToLifecycle(lifecycleOwner)
+            val initialization = controller.initializationFuture
+            initialization.addListener(
+                { lenses = if (runCatching { initialization.get() }.isSuccess) Lenses.of(controller) else Lenses.NONE },
+                ContextCompat.getMainExecutor(context),
+            )
+        }
+        onDispose { controller.unbind() }
+    }
+    return lenses
+}
+
+/** Points [controller] at the front or back camera, falling back to whichever one exists. */
+@Composable
+private fun SelectCamera(controller: LifecycleCameraController, available: Lenses?, useFrontCamera: Boolean) {
+    LaunchedEffect(useFrontCamera, available) {
+        if (available == null || !available.any) return@LaunchedEffect
+        val front = if (useFrontCamera) available.front else !available.back
+        val selector = if (front) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
+        if (controller.cameraSelector != selector) controller.cameraSelector = selector
+    }
 }
 
 /** Which cameras the device has. */

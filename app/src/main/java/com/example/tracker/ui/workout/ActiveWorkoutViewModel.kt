@@ -51,6 +51,8 @@ import kotlinx.coroutines.flow.update
  * over while the app is in the background. State is exposed as [uiState];
  * navigation and messages are sent once through [events].
  */
+// One function per action on the workout screen; the rest timer is the natural piece to split out next.
+@Suppress("TooManyFunctions")
 @OptIn(ExperimentalCoroutinesApi::class)
 class ActiveWorkoutViewModel(
     private val workoutId: String,

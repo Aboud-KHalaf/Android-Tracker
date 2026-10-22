@@ -120,17 +120,25 @@ internal fun poseOutline(pose: PhotoPose, size: Size, top: Float, bottom: Float)
         PhotoPose.FRONT, PhotoPose.BACK -> {
             val right = FRONT_RIGHT_HALF.map { (x, y) -> point(x, y) }
             val left = FRONT_RIGHT_HALF.reversed().drop(1).map { (x, y) -> point(-x, y) }
-            PoseOutline(union(head(0f, 0.048f), smoothClosedPath(right + left)), detail = null)
+            PoseOutline(union(head(0f, FRONT_HEAD_HALF_WIDTH), smoothClosedPath(right + left)), detail = null)
         }
 
         PhotoPose.SIDE -> PoseOutline(
-            body = union(head(0.008f, 0.052f), smoothClosedPath(SIDE_BODY.map { (x, y) -> point(x, y) })),
+            body = union(head(SIDE_HEAD_OFFSET, SIDE_HEAD_HALF_WIDTH), smoothClosedPath(SIDE_BODY.map { (x, y) -> point(x, y) })),
             detail = smoothClosedPath(SIDE_ARM.map { (x, y) -> point(x, y) }),
         )
     }
 }
 
 private const val HEAD_HEIGHT = 0.13f
+private const val FRONT_HEAD_HALF_WIDTH = 0.048f
+private const val SIDE_HEAD_HALF_WIDTH = 0.052f
+
+/** The side view's head sits slightly forward of the body's centre line. */
+private const val SIDE_HEAD_OFFSET = 0.008f
+
+/** Catmull-Rom to Bézier: each control point is a sixth of the neighbouring tangent away. */
+private const val CATMULL_ROM_TANGENT_DIVISOR = 6f
 
 private fun union(a: Path, b: Path) = Path().apply { op(a, b, PathOperation.Union) }
 
@@ -144,8 +152,8 @@ private fun smoothClosedPath(points: List<Offset>): Path {
             val p1 = points[i]
             val p2 = points[(i + 1) % n]
             val p3 = points[(i + 2) % n]
-            val c1 = p1 + (p2 - p0) / 6f
-            val c2 = p2 - (p3 - p1) / 6f
+            val c1 = p1 + (p2 - p0) / CATMULL_ROM_TANGENT_DIVISOR
+            val c2 = p2 - (p3 - p1) / CATMULL_ROM_TANGENT_DIVISOR
             cubicTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y)
         }
         close()
