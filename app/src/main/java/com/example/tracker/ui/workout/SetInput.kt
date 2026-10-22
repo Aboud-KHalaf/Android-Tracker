@@ -1,5 +1,6 @@
 package com.example.tracker.ui.workout
 
+import com.example.tracker.ui.common.toWesternDigits
 import kotlin.math.roundToInt
 
 /**
@@ -15,13 +16,13 @@ internal object SetInput {
     /** Weights show at most two decimals. */
     private const val HUNDREDTHS = 100.0
 
-    /** Kilograms ≥ 0, accepting "," or "." as the decimal separator; null if invalid. */
+    /** Kilograms ≥ 0, accepting "," or "." as the decimal separator and Arabic digits; null if invalid. */
     fun parseWeight(text: String): Double? =
-        text.trim().replace(',', '.').toDoubleOrNull()?.takeIf { it in 0.0..MAX_WEIGHT_KG }
+        text.toWesternDigits().trim().replace(',', '.').toDoubleOrNull()?.takeIf { it in 0.0..MAX_WEIGHT_KG }
 
     /** Reps ≥ 1 (a set with no reps isn't a set); null if invalid. */
     fun parseReps(text: String): Int? =
-        text.trim().toIntOrNull()?.takeIf { it in 1..MAX_REPS }
+        text.toWesternDigits().trim().toIntOrNull()?.takeIf { it in 1..MAX_REPS }
 
     /** "50" or "47.5"; empty when there is no value yet. */
     fun formatWeight(kg: Double?): String = when {
@@ -40,7 +41,7 @@ internal object SetInput {
 
     /** Adds [steps] reps to the typed reps (empty counts as 0), never below 1. */
     fun stepReps(text: String, steps: Int): String {
-        val current = text.trim().toIntOrNull() ?: 0
+        val current = text.toWesternDigits().trim().toIntOrNull() ?: 0
         return formatReps((current + steps * REPS_STEP).coerceIn(1, MAX_REPS))
     }
 }

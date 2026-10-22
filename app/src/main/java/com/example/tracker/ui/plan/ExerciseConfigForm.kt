@@ -3,6 +3,7 @@ package com.example.tracker.ui.plan
 import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.ui.workout.SetInput
+import com.example.tracker.ui.common.toWesternDigits
 
 /**
  * The targets as typed in the "Edit targets" sheet. Blank fields mean "repeat last time";
@@ -45,6 +46,7 @@ internal data class ExerciseConfigForm(
             holdText = config.targetDurationSeconds?.toString().orEmpty(),
         )
 
-        private fun parseHold(text: String): Int? = text.trim().toIntOrNull()?.takeIf { it in 1..MAX_HOLD_SECONDS }
+        private fun parseHold(text: String): Int? =
+            text.toWesternDigits().trim().toIntOrNull()?.takeIf { it in 1..MAX_HOLD_SECONDS }
     }
 }

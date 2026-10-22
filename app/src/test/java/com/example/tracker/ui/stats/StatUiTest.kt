@@ -36,4 +36,10 @@ class StatUiTest {
         assertEquals("19.5", 19.499999.toStatInput(1))
         assertEquals("19.50", 19.5.toStatInput(2))
     }
+
+    @Test
+    fun arabicDigits_areKeptAsNumbers() {
+        assertEquals("72.5", sanitizeStatInput("٧٢٫٥", decimals = 1))
+        assertEquals(72.5, parseStatInput("٧٢٫٥")!!, 0.0)
+    }
 }
