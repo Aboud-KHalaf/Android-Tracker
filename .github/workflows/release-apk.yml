@@ -121,7 +121,8 @@ jobs:
       - name: Compute version
         run: |
           base=$(./gradlew -q :app:printVersionName)
-          last_patch=$(git tag --list "v${base}.*" | sed "s/^v${base}\.//" | grep -E '^[0-9]+$' | sort -n | tail -1)
+          # grep finds nothing before the first patch release of a version; that is not an error.
+          last_patch=$(git tag --list "v${base}.*" | sed "s/^v${base}\.//" | { grep -E '^[0-9]+$' || true; } | sort -n | tail -1)
           version="${base}.$(( ${last_patch:-0} + 1 ))"
           echo "VERSION_NAME=$version" >> "$GITHUB_ENV"
           echo "Building version $version"
