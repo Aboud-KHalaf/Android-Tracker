@@ -10,6 +10,6 @@ data object HistoryDestination
 
 fun NavController.navigateToHistory() = navigate(HistoryDestination) { launchSingleTop = true }
 
-fun NavGraphBuilder.historyScreen(onBack: () -> Unit) {
-    composable<HistoryDestination> { HistoryRoute(onBack = onBack) }
+fun NavGraphBuilder.historyScreen(onBack: () -> Unit, onOpenWorkout: (workoutId: String) -> Unit) {
+    composable<HistoryDestination> { HistoryRoute(onBack = onBack, onOpenWorkout = onOpenWorkout) }
 }

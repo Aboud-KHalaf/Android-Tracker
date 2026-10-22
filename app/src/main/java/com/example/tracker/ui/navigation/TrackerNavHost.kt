@@ -12,6 +12,9 @@ import com.example.tracker.ui.exercises.exerciseListScreen
 import com.example.tracker.ui.history.historyScreen
 import com.example.tracker.ui.history.navigateToHistory
 import com.example.tracker.ui.onboarding.onboardingScreen
+import com.example.tracker.ui.summary.WorkoutSummaryDestination
+import com.example.tracker.ui.summary.navigateToWorkoutSummary
+import com.example.tracker.ui.summary.workoutSummaryScreen
 import com.example.tracker.ui.home.HomeDestination
 import com.example.tracker.ui.home.homeScreen
 import com.example.tracker.ui.photos.navigateToPhotoCapture
@@ -59,9 +62,14 @@ fun TrackerNavHost(
             onOpenProgram = navController::navigateToProgram,
             onOpenHistory = navController::navigateToHistory,
             onOpenExerciseProgress = navController::navigateToExerciseDetails,
+            onOpenWorkoutSummary = navController::navigateToWorkoutSummary,
             onOpenSettings = navController::navigateToSettings,
         )
-        historyScreen(onBack = navController::popBackStack)
+        historyScreen(onBack = navController::popBackStack, onOpenWorkout = navController::navigateToWorkoutSummary)
+        workoutSummaryScreen(
+            onBack = navController::popBackStack,
+            onOpenExerciseProgress = navController::navigateToExerciseDetails,
+        )
         onboardingScreen(
             // Onboarding sits over Home; a program made in it opens next, to add exercises.
             onFinished = { programId ->
@@ -99,6 +107,12 @@ fun TrackerNavHost(
         activeWorkoutScreen(
             onMinimize = navController::popBackStack,
             onWorkoutEnded = { navController.popBackStack(HomeDestination, inclusive = false) },
+            // The summary takes the workout's place, so Back from it returns Home.
+            onWorkoutFinished = { workoutId ->
+                navController.navigate(WorkoutSummaryDestination(workoutId, justFinished = true)) {
+                    popUpTo(HomeDestination)
+                }
+            },
             onOpenExerciseProgress = navController::navigateToExerciseDetails,
         )
         exerciseCatalogScreen(onBack = navController::popBackStack)

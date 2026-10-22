@@ -16,12 +16,14 @@ fun NavController.navigateToActiveWorkout(workoutId: String) = navigate(ActiveWo
 fun NavGraphBuilder.activeWorkoutScreen(
     onMinimize: () -> Unit,
     onWorkoutEnded: () -> Unit,
+    onWorkoutFinished: (workoutId: String) -> Unit,
     onOpenExerciseProgress: (exerciseId: String) -> Unit,
 ) {
     composable<ActiveWorkoutDestination> {
         ActiveWorkoutRoute(
             onMinimize = onMinimize,
             onWorkoutEnded = onWorkoutEnded,
+            onWorkoutFinished = onWorkoutFinished,
             onOpenExerciseProgress = onOpenExerciseProgress,
         )
     }

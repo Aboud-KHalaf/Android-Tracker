@@ -86,6 +86,11 @@ class WorkoutFlowTest {
         waitForNode(hasText("1 set isn't completed and won't be saved."))
         compose.onNode(hasText("Finish") and hasAnyAncestor(isDialog())).performClick()
 
+        // Its summary follows, with the set that was saved; Done goes back Home.
+        waitForNode(hasText("Workout done. Nice work!"))
+        compose.onNodeWithText("50×8 kg", substring = true).assertExists()
+        compose.onNodeWithText("Done").performClick()
+
         // Back on Home, the workout counts toward this week.
         waitForNode(hasText("1 workout", substring = true))
 
@@ -94,6 +99,11 @@ class WorkoutFlowTest {
         waitForNode(hasText("History"))
         waitForNode(hasText("1 exercise", substring = true))
         compose.onNodeWithText("Finished workouts will show up here.").assertDoesNotExist()
+
+        // Tapping it opens its summary again, without the "done" headline.
+        compose.onNodeWithText("1 exercise", substring = true).performClick()
+        waitForNode(hasText("Exercises"))
+        compose.onNodeWithText("Workout done. Nice work!").assertDoesNotExist()
     }
 
     /** Waits for a node matching [matcher]; Room loads data on background threads. */

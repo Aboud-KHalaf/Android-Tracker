@@ -1,6 +1,7 @@
 package com.example.tracker.ui.common
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Text
@@ -43,10 +44,10 @@ fun WorkoutSummary.toWorkoutSummaryUi(zone: ZoneId) = WorkoutSummaryUi(
  * choose the container (a grouped card on Home, plain in History).
  */
 @Composable
-fun WorkoutSummaryRow(workout: WorkoutSummaryUi, modifier: Modifier = Modifier) {
+fun WorkoutSummaryRow(workout: WorkoutSummaryUi, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
     val separator = stringResource(R.string.separator_dot)
     ListItem(
-        modifier = modifier,
+        modifier = if (onClick != null) modifier.clickable(onClick = onClick) else modifier,
         headlineContent = { Text(workout.name) },
         supportingContent = {
             Column {

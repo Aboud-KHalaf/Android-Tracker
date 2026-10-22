@@ -63,6 +63,7 @@ fun HomeRoute(
     onOpenExerciseProgress: (exerciseId: String) -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenWorkoutSummary: (workoutId: String) -> Unit = {},
     viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -89,6 +90,7 @@ fun HomeRoute(
             onOpenHistory = onOpenHistory,
             onOpenExerciseProgress = onOpenExerciseProgress,
             onOpenSettings = onOpenSettings,
+            onOpenWorkoutSummary = onOpenWorkoutSummary,
             onRetry = viewModel::onRetry,
         ),
         modifier = modifier,
@@ -104,6 +106,7 @@ data class HomeActions(
     val onOpenHistory: () -> Unit = {},
     val onOpenExerciseProgress: (exerciseId: String) -> Unit = {},
     val onOpenSettings: () -> Unit = {},
+    val onOpenWorkoutSummary: (workoutId: String) -> Unit = {},
     val onRetry: () -> Unit = {},
 )
 
@@ -201,7 +204,7 @@ private fun HomeContent(
                 )
             }
             programsSection(state.programs, onOpenProgram = actions.onOpenProgram, onCreateProgram = onCreateProgramClick)
-            recentWorkoutsSection(state.recentWorkouts, onSeeAll = actions.onOpenHistory)
+            recentWorkoutsSection(state.recentWorkouts, onSeeAll = actions.onOpenHistory, onOpen = actions.onOpenWorkoutSummary)
             item(key = "consistency") {
                 ConsistencyCard(
                     consistency = state.consistency,
@@ -246,6 +249,7 @@ private fun LazyListScope.programsSection(
 private fun LazyListScope.recentWorkoutsSection(
     workouts: List<WorkoutSummaryUi>,
     onSeeAll: () -> Unit,
+    onOpen: (workoutId: String) -> Unit,
 ) {
     item(key = "recent-header") {
         SectionHeader(
@@ -266,7 +270,7 @@ private fun LazyListScope.recentWorkoutsSection(
                 .animateItem()
                 .padding(top = if (index == 0) 0.dp else GroupedListGap),
         ) {
-            WorkoutSummaryRow(workout)
+            WorkoutSummaryRow(workout, onClick = { onOpen(workout.id) })
         }
     }
 }
