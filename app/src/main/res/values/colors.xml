@@ -9,4 +9,7 @@
     <color name="white">#FFFFFFFF</color>
     <!-- Tints the notification icon; matches the light theme primary in ui/theme/Color.kt. -->
     <color name="notification_accent">#FF2A5FA8</color>
+    <!-- Launcher shortcut icons: the brand blue disc with a white symbol. -->
+    <color name="shortcut_background">#FF2A5FA8</color>
+    <color name="shortcut_foreground">#FFFFFFFF</color>
 </resources>

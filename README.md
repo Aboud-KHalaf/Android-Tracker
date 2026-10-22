@@ -63,6 +63,9 @@ All data stays on your device, and you don't need an account. When you want your
 - Export all data (exercises, every workout set and every stat) as a PDF or Excel file
 - Delete all data, progress photos included, from the device
 
+### 📲 On your home screen
+- **App shortcuts**: long-press the app icon to start today's workout (or jump back into the one in progress), log a stat, or take progress photos
+
 ### 🎨 Design
 - Material Design 3 with a blue brand theme, plus light and dark modes
 - Animated splash screen, screen transitions and list animations
