@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.baselineprofile)
 }
 
 // Release signing credentials live in the git-ignored keystore.properties at the project root.
@@ -96,6 +97,20 @@ detekt {
     source.setFrom("src/main/java", "src/test/java", "src/androidTest/java")
 }
 
+// The Baseline Profile (src/release/generated/baselineProfiles) precompiles startup and the main
+// screens. Regenerate it on a connected Android 13+ phone or emulator after big UI changes:
+// ./gradlew :app:generateReleaseBaselineProfile
+baselineProfile {
+    saveInSrc = true
+    automaticGenerationDuringBuild = false
+}
+
+// The plugin's benchmark builds are copies of release; sign them with the debug key so they
+// install without the release keystore.
+android.buildTypes.matching { it.name == "nonMinifiedRelease" || it.name == "benchmarkRelease" }.configureEach {
+    signingConfig = android.signingConfigs.getByName("debug")
+}
+
 // Lets CI read the version without parsing this file.
 tasks.register("printVersionName") {
     val versionName = android.defaultConfig.versionName
@@ -105,6 +120,9 @@ tasks.register("printVersionName") {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
+    // Installs the Baseline Profile on devices without Play, such as sideloaded APKs.
+    implementation(libs.androidx.profileinstaller)
+    baselineProfile(project(":baselineprofile"))
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)

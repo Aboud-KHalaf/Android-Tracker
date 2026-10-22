@@ -102,6 +102,7 @@ Get the latest APK from the [website](https://aboud-khalaf.github.io/Android-Tra
 | Dependency injection | Manual (`AppContainer`) |
 | Testing | JUnit, Robolectric, Compose UI tests |
 | Code checks | Android lint and detekt, run in CI (`./gradlew lintDebug detekt`) |
+| Performance | Baseline Profile (`:baselineprofile` module): `./gradlew :app:generateReleaseBaselineProfile` on an Android 13+ device; startup benchmarks with `./gradlew :baselineprofile:connectedBenchmarkReleaseAndroidTest`. Build the app with `assembleDebug`/`assembleRelease`: a plain `assemble` also tries to generate the profile, which needs a device |
 
 ## 🏗️ Architecture
 
