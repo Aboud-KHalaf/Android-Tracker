@@ -96,6 +96,8 @@ sealed interface SetRowUi {
         val improvement: SetImprovement?,
         override val type: SetType = SetType.NORMAL,
         val rpe: Double? = null,
+        /** It beat the exercise's all-time best. */
+        val isRecord: Boolean = false,
     ) : SetRowUi
 
     /** The set being edited. */

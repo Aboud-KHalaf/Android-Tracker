@@ -40,7 +40,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -90,6 +92,7 @@ fun ActiveWorkoutRoute(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val haptics = LocalHapticFeedback.current
 
     LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.onAppForegrounded() }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.onAppBackgrounded() }
@@ -103,11 +106,13 @@ fun ActiveWorkoutRoute(
 
             // Launched so completing the next set replaces this snackbar instead of waiting.
             is ActiveWorkoutEvent.SetCompleted -> scope.launch {
+                val saved = context.getString(
+                    R.string.workout_set_saved,
+                    context.getString(setNameRes(event.setType), event.setNumber),
+                )
+                if (event.isRecord) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                 val result = snackbarHostState.showSnackbar(
-                    message = context.getString(
-                        R.string.workout_set_saved,
-                        context.getString(setNameRes(event.setType), event.setNumber),
-                    ),
+                    message = if (event.isRecord) context.getString(R.string.workout_new_record, saved) else saved,
                     actionLabel = context.getString(R.string.action_undo),
                     duration = SnackbarDuration.Short,
                 )

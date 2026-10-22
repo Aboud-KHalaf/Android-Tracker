@@ -13,6 +13,8 @@ import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.model.SetType
+import com.example.tracker.domain.progress.bestValue
+import com.example.tracker.domain.progress.recordSetIds
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.domain.workout.RestAlarm
@@ -80,9 +82,9 @@ class ActiveWorkoutViewModel(
                 observeLastTimes(),
                 selection,
                 draft,
-                combine(isFinishing, rest, ::Pair),
-            ) { workout, (lastTimes, lastNotes), selection, draft, (finishing, rest) ->
-                val state = ActiveWorkoutStateMapper.map(workout, lastTimes, selection, draft, lastNotes)
+                combine(isFinishing, rest, observeBests(), ::Triple),
+            ) { workout, (lastTimes, lastNotes), selection, draft, (finishing, rest, bests) ->
+                val state = ActiveWorkoutStateMapper.map(workout, lastTimes, selection, draft, lastNotes, bests)
                 if (state is ActiveWorkoutUiState.Success) state.copy(isFinishing = finishing, rest = rest) else state
             }
                 .onStart { emit(ActiveWorkoutUiState.Loading) }
@@ -137,7 +139,7 @@ class ActiveWorkoutViewModel(
             draft.value = null
             selection.update { it.copy(setId = null) }
             continueAfter(active.id)
-            _events.send(ActiveWorkoutEvent.SetCompleted(active.id, active.number, active.type))
+            _events.send(ActiveWorkoutEvent.SetCompleted(active.id, active.number, active.type, isRecord(active.id)))
         }
     }
 
@@ -367,6 +369,23 @@ class ActiveWorkoutViewModel(
         (uiState.value as? ActiveWorkoutUiState.Success)?.sets.orEmpty()
 
     private fun activeSet(): SetRowUi.Active? = currentSets().filterIsInstance<SetRowUi.Active>().firstOrNull()
+
+    /** Whether the completed set [setId] is a new all-time best for its exercise. */
+    private suspend fun isRecord(setId: String): Boolean {
+        val exercise = workoutRepository.observeWorkout(workoutId).first()
+            ?.exercises?.firstOrNull { exercise -> exercise.sets.any { it.id == setId } }
+            ?: return false
+        val best = bestValue(exercise.exercise.type, workoutRepository.observeExerciseSessions(exercise.exercise.id).first())
+        return setId in recordSetIds(exercise.exercise.type, exercise.sets, best)
+    }
+
+    /** Each exercise's all-time best from finished workouts, so this workout's records stand out. */
+    private fun observeBests() = workoutRepository.observeWorkout(workoutId)
+        .map { workout -> workout?.exercises?.map { it.exercise }?.toSet().orEmpty() }
+        .distinctUntilChanged()
+        .map { exercises ->
+            exercises.associate { it.id to bestValue(it.type, workoutRepository.observeExerciseSessions(it.id).first()) }
+        }
 
     private fun observeLastTimes() = workoutRepository.observeWorkout(workoutId)
         .map { workout -> workout?.exercises?.map { it.exercise.id }?.toSet().orEmpty() }

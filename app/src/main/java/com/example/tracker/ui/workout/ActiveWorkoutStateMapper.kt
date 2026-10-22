@@ -4,8 +4,10 @@ import com.example.tracker.domain.model.ExerciseType
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutExercise
 import com.example.tracker.domain.model.WorkoutSet
+import com.example.tracker.domain.progress.bestValue
 import com.example.tracker.domain.progress.improvementOver
 import com.example.tracker.domain.workout.Supersets
+import com.example.tracker.domain.progress.recordSetIds
 import com.example.tracker.domain.workout.resumeExerciseIndex
 import com.example.tracker.ui.common.SetValueUi
 import com.example.tracker.ui.common.toSetValue
@@ -34,6 +36,8 @@ internal object ActiveWorkoutStateMapper {
         selection: WorkoutSelection,
         draft: SetDraft?,
         lastNotes: Map<String, String?> = emptyMap(),
+        /** Each exercise's all-time best before this workout, by exercise id; see [bestValue]. */
+        bests: Map<String, Double?> = emptyMap(),
     ): ActiveWorkoutUiState {
         if (workout == null || !workout.isInProgress) return ActiveWorkoutUiState.NotFound
         val exercises = workout.exercises.sortedBy { it.position }
@@ -47,6 +51,7 @@ internal object ActiveWorkoutStateMapper {
         val activeId = selection.setId?.takeIf { id -> sets.any { it.id == id } }
             ?: sets.firstOrNull { !it.isCompleted }?.id
         val allSets = exercises.flatMap { it.sets }
+        val records = recordSetIds(current.exercise.type, sets, bests[current.exercise.id])
 
         return ActiveWorkoutUiState.Success(
             workoutName = workout.name,
@@ -86,6 +91,7 @@ internal object ActiveWorkoutStateMapper {
                         improvement = improvementOver(current.exercise.type, set, previous),
                         type = set.type,
                         rpe = set.rpe,
+                        isRecord = set.id in records,
                     )
 
                     else -> SetRowUi.Upcoming(id = set.id, number = number, planned = set.toSetValue(), type = set.type)

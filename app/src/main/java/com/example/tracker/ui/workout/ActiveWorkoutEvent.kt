@@ -6,8 +6,16 @@ import androidx.annotation.StringRes
 
 /** One-off effects the Active workout screen handles once. */
 sealed interface ActiveWorkoutEvent {
-    /** A set was completed; the screen offers to undo it. [setNumber] is one-based within its [setType]. */
-    data class SetCompleted(val setId: String, val setNumber: Int, val setType: SetType = SetType.NORMAL) : ActiveWorkoutEvent
+    /**
+     * A set was completed; the screen offers to undo it. [setNumber] is one-based within its
+     * [setType]; [isRecord] says it is a new personal best.
+     */
+    data class SetCompleted(
+        val setId: String,
+        val setNumber: Int,
+        val setType: SetType = SetType.NORMAL,
+        val isRecord: Boolean = false,
+    ) : ActiveWorkoutEvent
 
     /** The workout was finished or discarded; leave the screen. */
     data object WorkoutEnded : ActiveWorkoutEvent
