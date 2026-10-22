@@ -13,8 +13,11 @@ import com.example.tracker.domain.export.ExportFormat
 import com.example.tracker.domain.export.ReportExporter
 import com.example.tracker.domain.export.exportFileName
 import com.example.tracker.domain.model.ThemeMode
+import com.example.tracker.domain.repository.BackupRepository
 import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.domain.repository.ExerciseRepository
+import com.example.tracker.domain.repository.InvalidBackupException
+import com.example.tracker.domain.repository.NewerBackupException
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.domain.workout.RestTimes
@@ -33,12 +36,13 @@ import kotlinx.coroutines.flow.stateIn
 
 /**
  * Settings screen: the app theme, the daily reminder and its time, workout rest times, and
- * exporting or deleting all local data. State is exposed as [uiState]; messages are sent once through [events].
+ * exporting, backing up, restoring or deleting all local data. State is exposed as [uiState]; messages are sent once through [events].
  */
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,
     private val data: ExportableData,
     private val reportExporter: ReportExporter,
+    private val backup: BackupRepository,
     private val time: TimeProvider,
 ) : ViewModel() {
 
@@ -49,8 +53,10 @@ class SettingsViewModel(
         val stats: CustomStatRepository,
     )
 
-    private val isDeletingData = MutableStateFlow(false)
-    private val isExportingData = MutableStateFlow(false)
+    /** Whole-data work in progress; only one runs at a time. */
+    private enum class DataOperation { DELETE, EXPORT, BACK_UP, RESTORE }
+
+    private val dataOperation = MutableStateFlow<DataOperation?>(null)
 
     private val _events = Channel<SettingsEvent>(Channel.BUFFERED)
     val events: Flow<SettingsEvent> = _events.receiveAsFlow()
@@ -58,15 +64,17 @@ class SettingsViewModel(
     val uiState: StateFlow<SettingsUiState> =
         combine(
             settingsRepository.themeMode,
-            combine(isDeletingData, isExportingData, ::Pair),
+            dataOperation,
             settingsRepository.reminderEnabled,
             settingsRepository.reminderTime,
             settingsRepository.restTimes,
-        ) { themeMode, (deleting, exporting), reminder, reminderTime, restTimes ->
+        ) { themeMode, operation, reminder, reminderTime, restTimes ->
             SettingsUiState(
                 themeMode = themeMode,
-                isDeletingData = deleting,
-                isExportingData = exporting,
+                isDeletingData = operation == DataOperation.DELETE,
+                isExportingData = operation == DataOperation.EXPORT,
+                isBackingUp = operation == DataOperation.BACK_UP,
+                isRestoring = operation == DataOperation.RESTORE,
                 reminderEnabled = reminder,
                 reminderTime = reminderTime,
                 restTimes = restTimes,
@@ -110,40 +118,65 @@ class SettingsViewModel(
         }
     }
 
-    fun onDeleteAllData() {
-        if (isDeletingData.value) return
-        isDeletingData.value = true
-        viewModelScope.launchCatching(onError = { showMessage(R.string.settings_error_delete_data) }) {
-            try {
-                settingsRepository.deleteAllData()
-                showMessage(R.string.settings_data_deleted)
-            } finally {
-                isDeletingData.value = false
-            }
-        }
+    fun onDeleteAllData() = runDataOperation(DataOperation.DELETE, onError = { R.string.settings_error_delete_data }) {
+        settingsRepository.deleteAllData()
+        showMessage(R.string.settings_data_deleted)
     }
 
     fun exportFileName(format: ExportFormat): String = exportFileName("all-data", today(), format)
 
     /** Saves every exercise, workout set and stat entry as [format] to [destination], a file URI. */
-    fun onExportAllData(format: ExportFormat, destination: String) {
-        if (isExportingData.value) return
-        isExportingData.value = true
-        viewModelScope.launchCatching(onError = { showMessage(R.string.export_error) }) {
+    fun onExportAllData(format: ExportFormat, destination: String) =
+        runDataOperation(DataOperation.EXPORT, onError = { R.string.export_error }) {
+            val today = today()
+            val report = FullExportReportBuilder(time.zone()).build(
+                exportedOn = today,
+                exercises = data.exercises.observeExercises().first(),
+                sessions = data.workouts.observeAllSessions().first(),
+                stats = data.stats.observeOverviews().first().map { overview ->
+                    overview.stat to data.stats.observeEntries(overview.stat.id, HISTORY_START, today).first()
+                },
+            )
+            reportExporter.export(report, format, destination)
+            showMessage(R.string.export_done)
+        }
+
+    /** A suggested name for a backup file: "tracker-backup-2026-10-21.zip". */
+    fun backupFileName(): String = "tracker-backup-${today()}.$BACKUP_EXTENSION"
+
+    /** Saves everything to [destination], a file URI, to restore later. */
+    fun onBackUp(destination: String) = runDataOperation(DataOperation.BACK_UP, onError = { R.string.settings_error_backup }) {
+        backup.backUp(destination)
+        showMessage(R.string.settings_backup_done)
+    }
+
+    /** Replaces all data with the backup at [source], a file URI. */
+    fun onRestore(source: String) = runDataOperation(
+        DataOperation.RESTORE,
+        onError = { error ->
+            when (error) {
+                is InvalidBackupException -> R.string.settings_error_restore_invalid
+                is NewerBackupException -> R.string.settings_error_restore_newer
+                else -> R.string.settings_error_restore
+            }
+        },
+    ) {
+        backup.restore(source)
+        showMessage(R.string.settings_restore_done)
+    }
+
+    /** Runs [block] unless another data operation is running; a failure shows the message [onError] picks. */
+    private fun runDataOperation(
+        operation: DataOperation,
+        onError: (Exception) -> Int,
+        block: suspend () -> Unit,
+    ) {
+        if (!dataOperation.compareAndSet(null, operation)) return
+        viewModelScope.launchCatching(onError = { showMessage(onError(it)) }) {
             try {
-                val today = today()
-                val report = FullExportReportBuilder(time.zone()).build(
-                    exportedOn = today,
-                    exercises = data.exercises.observeExercises().first(),
-                    sessions = data.workouts.observeAllSessions().first(),
-                    stats = data.stats.observeOverviews().first().map { overview ->
-                        overview.stat to data.stats.observeEntries(overview.stat.id, HISTORY_START, today).first()
-                    },
-                )
-                reportExporter.export(report, format, destination)
-                showMessage(R.string.export_done)
+                block()
             } finally {
-                isExportingData.value = false
+                dataOperation.value = null
             }
         }
     }
@@ -156,6 +189,7 @@ class SettingsViewModel(
 
     companion object {
         private const val STOP_TIMEOUT_MILLIS = 5_000L
+        private const val BACKUP_EXTENSION = "zip"
 
         /** Before anything could have been logged, so "from here to today" is all history. */
         private val HISTORY_START: LocalDate = LocalDate.of(1900, 1, 1)
@@ -171,6 +205,7 @@ class SettingsViewModel(
                         stats = container.customStatRepository,
                     ),
                     reportExporter = container.reportExporter,
+                    backup = container.backupRepository,
                     time = container.time,
                 )
             }

@@ -1,6 +1,7 @@
 package com.example.tracker.data.local
 
 import android.content.Context
+import java.io.File
 import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
@@ -79,9 +80,17 @@ abstract class TrackerDatabase : RoomDatabase() {
     companion object {
         private const val NAME = "tracker.db"
 
-        fun create(context: Context): TrackerDatabase =
-            Room.databaseBuilder(context, TrackerDatabase::class.java, NAME)
+        fun create(context: Context): TrackerDatabase = builder(context, NAME).build()
+
+        /**
+         * Opens a standalone copy at [file], such as a backup, migrating it to this version first.
+         * It keeps no journal file beside it, so once closed [file] holds everything.
+         */
+        fun open(context: Context, file: File): TrackerDatabase =
+            builder(context, file.absolutePath).setJournalMode(RoomDatabase.JournalMode.TRUNCATE).build()
+
+        private fun builder(context: Context, name: String) =
+            Room.databaseBuilder(context, TrackerDatabase::class.java, name)
                 .addMigrations(PhotoSessionsMigration, LegacyLogsMigration)
-                .build()
     }
 }

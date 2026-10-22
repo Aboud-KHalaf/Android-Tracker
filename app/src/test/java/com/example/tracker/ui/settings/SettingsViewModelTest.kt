@@ -14,6 +14,9 @@ import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.progress.benchHistory
 import com.example.tracker.domain.progress.toSessions
 import com.example.tracker.domain.workout.RestTimes
+import com.example.tracker.domain.repository.InvalidBackupException
+import com.example.tracker.domain.repository.NewerBackupException
+import com.example.tracker.testing.FakeBackupRepository
 import com.example.tracker.testing.FakeCustomStatRepository
 import com.example.tracker.testing.FakeExerciseRepository
 import com.example.tracker.testing.FakeReportExporter
@@ -24,6 +27,7 @@ import java.io.IOException
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -31,6 +35,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -45,12 +50,14 @@ class SettingsViewModelTest {
     private val workouts = FakeWorkoutRepository()
     private val stats = FakeCustomStatRepository()
     private val exporter = FakeReportExporter()
+    private val backup = FakeBackupRepository()
     private val time = FakeTimeProvider(Instant.parse("2026-10-03T09:00:00Z"))
 
     private fun createViewModel() = SettingsViewModel(
         settingsRepository = settings,
         data = SettingsViewModel.ExportableData(exercises, workouts, stats),
         reportExporter = exporter,
+        backup = backup,
         time = time,
     )
 
@@ -225,5 +232,75 @@ class SettingsViewModelTest {
     @Test
     fun exportFileName_isDated() {
         assertEquals("tracker-all-data-2026-10-03.pdf", createViewModel().exportFileName(ExportFormat.PDF))
+    }
+
+    @Test
+    fun backupFileName_namesTheBackupAfterToday() {
+        assertEquals("tracker-backup-2026-10-03.zip", createViewModel().backupFileName())
+    }
+
+    @Test
+    fun onBackUp_savesAndConfirms() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.onBackUp("content://backup")
+
+        assertEquals(listOf("content://backup"), backup.backups)
+        assertEquals(SettingsEvent.ShowMessage(R.string.settings_backup_done), viewModel.events.first())
+        assertFalse(viewModel.uiState.value.isBackingUp)
+    }
+
+    @Test
+    fun onBackUp_failure_showsError() = runTest {
+        backup.error = IOException("disk full")
+        val viewModel = createViewModel()
+
+        viewModel.onBackUp("content://backup")
+
+        assertEquals(SettingsEvent.ShowMessage(R.string.settings_error_backup), viewModel.events.first())
+    }
+
+    @Test
+    fun onRestore_restoresAndConfirms() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.onRestore("content://backup")
+
+        assertEquals(listOf("content://backup"), backup.restores)
+        assertEquals(SettingsEvent.ShowMessage(R.string.settings_restore_done), viewModel.events.first())
+        assertFalse(viewModel.uiState.value.isRestoring)
+    }
+
+    @Test
+    fun onRestore_failure_explainsWhy() = runTest {
+        val cases = mapOf(
+            InvalidBackupException() to R.string.settings_error_restore_invalid,
+            NewerBackupException() to R.string.settings_error_restore_newer,
+            IOException("unreadable") to R.string.settings_error_restore,
+        )
+        for ((error, message) in cases) {
+            backup.error = error
+            val viewModel = createViewModel()
+
+            viewModel.onRestore("content://backup")
+
+            assertEquals(SettingsEvent.ShowMessage(message), viewModel.events.first())
+        }
+    }
+
+    @Test
+    fun onRestore_whileAnotherDataOperationRuns_isIgnored() = runTest {
+        val viewModel = createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+        backup.backUpGate = CompletableDeferred()
+
+        viewModel.onBackUp("content://backup")
+        viewModel.onRestore("content://backup")
+        viewModel.onDeleteAllData()
+
+        assertTrue(viewModel.uiState.value.isBackingUp)
+        assertTrue(viewModel.uiState.value.isDataBusy)
+        assertTrue(backup.restores.isEmpty())
+        assertEquals(0, settings.deleteAllDataCalls)
     }
 }

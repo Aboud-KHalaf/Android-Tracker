@@ -39,6 +39,20 @@ class ProgressPhotoStore(
         capture.delete()
     }
 
+    /** Every kept photo's file. */
+    fun files(): List<File> = photosDirectory.listFiles()?.filter { it.isFile }.orEmpty()
+
+    /** Replaces every kept photo with the files in [directory], which is moved, not copied. */
+    fun replaceAll(directory: File) {
+        photosDirectory.deleteRecursively()
+        if (!directory.isDirectory) return
+        // Renaming is instant; copying covers folders on different volumes.
+        if (!directory.renameTo(photosDirectory)) {
+            directory.copyRecursively(photosDirectory, overwrite = true)
+            directory.deleteRecursively()
+        }
+    }
+
     /** Deletes every photo and capture. */
     fun deleteAll() {
         photosDirectory.deleteRecursively()
