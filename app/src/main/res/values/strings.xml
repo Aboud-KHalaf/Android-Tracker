@@ -239,6 +239,11 @@
     <string name="rest_between_sets">Next set in</string>
     <string name="rest_before_exercise">Next exercise in</string>
     <string name="rest_skip">Skip</string>
+    <string name="rest_skip_rest">Skip rest</string>
+    <string name="rest_of_total">of %1$s</string>
+    <string name="rest_up_next">Up next</string>
+    <string name="rest_minimize">Show workout</string>
+    <string name="rest_expand">Show rest timer</string>
     <plurals name="rest_subtract_description">
         <item quantity="one">Shorten rest by %1$d second</item>
         <item quantity="other">Shorten rest by %1$d seconds</item>

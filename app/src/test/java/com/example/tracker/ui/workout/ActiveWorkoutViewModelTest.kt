@@ -487,6 +487,33 @@ class ActiveWorkoutViewModelTest {
     }
 
     @Test
+    fun restBetweenExercises_endingOpensTheNextExercise() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        repeat(2) { viewModel.onCompleteSet() }
+        assertEquals(NextExerciseUi(1, "Incline Dumbbell Press"), state().nextOpenExercise)
+        assertEquals(0, state().exerciseIndex)
+
+        viewModel.onEndRest()
+
+        assertNull(state().rest)
+        assertEquals(1, state().exerciseIndex)
+        assertEquals(1, workouts.activeWorkout.value?.currentExerciseIndex)
+    }
+
+    @Test
+    fun restBetweenSets_endingStaysOnTheExercise() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onCompleteSet()
+
+        viewModel.onEndRest()
+
+        assertNull(state().rest)
+        assertEquals(0, state().exerciseIndex)
+    }
+
+    @Test
     fun restTurnedOffInSettings_doesNotRest() = runTest {
         settings.restTimes.value = RestTimes(betweenSetsSeconds = 0, betweenExercisesSeconds = 120)
         val viewModel = createViewModel()

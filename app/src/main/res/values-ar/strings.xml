@@ -183,6 +183,11 @@
     <string name="rest_between_sets">المجموعة التالية بعد</string>
     <string name="rest_before_exercise">التمرين التالي بعد</string>
     <string name="rest_skip">تخطٍّ</string>
+    <string name="rest_skip_rest">تخطّي الراحة</string>
+    <string name="rest_of_total">من %1$s</string>
+    <string name="rest_up_next">التالي</string>
+    <string name="rest_minimize">عرض التمرين</string>
+    <string name="rest_expand">عرض مؤقّت الراحة</string>
     <plurals name="rest_subtract_description">
         <item quantity="zero">تقصير الراحة %1$d ثانية</item>
         <item quantity="one">تقصير الراحة ثانية واحدة</item>
