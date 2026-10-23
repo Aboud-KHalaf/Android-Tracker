@@ -128,6 +128,18 @@ class ActiveWorkoutViewModelTest {
     }
 
     @Test
+    fun onUseLastTime_fillsTheSameSetFromLastTime() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onWeightTextChange("60")
+        viewModel.onRepsTextChange("3")
+
+        viewModel.onUseLastTime()
+
+        assertEquals(SetEditorUi.WeightReps("50", "8"), state().editor())
+    }
+
+    @Test
     fun onCompleteSet_savesValuesMovesOnAndOffersUndo() = runTest {
         val viewModel = createViewModel()
         val state = collectState(viewModel)

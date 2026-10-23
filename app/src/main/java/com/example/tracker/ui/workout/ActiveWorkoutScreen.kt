@@ -137,6 +137,7 @@ fun ActiveWorkoutRoute(
                 onWeightStep = viewModel::onWeightStep,
                 onRepsStep = viewModel::onRepsStep,
                 onRpeChange = viewModel::onSetActiveRpe,
+                onUseLastTime = viewModel::onUseLastTime,
             ),
             duration = DurationEditorActions(
                 onToggle = viewModel::onToggleTimer,

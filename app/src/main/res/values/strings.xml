@@ -187,6 +187,7 @@
     <string name="workout_go_to_set">Go to set</string>
     <string name="workout_value_not_set">Not set</string>
     <string name="workout_last_time_set">Last time %1$s</string>
+    <string name="workout_use_last_time">Same as last time: %1$s</string>
     <string name="workout_new_set">New set</string>
     <string name="workout_remove_set">Remove %1$s</string>
     <string name="workout_weight_label">Weight (kg)</string>
