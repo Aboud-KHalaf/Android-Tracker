@@ -786,7 +786,7 @@
     <string name="widget_nothing_to_start">خطّط تمارينك</string>
     <string name="widget_nothing_to_start_body">أنشئ برنامجًا وأضف تمارين في التطبيق.</string>
     <string name="widget_error">اضغط لفتح التطبيق.</string>
-    <string name="home_consistency">الالتزام</string>
+    <string name="history_consistency">الالتزام</string>
     <string name="home_no_streak">تمرّن هذا الأسبوع لتبدأ سلسلة</string>
     <string name="home_calendar_less">أقل</string>
     <string name="home_calendar_more">أكثر</string>

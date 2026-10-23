@@ -29,7 +29,7 @@ All data stays on your device, and you don't need an account. When you want your
 - **New personal bests are celebrated** the moment you complete the set: a vibration, a "New personal best!" message and a PB badge on the set
 - Built-in hold timer for timed sets (planks, holds, etc.)
 - Workout history grouped by month, with a filter by training day
-- **Consistency** on Home: your streak of weeks in a row with a workout, and a 12-week training calendar
+- **Consistency** in History: your streak of weeks in a row with a workout, and a 12-week training calendar
 - **Workout summary** after finishing (and from any workout in Home or History): time, sets, volume against the last workout of the same day, the personal bests it set, and each exercise's sets
 
 ### ⏱️ Workouts that survive leaving the app

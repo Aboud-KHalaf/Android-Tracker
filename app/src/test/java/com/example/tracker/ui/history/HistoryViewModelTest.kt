@@ -69,6 +69,19 @@ class HistoryViewModelTest {
     }
 
     @Test
+    fun consistency_countsEveryWorkoutWhateverTheFilter() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onSelectPlan("pull")
+
+        val consistency = state().consistency
+        assertEquals(HistoryStateMapper.CALENDAR_WEEKS, consistency.weeks.size)
+        assertEquals(3, consistency.trainedDayCount)
+        assertEquals(2, consistency.weekStreak)
+    }
+
+    @Test
     fun onSelectPlan_filtersToThatPlan() = runTest {
         val viewModel = createViewModel()
         val state = collectState(viewModel)

@@ -3,6 +3,7 @@ package com.example.tracker.ui.history
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -32,6 +33,7 @@ import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MonthHeader
 import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.WorkoutSummaryRow
+import com.example.tracker.ui.history.components.ConsistencyCard
 import com.example.tracker.ui.history.components.PlanFilterChips
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
@@ -112,6 +114,14 @@ private fun HistoryContent(
                 bottom = contentPadding.calculateBottomPadding() + spacing.lg,
             ),
         ) {
+            item(key = "consistency") {
+                ConsistencyCard(
+                    consistency = state.consistency,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = spacing.lg, end = spacing.lg, top = spacing.sm, bottom = spacing.lg),
+                )
+            }
             item(key = "filters") {
                 PlanFilterChips(
                     filters = state.filters,

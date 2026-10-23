@@ -1,4 +1,4 @@
-package com.example.tracker.ui.home.components
+package com.example.tracker.ui.history.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,8 +31,8 @@ import androidx.compose.ui.unit.dp
 import com.example.tracker.R
 import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.common.narrowName
-import com.example.tracker.ui.home.CalendarDayUi
-import com.example.tracker.ui.home.ConsistencyUi
+import com.example.tracker.ui.history.CalendarDayUi
+import com.example.tracker.ui.history.ConsistencyUi
 import com.example.tracker.ui.theme.spacing
 import java.time.DayOfWeek
 
@@ -54,7 +54,7 @@ fun ConsistencyCard(consistency: ConsistencyUi, modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
         ) {
             Text(
-                stringResource(R.string.home_consistency),
+                stringResource(R.string.history_consistency),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.semantics { heading() },
             )
