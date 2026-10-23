@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.model.StatOverview
@@ -16,6 +17,8 @@ import com.example.tracker.domain.stats.progressToward
 import com.example.tracker.ui.common.launchCatching
 import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,10 +27,14 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
-/** Stats: the user's stats with their latest values, suggestions for new ones, and the latest progress photos. */
+/**
+ * Stats: the user's stats with their latest values, suggestions for new ones, and the latest
+ * progress photos. Messages are sent once through [events].
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class StatsViewModel(
     private val customStatRepository: CustomStatRepository,
@@ -37,6 +44,9 @@ class StatsViewModel(
 ) : ViewModel() {
 
     private val loadAttempt = MutableStateFlow(0)
+
+    private val _events = Channel<StatsEvent>(Channel.BUFFERED)
+    val events: Flow<StatsEvent> = _events.receiveAsFlow()
 
     val uiState: StateFlow<StatsUiState> = loadAttempt
         .flatMapLatest {
@@ -72,6 +82,14 @@ class StatsViewModel(
 
     fun onRetry() {
         loadAttempt.update { it + 1 }
+    }
+
+    /** Deletes a stat and everything logged for it, after the screen has asked. */
+    fun onDeleteStat(statId: String) {
+        viewModelScope.launchCatching(onError = { _events.send(StatsEvent.ShowMessage(R.string.stat_error_delete_stat)) }) {
+            customStatRepository.deleteStat(statId)
+            _events.send(StatsEvent.ShowMessage(R.string.stat_deleted))
+        }
     }
 
     private fun today(): LocalDate = time.now().atZone(time.zone()).toLocalDate()

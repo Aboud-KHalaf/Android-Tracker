@@ -695,6 +695,9 @@
     <string name="stat_delete">حذف الإحصاء</string>
     <string name="stat_delete_title">حذف %1$s؟</string>
     <string name="stat_delete_body">سيُحذف الإحصاء وكل القيم المسجّلة له.</string>
+    <string name="stat_edit_action">تعديل الإحصاء</string>
+    <string name="stat_more_actions">تعديل أو حذف</string>
+    <string name="stat_deleted">حُذف الإحصاء</string>
     <string name="stat_error_save_stat">تعذّر حفظ الإحصاء.</string>
     <string name="stat_error_delete_stat">تعذّر حذف الإحصاء.</string>
     <string name="stat_template_body_fat">نسبة الدهون</string>

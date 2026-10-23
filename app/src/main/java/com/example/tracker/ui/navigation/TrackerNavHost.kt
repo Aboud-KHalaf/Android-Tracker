@@ -86,6 +86,7 @@ fun TrackerNavHost(
             onTakePhotos = navController::navigateToPhotoCapture,
             onNewStat = navController::navigateToNewStat,
             onOpenStat = navController::navigateToStatDetail,
+            onEditStat = navController::navigateToEditStat,
         )
         statDetailScreen(onBack = navController::popBackStack, onEdit = navController::navigateToEditStat)
         statEditorScreen(

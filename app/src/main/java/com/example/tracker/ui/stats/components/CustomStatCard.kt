@@ -1,11 +1,22 @@
 package com.example.tracker.ui.stats.components
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.tracker.R
@@ -19,7 +30,10 @@ import com.example.tracker.ui.theme.statColors
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
-/** One of the user's stats: the latest value, the change since the first, progress to the target, and a log button. */
+/**
+ * One of the user's stats: the latest value, the change since the first, progress to the
+ * target, and a log button. A long press offers Edit and Delete.
+ */
 @Composable
 fun CustomStatCard(
     card: StatCardUi,
@@ -27,6 +41,42 @@ fun CustomStatCard(
     onClick: () -> Unit,
     onLog: () -> Unit,
     modifier: Modifier = Modifier,
+    onEdit: () -> Unit = {},
+    onDelete: () -> Unit = {},
+) {
+    val stat = card.stat
+    val latest = card.latest
+    var showMenu by remember { mutableStateOf(false) }
+    Box(modifier) {
+        StatCardContent(card, today, onClick, onLog, onLongClick = { showMenu = true })
+        DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.stat_edit_action)) },
+                leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
+                onClick = {
+                    showMenu = false
+                    onEdit()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.stat_delete)) },
+                leadingIcon = { Icon(Icons.Outlined.Delete, contentDescription = null) },
+                onClick = {
+                    showMenu = false
+                    onDelete()
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatCardContent(
+    card: StatCardUi,
+    today: LocalDate,
+    onClick: () -> Unit,
+    onLog: () -> Unit,
+    onLongClick: () -> Unit,
 ) {
     val stat = card.stat
     val latest = card.latest
@@ -53,7 +103,9 @@ fun CustomStatCard(
             }
         },
         onClick = onClick,
-        modifier = modifier,
+        onLongClick = onLongClick,
+        onLongClickLabel = stringResource(R.string.stat_more_actions),
+        modifier = Modifier.fillMaxWidth(),
     )
 }
 
