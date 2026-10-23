@@ -2,6 +2,7 @@ package com.example.tracker.ui.plan
 
 import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.ui.common.SetValueUi
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -46,7 +47,13 @@ data class PlanExerciseUi(
     val canSupersetWithNext: Boolean get() = canMoveDown
 }
 
-data class ExerciseOptionUi(val id: String, val name: String, val type: ExerciseType)
+data class ExerciseOptionUi(
+    val id: String,
+    val name: String,
+    val type: ExerciseType,
+    /** Null when it has none yet; it's asked for before the exercise is added. */
+    val muscleGroup: MuscleGroup? = null,
+)
 
 /**
  * The "Edit targets" sheet: the exercise's default configuration and, kept apart from it,

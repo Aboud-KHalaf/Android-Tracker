@@ -101,6 +101,9 @@
     <string name="add_exercise_new_title">تمرين جديد</string>
     <string name="add_exercise_name_label">اسم التمرين</string>
     <string name="add_exercise_type_label">يُقاس بـ</string>
+    <string name="add_exercise_muscle_label">العضلة المستهدفة</string>
+    <string name="add_exercise_muscle_title">أي عضلة يستهدف %1$s؟</string>
+    <string name="add_exercise_muscle_body">تُحتسب مجموعاته في \"مجموعات هذا الأسبوع حسب العضلة\" في شاشة التقدّم.</string>
     <string name="add_exercise_confirm">إضافة إلى اليوم</string>
 
     <!-- Exercise catalog -->

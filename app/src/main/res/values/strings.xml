@@ -132,6 +132,9 @@
     <string name="add_exercise_new_title">New exercise</string>
     <string name="add_exercise_name_label">Exercise name</string>
     <string name="add_exercise_type_label">Measured by</string>
+    <string name="add_exercise_muscle_label">Target muscle</string>
+    <string name="add_exercise_muscle_title">Which muscle does %1$s train?</string>
+    <string name="add_exercise_muscle_body">It counts toward \"Sets this week by muscle\" in Progress.</string>
     <string name="add_exercise_confirm">Add to day</string>
 
     <!-- Exercise catalog -->

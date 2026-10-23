@@ -13,6 +13,7 @@ import com.example.tracker.TrackerApplication
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.PlanRepository
 import com.example.tracker.domain.repository.WorkoutRepository
@@ -94,19 +95,23 @@ class PlanViewModel(
         }
     }
 
-    /** Swaps the library exercise behind [planExerciseId], keeping its place and targets. */
-    fun onReplaceExercise(planExerciseId: String, exerciseId: String) {
+    /**
+     * Swaps the library exercise behind [planExerciseId], keeping its place and targets.
+     * [muscleGroup] is given when the exercise had none yet.
+     */
+    fun onReplaceExercise(planExerciseId: String, exerciseId: String, muscleGroup: MuscleGroup? = null) {
         viewModelScope.launchCatching(onError = { showMessage(R.string.plan_error_replace) }) {
+            if (muscleGroup != null) exerciseRepository.setMuscleGroup(exerciseId, muscleGroup)
             planRepository.replaceExercise(planExerciseId, exerciseId)
         }
     }
 
     /** Creates a new library exercise and puts it in place of [planExerciseId]. */
-    fun onCreateReplacement(planExerciseId: String, name: String, type: ExerciseType) {
+    fun onCreateReplacement(planExerciseId: String, name: String, type: ExerciseType, muscleGroup: MuscleGroup) {
         val trimmed = name.trim()
         if (trimmed.isEmpty()) return
         viewModelScope.launchCatching(onError = { showMessage(R.string.plan_error_replace) }) {
-            val exerciseId = exerciseRepository.createExercise(trimmed, type)
+            val exerciseId = exerciseRepository.createExercise(trimmed, type, muscleGroup)
             planRepository.replaceExercise(planExerciseId, exerciseId)
         }
     }
@@ -169,18 +174,20 @@ class PlanViewModel(
         }
     }
 
-    fun onAddExercise(exerciseId: String) {
+    /** Adds a library exercise; [muscleGroup] is given when it had none yet. */
+    fun onAddExercise(exerciseId: String, muscleGroup: MuscleGroup? = null) {
         viewModelScope.launchCatching(onError = { showMessage(R.string.plan_error_add_exercise) }) {
+            if (muscleGroup != null) exerciseRepository.setMuscleGroup(exerciseId, muscleGroup)
             planRepository.addExercise(planId, exerciseId)
         }
     }
 
-    /** Creates a new library exercise and adds it to this plan. */
-    fun onCreateExercise(name: String, type: ExerciseType) {
+    /** Creates a new library exercise, with the muscle it trains, and adds it to this plan. */
+    fun onCreateExercise(name: String, type: ExerciseType, muscleGroup: MuscleGroup) {
         val trimmed = name.trim()
         if (trimmed.isEmpty()) return
         viewModelScope.launchCatching(onError = { showMessage(R.string.plan_error_add_exercise) }) {
-            val exerciseId = exerciseRepository.createExercise(trimmed, type)
+            val exerciseId = exerciseRepository.createExercise(trimmed, type, muscleGroup)
             planRepository.addExercise(planId, exerciseId)
         }
     }

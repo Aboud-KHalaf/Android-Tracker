@@ -52,7 +52,7 @@ internal class PlanStateMapper(private val zone: ZoneId) {
             },
             availableExercises = library
                 .filter { it.id !in inPlan }
-                .map { ExerciseOptionUi(it.id, it.name, it.type) },
+                .map { ExerciseOptionUi(it.id, it.name, it.type, it.muscleGroup) },
             workoutAction = when {
                 activeWorkout != null -> WorkoutActionUi.Resume(activeWorkout.id)
                 details.exercises.isEmpty() -> WorkoutActionUi.Unavailable
