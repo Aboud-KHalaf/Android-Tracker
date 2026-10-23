@@ -14,7 +14,7 @@ data class WorkoutRecap(
     val volumeKg: Double,
     /** The same volume for the previous finished workout of the same training day, if any. */
     val previousVolumeKg: Double?,
-    /** Exercises with at least one completed set, in workout order. */
+    /** Exercises with at least one completed set or a note, in workout order. */
     val exercises: List<ExerciseRecap>,
     /** Personal bests set in this workout, in workout order. */
     val personalBests: List<PersonalBest>,
@@ -23,7 +23,8 @@ data class WorkoutRecap(
     val volumeChangeKg: Double? get() = previousVolumeKg?.takeIf { it > 0.0 && volumeKg > 0.0 }?.let { volumeKg - it }
 }
 
-data class ExerciseRecap(val exercise: Exercise, val sets: List<WorkoutSet>)
+/** An exercise's completed sets, with the note left on it in this workout. */
+data class ExerciseRecap(val exercise: Exercise, val sets: List<WorkoutSet>, val note: String? = null)
 
 /**
  * Sums up a finished [workout]. [personalBests] may hold every personal best; only this
@@ -33,7 +34,7 @@ fun recapOf(workout: Workout, personalBests: List<PersonalBest>, previous: Worko
     val finishedAt = workout.finishedAt ?: return null
     val exercises = workout.exercises.sortedBy { it.position }.mapNotNull { exercise ->
         val sets = exercise.sets.filter { it.isCompleted }.sortedBy { it.position }
-        if (sets.isEmpty()) null else ExerciseRecap(exercise.exercise, sets)
+        if (sets.isEmpty() && exercise.note == null) null else ExerciseRecap(exercise.exercise, sets, exercise.note)
     }
     val order = exercises.map { it.exercise.id }
     return WorkoutRecap(

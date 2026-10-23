@@ -73,6 +73,28 @@ class WorkoutSummaryViewModelTest {
     }
 
     @Test
+    fun notes_areShownWithTheWorkoutAndEachExercise() = runTest {
+        val plank = Exercise("plank", "Plank", ExerciseType.DURATION)
+        workouts.activeWorkout.value = finishedWorkout().let { workout ->
+            workout.copy(
+                note = "Felt strong",
+                exercises = listOf(
+                    workout.exercises.single().copy(note = "Pause at the chest"),
+                    // Skipped, but its note is still worth keeping.
+                    WorkoutExercise("wp", plank, 1, listOf(WorkoutSet("s2", 0, null, null, 60, null)), note = "Elbow hurt"),
+                ),
+            )
+        }
+
+        val state = stateOf(WorkoutSummaryViewModel("w1", justFinished = false, workouts, time))() as WorkoutSummaryUiState.Success
+
+        assertEquals("Felt strong", state.note)
+        assertEquals(listOf("Pause at the chest", "Elbow hurt"), state.exercises.map { it.note })
+        assertEquals(listOf(emptyList<SetValueUi>()), state.exercises.drop(1).map { it.sets })
+        assertEquals(1, state.setCount)
+    }
+
+    @Test
     fun workoutInProgress_isNotFound() = runTest {
         workouts.activeWorkout.value = finishedWorkout(finished = false)
 

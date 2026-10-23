@@ -28,6 +28,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.material.icons.automirrored.outlined.Notes
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -165,6 +170,9 @@ private fun SummaryContent(
                     )
                 }
             }
+            state.note?.let { note ->
+                item(key = "note") { NoteCard(label = stringResource(R.string.workout_note), note = note) }
+            }
             item(key = "figures") {
                 Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
                     FigureTile(stringResource(R.string.summary_duration), formatDuration(state.duration), Modifier.weight(1f))
@@ -204,7 +212,12 @@ private fun SummaryContent(
                     ListItem(
                         headlineContent = { Text(exercise.name) },
                         supportingContent = {
-                            Text(exercise.sets.compactText(), style = MaterialTheme.typography.bodyMedium.tabularNumbers())
+                            Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                                if (exercise.sets.isNotEmpty()) {
+                                    Text(exercise.sets.compactText(), style = MaterialTheme.typography.bodyMedium.tabularNumbers())
+                                }
+                                exercise.note?.let { ExerciseNoteText(it) }
+                            }
                         },
                         trailingContent = if (exercise.isPersonalBest) {
                             { PersonalRecordBadge(stringResource(R.string.exercise_pb_badge)) }
@@ -226,6 +239,50 @@ private fun volumeChangeText(change: Double): String {
     val sign = if (change > 0) "+" else "−"
     val amount = stringResource(R.string.value_kg, formatNumber(abs(change), currentLocale()))
     return stringResource(R.string.summary_volume_change, sign + amount)
+}
+
+/** A note left on the whole workout, under its label. */
+@Composable
+private fun NoteCard(label: String, note: String, modifier: Modifier = Modifier) {
+    Surface(
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.padding(MaterialTheme.spacing.md),
+            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm),
+        ) {
+            Icon(Icons.AutoMirrored.Outlined.Notes, contentDescription = null)
+            Column {
+                Text(label, style = MaterialTheme.typography.labelMedium)
+                Text(note, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+/** The note left on an exercise, set apart from its sets. */
+@Composable
+private fun ExerciseNoteText(note: String) {
+    val description = stringResource(R.string.summary_exercise_note_description, note)
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.xs),
+        modifier = Modifier.clearAndSetSemantics { contentDescription = description },
+    ) {
+        Icon(
+            Icons.AutoMirrored.Outlined.Notes,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(Dimens.inlineIconSize),
+        )
+        Text(
+            note,
+            style = MaterialTheme.typography.bodyMedium,
+            fontStyle = FontStyle.Italic,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 }
 
 @Composable
