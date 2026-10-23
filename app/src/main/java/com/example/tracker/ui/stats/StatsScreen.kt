@@ -14,20 +14,29 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.ui.common.AnimatedFab
+import com.example.tracker.ui.common.DestructiveConfirmDialog
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
+import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.ScreenTitle
 import com.example.tracker.ui.common.SectionHeader
 import com.example.tracker.ui.common.StateCrossfade
@@ -49,9 +58,17 @@ fun StatsRoute(
     onNewStat: (StatTemplate?) -> Unit,
     onOpenStat: (statId: String, logToday: Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    onEditStat: (statId: String) -> Unit = {},
     viewModel: StatsViewModel = viewModel(factory = StatsViewModel.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            is StatsEvent.ShowMessage -> snackbarHostState.showSnackbar(context.getString(event.messageRes))
+        }
+    }
     val latestCheckIn by viewModel.latestCheckIn.collectAsStateWithLifecycle()
 
     // The daily reminder needs notification permission; ask once, here, where the reason is clear.
@@ -66,9 +83,12 @@ fun StatsRoute(
         actions = StatsActions(
             onNewStat = onNewStat,
             onOpenStat = onOpenStat,
+            onEditStat = onEditStat,
+            onDeleteStat = viewModel::onDeleteStat,
             onRetry = viewModel::onRetry,
         ),
         modifier = modifier,
+        snackbarHostState = snackbarHostState,
         photosCard = { cardModifier ->
             ProgressPhotosCard(latest = latestCheckIn, onOpen = onOpenPhotos, onTakePhotos = onTakePhotos, modifier = cardModifier)
         },
@@ -81,6 +101,9 @@ data class StatsActions(
     val onNewStat: (StatTemplate?) -> Unit = {},
     /** `logToday` opens today's entry right away. */
     val onOpenStat: (statId: String, logToday: Boolean) -> Unit = { _, _ -> },
+    val onEditStat: (statId: String) -> Unit = {},
+    /** Called once the user has confirmed. */
+    val onDeleteStat: (statId: String) -> Unit = {},
     val onRetry: () -> Unit = {},
 )
 
@@ -91,9 +114,11 @@ fun StatsScreen(
     actions: StatsActions,
     modifier: Modifier = Modifier,
     photosCard: @Composable (Modifier) -> Unit = {},
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             AnimatedFab(visible = uiState is StatsUiState.Success) {
                 ExtendedFloatingActionButton(
@@ -127,6 +152,8 @@ private fun StatsContent(
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
+    // The stat waiting for the user to confirm its deletion.
+    var deletingId by rememberSaveable { mutableStateOf<String?>(null) }
     val cardModifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = spacing.lg, vertical = spacing.sm)
@@ -159,6 +186,8 @@ private fun StatsContent(
                     today = state.today,
                     onClick = { actions.onOpenStat(card.stat.id, false) },
                     onLog = { actions.onOpenStat(card.stat.id, true) },
+                    onEdit = { actions.onEditStat(card.stat.id) },
+                    onDelete = { deletingId = card.stat.id },
                     modifier = cardModifier.animateItem(),
                 )
             }
@@ -171,5 +200,20 @@ private fun StatsContent(
                 )
             }
         }
+    }
+
+    // A stat deleted elsewhere meanwhile just closes the dialog.
+    val deleting = state.stats.firstOrNull { it.stat.id == deletingId }?.stat
+    if (deleting != null) {
+        DestructiveConfirmDialog(
+            title = stringResource(R.string.stat_delete_title, deleting.name),
+            body = stringResource(R.string.stat_delete_body),
+            confirmLabel = stringResource(R.string.action_delete),
+            onConfirm = {
+                deletingId = null
+                actions.onDeleteStat(deleting.id)
+            },
+            onDismiss = { deletingId = null },
+        )
     }
 }

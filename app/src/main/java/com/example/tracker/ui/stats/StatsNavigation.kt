@@ -19,6 +19,7 @@ fun NavGraphBuilder.statsScreen(
     onTakePhotos: () -> Unit,
     onNewStat: (StatTemplate?) -> Unit,
     onOpenStat: (statId: String, logToday: Boolean) -> Unit,
+    onEditStat: (statId: String) -> Unit,
 ) {
     composable<StatsDestination>(
         deepLinks = listOf(
@@ -31,6 +32,7 @@ fun NavGraphBuilder.statsScreen(
             onTakePhotos = onTakePhotos,
             onNewStat = onNewStat,
             onOpenStat = onOpenStat,
+            onEditStat = onEditStat,
         )
     }
 }

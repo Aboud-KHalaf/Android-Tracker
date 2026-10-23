@@ -22,6 +22,7 @@ All data stays on your device, and you don't need an account. When you want your
 - **Targets per exercise**: sets, reps and weight, or hold time, edited on their own without starting a workout. They prefill each new workout; what you actually lift is recorded separately and shown next to them as "Recorded last workout"
 - Log weight-and-reps sets during an active workout
 - Mark a set as a **warm-up**, **drop set** or **to failure**; add warm-ups before the working sets with one tap. Warm-ups are numbered apart and left out of progress, records, volume and "last time" comparisons
+- **Rest screen**: after a set, the rest countdown takes over the screen with what comes next (the next set and last time's value, or the next exercise), −15s / +15s and Skip; "Show workout" shrinks it to a bar. When the rest between exercises ends, the next exercise opens
 - Optionally rate each weighted set's effort on the **RPE** scale (6–10), shown next to the set once it's done
 - **Notes**: a note on the whole workout (shown in history) and on each exercise (shown in its progress history and, next time, under the exercise as "Last time")
 - **Supersets**: pair exercises on a training day ("Superset with next"); during the workout, completing a set goes straight to the next exercise of the superset, and the rest comes after each round
@@ -29,7 +30,7 @@ All data stays on your device, and you don't need an account. When you want your
 - **New personal bests are celebrated** the moment you complete the set: a vibration, a "New personal best!" message and a PB badge on the set
 - Built-in hold timer for timed sets (planks, holds, etc.)
 - Workout history grouped by month, with a filter by training day
-- **Consistency** on Home: your streak of weeks in a row with a workout, and a 12-week training calendar
+- **Consistency** in History: your streak of weeks in a row with a workout, and a 12-week training calendar
 - **Workout summary** after finishing (and from any workout in Home or History): time, sets, volume against the last workout of the same day, the personal bests it set, and each exercise's sets
 
 ### ⏱️ Workouts that survive leaving the app
@@ -47,6 +48,7 @@ All data stays on your device, and you don't need an account. When you want your
 ### 📊 Stats
 - Track any number once a day: create a stat with a name, unit, decimal places, an optional target, an icon and a colour
 - Start from suggestions such as **Weight**, **Body fat**, **Waist**, **Calories**, **Protein**, **Steps**, **Water**, **Sleep** and **Resting heart rate**, or make your own
+- Long-press a stat on the Stats tab to edit or delete it
 - Each stat shows its latest value, progress toward its target (going up or down follows from your first entry), a chart with a period selector and the full history by month; edit or delete any day
 - Export a stat's selected period as a PDF or Excel file
 - Optional daily reminder (9 PM by default, at a time you choose) when a stat isn't logged that day
@@ -57,7 +59,7 @@ All data stays on your device, and you don't need an account. When you want your
 - A human outline with head, feet, shoulder, waist, hip and knee marks shows where and how to stand, so every photo is framed the same way
 - Optionally note measurements with each session (weight, body fat, waist, chest, arms, thighs and more, or your own); the ones you measured last time are ready to fill in
 - Your last photo of each pose shows faintly over the camera, so you can line up in the same spot
-- A 3 or 10 second self-timer gives you time to step back from a propped-up phone; switch between the front and back camera
+- A 3, 5 or 10 second self-timer (picked from a menu) gives you time to step back from a propped-up phone; switch between the front and back camera
 - See every session's photos and measurements with their change, and compare your first and latest photo of a pose side by side
 - Photos stay inside the app: they aren't added to your gallery or included in cloud backups
 

@@ -25,6 +25,8 @@ sealed interface ActiveWorkoutUiState {
         val sets: List<SetRowUi>,
         val previousExerciseName: String?,
         val nextExerciseName: String?,
+        /** Where a rest between exercises leads: the next exercise with sets left, if any. */
+        val nextOpenExercise: NextExerciseUi? = null,
         val completedSetCount: Int,
         val openSetCount: Int,
         val isFinishing: Boolean = false,
@@ -44,6 +46,9 @@ sealed interface ActiveWorkoutUiState {
     }
 }
 
+/** An exercise to move on to, by its position in the workout. */
+data class NextExerciseUi(val index: Int, val name: String)
+
 /**
  * A rest countdown that ends at [endsAt]; the UI ticks it, so this state only changes on user
  * actions. [totalSeconds] is the whole rest, for showing how much is left.
@@ -54,6 +59,9 @@ data class RestUi(val kind: RestKind, val endsAt: Instant, val totalSeconds: Int
         val millis = java.time.Duration.between(now, endsAt).toMillis()
         return if (millis <= 0) 0 else ((millis + MILLIS_PER_SECOND - 1) / MILLIS_PER_SECOND).toInt()
     }
+
+    /** When it started; adjusting the rest moves its end, not its start. */
+    val startedAt: Instant get() = endsAt.minusSeconds(totalSeconds.toLong())
 
     /** The share of the rest still left, 1 at the start and 0 at the end. */
     fun fractionLeftAt(now: Instant): Float =

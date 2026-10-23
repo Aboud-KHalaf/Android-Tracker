@@ -37,6 +37,9 @@ object Dimens {
     /** The shutter button on the progress photo camera. */
     val shutterSize: Dp = 72.dp
 
+    /** Small icons beside a line of body text, e.g. before a note. */
+    val inlineIconSize: Dp = 18.dp
+
     /** Content column width cap, so screens stay readable on tablets and in landscape. */
     val maxContentWidth: Dp = 640.dp
 }

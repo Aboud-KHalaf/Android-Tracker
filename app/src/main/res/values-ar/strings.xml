@@ -101,6 +101,9 @@
     <string name="add_exercise_new_title">تمرين جديد</string>
     <string name="add_exercise_name_label">اسم التمرين</string>
     <string name="add_exercise_type_label">يُقاس بـ</string>
+    <string name="add_exercise_muscle_label">العضلة المستهدفة</string>
+    <string name="add_exercise_muscle_title">أي عضلة يستهدف %1$s؟</string>
+    <string name="add_exercise_muscle_body">تُحتسب مجموعاته في \"مجموعات هذا الأسبوع حسب العضلة\" في شاشة التقدّم.</string>
     <string name="add_exercise_confirm">إضافة إلى اليوم</string>
 
     <!-- Exercise catalog -->
@@ -139,6 +142,7 @@
     <string name="workout_go_to_set">انتقل إلى المجموعة</string>
     <string name="workout_value_not_set">غير محدد</string>
     <string name="workout_last_time_set">آخر مرة %1$s</string>
+    <string name="workout_use_last_time">مثل المرة السابقة: %1$s</string>
     <string name="workout_new_set">مجموعة جديدة</string>
     <string name="workout_remove_set">إزالة %1$s</string>
     <string name="workout_weight_label">الوزن (كغ)</string>
@@ -179,6 +183,11 @@
     <string name="rest_between_sets">المجموعة التالية بعد</string>
     <string name="rest_before_exercise">التمرين التالي بعد</string>
     <string name="rest_skip">تخطٍّ</string>
+    <string name="rest_skip_rest">تخطّي الراحة</string>
+    <string name="rest_of_total">من %1$s</string>
+    <string name="rest_up_next">التالي</string>
+    <string name="rest_minimize">عرض التمرين</string>
+    <string name="rest_expand">عرض مؤقّت الراحة</string>
     <plurals name="rest_subtract_description">
         <item quantity="zero">تقصير الراحة %1$d ثانية</item>
         <item quantity="one">تقصير الراحة ثانية واحدة</item>
@@ -456,6 +465,9 @@
     <string name="capture_switch_camera">تبديل الكاميرا</string>
     <string name="capture_timer_off">المؤقّت متوقف</string>
     <string name="capture_timer_seconds">مؤقّت %1$d ث</string>
+    <string name="capture_timer_off_short">إيقاف</string>
+    <string name="capture_timer_seconds_short">%1$d ث</string>
+    <string name="capture_timer_description">المؤقّت الذاتي: %1$s. اضغط للتغيير</string>
     <string name="capture_overlay_description">إظهار صورتك السابقة فوق الكاميرا</string>
     <string name="capture_retake">إعادة الالتقاط</string>
     <string name="capture_use">استخدام الصورة</string>
@@ -689,6 +701,9 @@
     <string name="stat_delete">حذف الإحصاء</string>
     <string name="stat_delete_title">حذف %1$s؟</string>
     <string name="stat_delete_body">سيُحذف الإحصاء وكل القيم المسجّلة له.</string>
+    <string name="stat_edit_action">تعديل الإحصاء</string>
+    <string name="stat_more_actions">تعديل أو حذف</string>
+    <string name="stat_deleted">حُذف الإحصاء</string>
     <string name="stat_error_save_stat">تعذّر حفظ الإحصاء.</string>
     <string name="stat_error_delete_stat">تعذّر حذف الإحصاء.</string>
     <string name="stat_template_body_fat">نسبة الدهون</string>
@@ -783,11 +798,12 @@
     <string name="widget_nothing_to_start">خطّط تمارينك</string>
     <string name="widget_nothing_to_start_body">أنشئ برنامجًا وأضف تمارين في التطبيق.</string>
     <string name="widget_error">اضغط لفتح التطبيق.</string>
-    <string name="home_consistency">الالتزام</string>
+    <string name="history_consistency">الالتزام</string>
     <string name="home_no_streak">تمرّن هذا الأسبوع لتبدأ سلسلة</string>
     <string name="home_calendar_less">أقل</string>
     <string name="home_calendar_more">أكثر</string>
     <string name="workout_note">ملاحظة التمرين</string>
+    <string name="summary_exercise_note_description">ملاحظة: %1$s</string>
     <string name="workout_note_hint">كيف كان التمرين؟</string>
     <string name="workout_exercise_note_add">إضافة ملاحظة</string>
     <string name="workout_exercise_note_title">ملاحظة على %1$s</string>

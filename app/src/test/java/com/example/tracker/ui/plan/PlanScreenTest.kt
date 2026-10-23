@@ -12,6 +12,7 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
 import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.ui.theme.TrackerTheme
 import java.time.DayOfWeek
 import org.junit.Assert.assertEquals
@@ -43,7 +44,10 @@ class PlanScreenTest {
         dayOfWeek = DayOfWeek.MONDAY,
         lastDoneOn = null,
         exercises = listOf("Bench Press", "Overhead Press", "Dips").mapIndexed { i, name -> exercise(i, name, 3) },
-        availableExercises = listOf(ExerciseOptionUi("db", "Dumbbell Press", ExerciseType.WEIGHT_REPS)),
+        availableExercises = listOf(
+            ExerciseOptionUi("db", "Dumbbell Press", ExerciseType.WEIGHT_REPS, MuscleGroup.CHEST),
+            ExerciseOptionUi("fly", "Cable Fly", ExerciseType.WEIGHT_REPS),
+        ),
         workoutAction = WorkoutActionUi.Start,
     )
 
@@ -92,7 +96,9 @@ class PlanScreenTest {
             TrackerTheme {
                 PlanScreen(
                     uiState = state,
-                    actions = PlanActions(onReplaceExercise = { planExerciseId, exerciseId -> replaced += planExerciseId to exerciseId }),
+                    actions = PlanActions(
+                        onReplaceExercise = { planExerciseId, exerciseId, _ -> replaced += planExerciseId to exerciseId },
+                    ),
                 )
             }
         }
@@ -103,6 +109,27 @@ class PlanScreenTest {
         compose.onNodeWithText("Dumbbell Press").performClick()
 
         assertEquals(listOf("pe1" to "db"), replaced)
+    }
+
+    @Test
+    fun addExercise_withoutMuscleGroup_asksForItFirst() {
+        val added = mutableListOf<Pair<String, MuscleGroup?>>()
+        compose.setContent {
+            TrackerTheme {
+                PlanScreen(
+                    uiState = state,
+                    actions = PlanActions(onAddExercise = { exerciseId, muscleGroup -> added += exerciseId to muscleGroup }),
+                )
+            }
+        }
+
+        compose.onNodeWithText("Add exercise").performClick()
+        compose.onNodeWithText("Cable Fly").performClick()
+        compose.onNodeWithText("Which muscle does Cable Fly train?").assertExists()
+        compose.onNodeWithText("Chest").performClick()
+        compose.onNodeWithText("Add to day").performClick()
+
+        assertEquals(listOf<Pair<String, MuscleGroup?>>("fly" to MuscleGroup.CHEST), added)
     }
 
     @Test

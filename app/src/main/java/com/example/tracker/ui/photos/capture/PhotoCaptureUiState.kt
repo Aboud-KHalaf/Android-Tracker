@@ -8,9 +8,8 @@ import com.example.tracker.ui.photos.measurements.MeasurementsForm
 enum class CaptureTimer(val seconds: Int) {
     OFF(0),
     THREE(3),
-    TEN(10);
-
-    fun next(): CaptureTimer = entries[(ordinal + 1) % entries.size]
+    FIVE(5),
+    TEN(10),
 }
 
 /** Everything the capture screen renders. */

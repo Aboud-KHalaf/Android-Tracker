@@ -128,6 +128,18 @@ class ActiveWorkoutViewModelTest {
     }
 
     @Test
+    fun onUseLastTime_fillsTheSameSetFromLastTime() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onWeightTextChange("60")
+        viewModel.onRepsTextChange("3")
+
+        viewModel.onUseLastTime()
+
+        assertEquals(SetEditorUi.WeightReps("50", "8"), state().editor())
+    }
+
+    @Test
     fun onCompleteSet_savesValuesMovesOnAndOffersUndo() = runTest {
         val viewModel = createViewModel()
         val state = collectState(viewModel)
@@ -472,6 +484,33 @@ class ActiveWorkoutViewModelTest {
         viewModel.onCompleteSet()
 
         assertNull(state().rest)
+    }
+
+    @Test
+    fun restBetweenExercises_endingOpensTheNextExercise() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        repeat(2) { viewModel.onCompleteSet() }
+        assertEquals(NextExerciseUi(1, "Incline Dumbbell Press"), state().nextOpenExercise)
+        assertEquals(0, state().exerciseIndex)
+
+        viewModel.onEndRest()
+
+        assertNull(state().rest)
+        assertEquals(1, state().exerciseIndex)
+        assertEquals(1, workouts.activeWorkout.value?.currentExerciseIndex)
+    }
+
+    @Test
+    fun restBetweenSets_endingStaysOnTheExercise() = runTest {
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+        viewModel.onCompleteSet()
+
+        viewModel.onEndRest()
+
+        assertNull(state().rest)
+        assertEquals(0, state().exerciseIndex)
     }
 
     @Test

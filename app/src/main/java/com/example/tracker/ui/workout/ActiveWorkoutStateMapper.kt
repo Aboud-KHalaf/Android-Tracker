@@ -58,18 +58,7 @@ internal object ActiveWorkoutStateMapper {
             startedAt = workout.startedAt,
             exerciseIndex = index,
             exerciseCount = exercises.size,
-            exercise = CurrentExerciseUi(
-                workoutExerciseId = current.id,
-                exerciseId = current.exercise.id,
-                name = current.exercise.name,
-                type = current.exercise.type,
-                lastTime = lastTime.mapNotNull { it.toSetValue() },
-                note = current.note,
-                lastTimeNote = lastNotes[current.exercise.id],
-                supersetPartners = Supersets.runOf(exercises.map { it.supersetGroup }, index)
-                    .filter { it != index }
-                    .map { exercises[it].exercise.name },
-            ),
+            exercise = currentExercise(exercises, index, lastTime, lastNotes),
             sets = numbered(sets).map { (set, number) ->
                 // Last time only holds working sets, so a working set compares with the one in
                 // its place among them; warm-ups have nothing to compare with.
@@ -99,11 +88,39 @@ internal object ActiveWorkoutStateMapper {
             },
             previousExerciseName = exercises.getOrNull(index - 1)?.exercise?.name,
             nextExerciseName = exercises.getOrNull(index + 1)?.exercise?.name,
+            nextOpenExercise = nextOpenExercise(exercises, index),
             completedSetCount = allSets.count { it.isCompleted },
             openSetCount = allSets.count { !it.isCompleted },
             workoutNote = workout.note,
         )
     }
+
+    private fun currentExercise(
+        exercises: List<WorkoutExercise>,
+        index: Int,
+        lastTime: List<WorkoutSet>,
+        lastNotes: Map<String, String?>,
+    ): CurrentExerciseUi {
+        val current = exercises[index]
+        return CurrentExerciseUi(
+            workoutExerciseId = current.id,
+            exerciseId = current.exercise.id,
+            name = current.exercise.name,
+            type = current.exercise.type,
+            lastTime = lastTime.mapNotNull { it.toSetValue() },
+            note = current.note,
+            lastTimeNote = lastNotes[current.exercise.id],
+            supersetPartners = Supersets.runOf(exercises.map { it.supersetGroup }, index)
+                .filter { it != index }
+                .map { exercises[it].exercise.name },
+        )
+    }
+
+    /** The first exercise after [current] with sets left, going round to the start; never [current] itself. */
+    private fun nextOpenExercise(exercises: List<WorkoutExercise>, current: Int): NextExerciseUi? =
+        (exercises.indices.drop(current + 1) + exercises.indices.take(current))
+            .firstOrNull { i -> exercises[i].sets.any { !it.isCompleted } }
+            ?.let { NextExerciseUi(it, exercises[it].exercise.name) }
 
     /** Each set with its one-based number, counting warm-ups and working sets separately. */
     private fun numbered(sets: List<WorkoutSet>): List<Pair<WorkoutSet, Int>> {

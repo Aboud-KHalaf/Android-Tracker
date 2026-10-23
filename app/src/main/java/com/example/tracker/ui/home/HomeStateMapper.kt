@@ -7,8 +7,6 @@ import com.example.tracker.domain.model.WeekSummary
 import com.example.tracker.domain.model.Workout
 import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.domain.program.nextWorkout
-import com.example.tracker.domain.progress.consistencyOf
-import com.example.tracker.domain.progress.startOfWeek
 import com.example.tracker.ui.common.SetValueUi
 import com.example.tracker.ui.common.toWorkoutSummaryUi
 import java.time.DayOfWeek
@@ -48,26 +46,7 @@ internal class HomeStateMapper(private val zone: ZoneId) {
                 )
             },
             recentWorkouts = history.take(RECENT_WORKOUT_LIMIT).map { it.toWorkoutSummaryUi(zone) },
-            consistency = consistency(today, history),
         )
-    }
-
-    /** The last [CALENDAR_WEEKS] weeks, this one included, and the streak. */
-    private fun consistency(today: LocalDate, history: List<WorkoutSummary>): ConsistencyUi {
-        val consistency = consistencyOf(history, today, zone)
-        val firstMonday = today.startOfWeek().minusWeeks(CALENDAR_WEEKS - 1L)
-        val weeks = (0 until CALENDAR_WEEKS).map { week ->
-            (0 until DAYS_PER_WEEK).map { day ->
-                val date = firstMonday.plusWeeks(week.toLong()).plusDays(day.toLong())
-                CalendarDayUi(
-                    date = date,
-                    workoutCount = consistency.workoutsByDay[date] ?: 0,
-                    isToday = date == today,
-                    isFuture = date.isAfter(today),
-                )
-            }
-        }
-        return ConsistencyUi(consistency.weekStreak, weeks)
     }
 
     private fun upNext(today: LocalDate, activeWorkout: Workout?, programs: List<Program>): UpNextUi {
@@ -128,8 +107,6 @@ internal class HomeStateMapper(private val zone: ZoneId) {
 
     companion object {
         const val RECENT_WORKOUT_LIMIT = 3
-        const val CALENDAR_WEEKS = 12
-        private const val DAYS_PER_WEEK = 7
 
         fun startOfWeek(date: LocalDate): LocalDate =
             date.minusDays((date.dayOfWeek.value - DayOfWeek.MONDAY.value).toLong())

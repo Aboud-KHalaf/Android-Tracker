@@ -1,5 +1,6 @@
 package com.example.tracker.ui.stats
 
+import com.example.tracker.R
 import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.PhotoPose
@@ -15,6 +16,7 @@ import java.io.IOException
 import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -122,5 +124,29 @@ class StatsViewModelTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.shouldRequestNotificationPermission.collect {} }
 
         assertFalse(viewModel.shouldRequestNotificationPermission.value)
+    }
+
+    @Test
+    fun onDeleteStat_deletesItAndSaysSo() = runTest {
+        stats.stats.value = listOf(bodyFat)
+        val viewModel = createViewModel()
+        val state = collectState(viewModel)
+
+        viewModel.onDeleteStat("fat")
+
+        assertTrue((state() as StatsUiState.Success).stats.isEmpty())
+        assertEquals(StatsEvent.ShowMessage(R.string.stat_deleted), viewModel.events.first())
+    }
+
+    @Test
+    fun onDeleteStat_failure_showsMessage() = runTest {
+        stats.stats.value = listOf(bodyFat)
+        stats.writeError = IOException("disk full")
+        val viewModel = createViewModel()
+
+        viewModel.onDeleteStat("fat")
+
+        assertEquals(StatsEvent.ShowMessage(R.string.stat_error_delete_stat), viewModel.events.first())
+        assertEquals(listOf(bodyFat), stats.stats.value)
     }
 }

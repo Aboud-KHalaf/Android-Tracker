@@ -80,6 +80,9 @@ class WorkoutJourneyTest {
         compose.onNodeWithContentDescription("Weight (kg)").performTextReplacement("50")
         compose.onNodeWithContentDescription("Reps").performTextReplacement("8")
         compose.onNodeWithText("Complete set").performScrollTo().assertIsEnabled().performClick()
+        // The rest takes over the screen until it's skipped.
+        waitForNode(hasText("Skip rest"))
+        compose.onNodeWithText("Skip rest").performClick()
         waitForNode(hasContentDescription("Set 1 done, 50 kg × 8"))
 
         compose.onNodeWithText("Finish").performClick()

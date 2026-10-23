@@ -5,6 +5,7 @@ import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.domain.model.PlanDetails
 import com.example.tracker.domain.model.PlanExercise
 import com.example.tracker.domain.model.Workout
@@ -160,13 +161,22 @@ class PlanViewModelTest {
     }
 
     @Test
-    fun onCreateExercise_createsTrimmedAndAddsToPlan() = runTest {
+    fun onAddExercise_withMuscleGroup_savesItBeforeAdding() = runTest {
+        createViewModel().onAddExercise("press", MuscleGroup.SHOULDERS)
+
+        assertEquals(MuscleGroup.SHOULDERS, exercises.exercises.value.first { it.id == "press" }.muscleGroup)
+        assertEquals(listOf("add push press"), plans.writes)
+    }
+
+    @Test
+    fun onCreateExercise_createsTrimmedWithMuscleAndAddsToPlan() = runTest {
         val viewModel = createViewModel()
 
-        viewModel.onCreateExercise("  Dips ", ExerciseType.WEIGHT_REPS)
-        viewModel.onCreateExercise("   ", ExerciseType.DURATION)
+        viewModel.onCreateExercise("  Dips ", ExerciseType.WEIGHT_REPS, MuscleGroup.CHEST)
+        viewModel.onCreateExercise("   ", ExerciseType.DURATION, MuscleGroup.CORE)
 
         assertEquals(listOf("Dips" to ExerciseType.WEIGHT_REPS), exercises.createdExercises)
+        assertEquals(listOf<MuscleGroup?>(MuscleGroup.CHEST), exercises.createdMuscleGroups)
         assertEquals(listOf("add push exercise-1"), plans.writes)
     }
 
@@ -252,9 +262,10 @@ class PlanViewModelTest {
         val viewModel = createViewModel()
         collectState(viewModel)
 
-        viewModel.onCreateReplacement("pe-bench", "  Dips ", ExerciseType.WEIGHT_REPS)
+        viewModel.onCreateReplacement("pe-bench", "  Dips ", ExerciseType.WEIGHT_REPS, MuscleGroup.CHEST)
 
         assertEquals(listOf("Dips" to ExerciseType.WEIGHT_REPS), exercises.createdExercises)
+        assertEquals(listOf<MuscleGroup?>(MuscleGroup.CHEST), exercises.createdMuscleGroups)
         assertEquals(listOf("replace pe-bench exercise-1"), plans.writes)
     }
 

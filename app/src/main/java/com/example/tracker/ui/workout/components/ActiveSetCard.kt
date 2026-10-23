@@ -1,6 +1,14 @@
 package com.example.tracker.ui.workout.components
 
 import androidx.compose.foundation.BorderStroke
+import com.example.tracker.ui.common.SetValueUi
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +35,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,6 +74,8 @@ data class WeightRepsEditorActions(
     val onRepsStep: (steps: Int) -> Unit = {},
     /** A rating, or null to clear it. */
     val onRpeChange: (Double?) -> Unit = {},
+    /** Fills in the weight and reps of the same set last time. */
+    val onUseLastTime: () -> Unit = {},
 )
 
 /** The set being edited: last time's values, its inputs, and Complete. */
@@ -101,7 +110,13 @@ fun ActiveSetCard(
                 verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
             ) {
                 when (val editor = set.editor) {
-                    is SetEditorUi.WeightReps -> WeightRepsEditor(editor, set.rpe, weightRepsActions, onComplete)
+                    is SetEditorUi.WeightReps -> WeightRepsEditor(
+                        editor = editor,
+                        lastTime = set.lastTime as? SetValueUi.WeightReps,
+                        rpe = set.rpe,
+                        actions = weightRepsActions,
+                        onComplete = onComplete,
+                    )
                     is SetEditorUi.Duration -> DurationEditor(editor, durationActions, onComplete)
                 }
             }
@@ -170,10 +185,24 @@ private fun SetTypeChip(selected: SetType, onSelect: (SetType) -> Unit) {
 @Composable
 private fun WeightRepsEditor(
     editor: SetEditorUi.WeightReps,
+    lastTime: SetValueUi.WeightReps?,
     rpe: Double?,
     actions: WeightRepsEditorActions,
     onComplete: () -> Unit,
 ) {
+    val focusManager = LocalFocusManager.current
+    val repsFocus = remember { FocusRequester() }
+    var showPlates by rememberSaveable { mutableStateOf(false) }
+    QuickActions(
+        // Offered only while it would change something.
+        lastTime = lastTime?.takeIf { it.weightKg != editor.weightKg || it.reps != editor.reps },
+        onUseLastTime = {
+            focusManager.clearFocus()
+            actions.onUseLastTime()
+        },
+        onShowPlates = { showPlates = true },
+    )
+    if (showPlates) PlateCalculatorSheet(weightKg = editor.weightKg, onDismiss = { showPlates = false })
     val step = formatWeight(SetInput.WEIGHT_STEP_KG, currentLocale())
     StepperField(
         label = stringResource(R.string.workout_weight_label),
@@ -185,14 +214,10 @@ private fun WeightRepsEditor(
         onValueChange = actions.onWeightChange,
         onDecrease = { actions.onWeightStep(-1) },
         onIncrease = { actions.onWeightStep(1) },
+        // The keyboard's Next goes straight on to the reps.
+        imeAction = ImeAction.Next,
+        onImeAction = { repsFocus.requestFocus() },
     )
-    var showPlates by rememberSaveable { mutableStateOf(false) }
-    TextButton(onClick = { showPlates = true }) {
-        Icon(Icons.Outlined.FitnessCenter, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
-        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-        Text(stringResource(R.string.plates_action))
-    }
-    if (showPlates) PlateCalculatorSheet(weightKg = editor.weightKg, onDismiss = { showPlates = false })
     StepperField(
         label = stringResource(R.string.workout_reps_label),
         value = editor.repsText,
@@ -203,10 +228,14 @@ private fun WeightRepsEditor(
         onValueChange = actions.onRepsChange,
         onDecrease = { actions.onRepsStep(-1) },
         onIncrease = { actions.onRepsStep(1) },
+        focusRequester = repsFocus,
     )
     RpeSelector(selected = rpe, onSelect = actions.onRpeChange)
     Button(
-        onClick = onComplete,
+        onClick = {
+            focusManager.clearFocus()
+            onComplete()
+        },
         enabled = editor.canComplete,
         modifier = Modifier
             .fillMaxWidth()
@@ -218,7 +247,40 @@ private fun WeightRepsEditor(
     }
 }
 
+/** "Same as last time" (when there is a last time to copy) and the plate calculator. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun QuickActions(lastTime: SetValueUi.WeightReps?, onUseLastTime: () -> Unit, onShowPlates: () -> Unit) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm),
+        verticalArrangement = Arrangement.Center,
+    ) {
+        if (lastTime != null) {
+            AssistChip(
+                onClick = onUseLastTime,
+                label = {
+                    Text(
+                        stringResource(R.string.workout_use_last_time, lastTime.text()),
+                        style = MaterialTheme.typography.labelLarge.tabularNumbers(),
+                    )
+                },
+                leadingIcon = {
+                    Icon(Icons.Outlined.History, contentDescription = null, modifier = Modifier.size(AssistChipDefaults.IconSize))
+                },
+            )
+        }
+        AssistChip(
+            onClick = onShowPlates,
+            label = { Text(stringResource(R.string.plates_action)) },
+            leadingIcon = {
+                Icon(Icons.Outlined.FitnessCenter, contentDescription = null, modifier = Modifier.size(AssistChipDefaults.IconSize))
+            },
+        )
+    }
+}
+
 /** Optional effort rating: tapping a value picks it, tapping it again clears it. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RpeSelector(selected: Double?, onSelect: (Double?) -> Unit) {
     val locale = currentLocale()
@@ -229,7 +291,7 @@ private fun RpeSelector(selected: Double?, onSelect: (Double?) -> Unit) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)) {
             Rpe.choices.forEach { value ->
                 val number = formatNumber(value, locale)
                 val description = stringResource(R.string.workout_rpe_value, number)

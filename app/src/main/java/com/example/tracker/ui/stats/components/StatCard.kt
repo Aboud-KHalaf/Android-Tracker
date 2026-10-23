@@ -2,6 +2,8 @@ package com.example.tracker.ui.stats.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +19,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -28,8 +33,10 @@ import com.example.tracker.ui.theme.tabularNumbers
 
 /**
  * One stat on the Stats tab: its icon, name, current [value] and a line of context, with an
- * optional [progress] bar (0 to 1) toward a target and a [trailing] action. Tapping opens it.
+ * optional [progress] bar (0 to 1) toward a target and a [trailing] action. Tapping opens it;
+ * a long press, when [onLongClick] is given, offers more (read out as [onLongClickLabel]).
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StatCard(
     title: String,
@@ -42,10 +49,23 @@ fun StatCard(
     progress: Float? = null,
     progressLabel: String? = null,
     trailing: @Composable (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
+    onLongClickLabel: String? = null,
 ) {
+    val haptics = LocalHapticFeedback.current
     Card(
-        onClick = onClick,
-        modifier = modifier,
+        modifier = modifier
+            .clip(CardDefaults.shape)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick?.let { longClick ->
+                    {
+                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        longClick()
+                    }
+                },
+                onLongClickLabel = onLongClickLabel,
+            ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
         Column(

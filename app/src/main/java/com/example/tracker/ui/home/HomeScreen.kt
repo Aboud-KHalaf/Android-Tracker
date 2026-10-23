@@ -44,7 +44,6 @@ import com.example.tracker.ui.common.rememberAfterNotificationPermission
 import com.example.tracker.ui.home.components.HomeHeader
 import com.example.tracker.ui.home.components.ProgramRow
 import com.example.tracker.ui.home.components.UpNextCard
-import com.example.tracker.ui.home.components.ConsistencyCard
 import com.example.tracker.ui.home.components.WeekCard
 import com.example.tracker.ui.program.ProgramSetup
 import com.example.tracker.ui.program.components.CreateProgramSheet
@@ -205,14 +204,6 @@ private fun HomeContent(
             }
             programsSection(state.programs, onOpenProgram = actions.onOpenProgram, onCreateProgram = onCreateProgramClick)
             recentWorkoutsSection(state.recentWorkouts, onSeeAll = actions.onOpenHistory, onOpen = actions.onOpenWorkoutSummary)
-            item(key = "consistency") {
-                ConsistencyCard(
-                    consistency = state.consistency,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = spacing.xl),
-                )
-            }
         }
     }
 }

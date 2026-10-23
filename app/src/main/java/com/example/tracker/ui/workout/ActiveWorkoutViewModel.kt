@@ -18,6 +18,7 @@ import com.example.tracker.domain.progress.recordSetIds
 import com.example.tracker.domain.repository.SettingsRepository
 import com.example.tracker.domain.repository.WorkoutRepository
 import com.example.tracker.domain.workout.RestAlarm
+import com.example.tracker.domain.workout.RestKind
 import com.example.tracker.domain.workout.afterCompleting
 import com.example.tracker.domain.workout.resumeExerciseIndex
 import com.example.tracker.ui.common.SetValueUi
@@ -114,6 +115,12 @@ class ActiveWorkoutViewModel(
     fun onWeightStep(steps: Int) = editActive { it.copy(weightText = SetInput.stepWeight(it.weightText, steps)) }
 
     fun onRepsStep(steps: Int) = editActive { it.copy(repsText = SetInput.stepReps(it.repsText, steps)) }
+
+    /** Fills the active set with the weight and reps of the same set last time. */
+    fun onUseLastTime() {
+        val last = activeSet()?.lastTime as? SetValueUi.WeightReps ?: return
+        editActive { it.copy(weightText = SetInput.formatWeight(last.weightKg), repsText = SetInput.formatReps(last.reps)) }
+    }
 
     /** Starts, pauses or resumes the active hold's timer. */
     fun onToggleTimer() = editHold { hold, now ->
@@ -225,9 +232,16 @@ class ActiveWorkoutViewModel(
         }
     }
 
-    /** The rest was skipped or has run out. */
+    /**
+     * The rest was skipped or has run out. After the rest between exercises, the next
+     * exercise with sets left opens, unless the user has already reopened a set here.
+     */
     fun onEndRest() {
+        val ended = rest.value ?: return
         rest.value = null
+        val state = uiState.value as? ActiveWorkoutUiState.Success ?: return
+        val next = state.nextOpenExercise ?: return
+        if (ended.kind == RestKind.BETWEEN_EXERCISES && state.allSetsDone) goToExerciseAt(next.index)
     }
 
     /** Saves the workout's note; blank text removes it. */
@@ -282,8 +296,12 @@ class ActiveWorkoutViewModel(
 
     private fun goToExercise(offset: Int) {
         val state = uiState.value as? ActiveWorkoutUiState.Success ?: return
-        val target = state.exerciseIndex + offset
-        if (target !in 0 until state.exerciseCount) return
+        goToExerciseAt(state.exerciseIndex + offset)
+    }
+
+    private fun goToExerciseAt(target: Int) {
+        val state = uiState.value as? ActiveWorkoutUiState.Success ?: return
+        if (target !in 0 until state.exerciseCount || target == state.exerciseIndex) return
         viewModelScope.launchCatching(onError = { showMessage(R.string.workout_error_save) }) {
             saveDraft()
             selection.value = WorkoutSelection(exerciseIndex = target)
