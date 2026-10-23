@@ -772,6 +772,9 @@
     <string name="stat_delete">Delete stat</string>
     <string name="stat_delete_title">Delete %1$s?</string>
     <string name="stat_delete_body">The stat and every value logged for it will be deleted.</string>
+    <string name="stat_edit_action">Edit stat</string>
+    <string name="stat_more_actions">Edit or delete</string>
+    <string name="stat_deleted">Stat deleted</string>
     <string name="stat_error_save_stat">Couldn\'t save the stat.</string>
     <string name="stat_error_delete_stat">Couldn\'t delete the stat.</string>
     <string name="stat_template_body_fat">Body fat</string>

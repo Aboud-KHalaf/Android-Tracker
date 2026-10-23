@@ -47,6 +47,7 @@ All data stays on your device, and you don't need an account. When you want your
 ### 📊 Stats
 - Track any number once a day: create a stat with a name, unit, decimal places, an optional target, an icon and a colour
 - Start from suggestions such as **Weight**, **Body fat**, **Waist**, **Calories**, **Protein**, **Steps**, **Water**, **Sleep** and **Resting heart rate**, or make your own
+- Long-press a stat on the Stats tab to edit or delete it
 - Each stat shows its latest value, progress toward its target (going up or down follows from your first entry), a chart with a period selector and the full history by month; edit or delete any day
 - Export a stat's selected period as a PDF or Excel file
 - Optional daily reminder (9 PM by default, at a time you choose) when a stat isn't logged that day
