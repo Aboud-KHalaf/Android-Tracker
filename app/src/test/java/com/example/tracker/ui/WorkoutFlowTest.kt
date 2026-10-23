@@ -78,6 +78,9 @@ class WorkoutFlowTest {
         compose.onNodeWithContentDescription("Increase reps by 1").performClick()
         compose.onNodeWithText("Complete set").performScrollTo().assertIsEnabled().performClick()
 
+        // The rest takes over the screen until it's skipped.
+        waitForNode(hasText("Skip rest"))
+        compose.onNodeWithText("Skip rest").performClick()
         waitForNode(hasContentDescription("Set 1 done, 50 kg × 8"))
         waitForNode(hasText("Set 1 saved"))
 

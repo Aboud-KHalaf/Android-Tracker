@@ -2,6 +2,7 @@ package com.example.tracker.ui.workout
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +53,8 @@ import com.example.tracker.R
 import com.example.tracker.ui.common.NoteDialog
 import com.example.tracker.ui.workout.components.ExerciseNote
 import com.example.tracker.domain.model.SetType
+import com.example.tracker.domain.workout.RestKind
+import com.example.tracker.ui.common.text
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
 import com.example.tracker.ui.common.MessageContent
@@ -69,7 +72,9 @@ import com.example.tracker.ui.workout.components.ExerciseHeader
 import com.example.tracker.ui.workout.components.FinishWorkoutDialog
 import com.example.tracker.ui.workout.components.KeepScreenOn
 import com.example.tracker.ui.workout.components.RestTimerActions
+import com.example.tracker.ui.workout.components.RestScreen
 import com.example.tracker.ui.workout.components.RestTimerBar
+import com.example.tracker.ui.workout.components.RestUpNext
 import com.example.tracker.ui.workout.components.UpcomingSetRow
 import com.example.tracker.ui.workout.components.WeightRepsEditorActions
 import com.example.tracker.ui.workout.components.WorkoutFooter
@@ -204,6 +209,11 @@ fun ActiveWorkoutScreen(
 
     KeepScreenOn(success?.isTiming == true)
 
+    // The rest the user shrank to a bar, by when it started; a new rest shows full screen again.
+    var minimizedRestStart by rememberSaveable { mutableStateOf<Long?>(null) }
+    val rest = success?.rest
+    val showRestScreen = rest != null && rest.startedAt.epochSecond != minimizedRestStart
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -222,11 +232,21 @@ fun ActiveWorkoutScreen(
             }
         },
         bottomBar = {
-            if (success != null) WorkoutBottomBar(success, actions, onFinish = requestFinish)
+            if (success != null && !showRestScreen) {
+                WorkoutBottomBar(success, actions, onFinish = requestFinish, onExpandRest = { minimizedRestStart = null })
+            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        WorkoutStateContent(uiState, actions, innerPadding)
+        Crossfade(targetState = showRestScreen, label = "rest") { resting ->
+            WorkoutBody(
+                uiState = uiState,
+                showRest = resting,
+                actions = actions,
+                innerPadding = innerPadding,
+                onMinimizeRest = { minimizedRestStart = it.startedAt.epochSecond },
+            )
+        }
     }
 
     if (showWorkoutNote && success != null) {
@@ -242,35 +262,78 @@ fun ActiveWorkoutScreen(
         )
     }
 
-    if (showEndDialog && success != null) {
-        val dismiss = { showEndDialog = false }
-        if (success.completedSetCount == 0) {
-            DiscardWorkoutDialog(
-                onDiscard = {
-                    dismiss()
-                    actions.onDiscard()
-                },
-                onDismiss = dismiss,
-            )
-        } else {
-            FinishWorkoutDialog(
-                openSetCount = success.openSetCount,
-                onFinish = {
-                    dismiss()
-                    actions.onFinish()
-                },
-                onDismiss = dismiss,
-            )
-        }
+    if (showEndDialog && success != null) EndWorkoutDialog(success, actions, onDismiss = { showEndDialog = false })
+}
+
+/** Discard a workout with nothing logged, or finish one that still has open sets. */
+@Composable
+private fun EndWorkoutDialog(state: ActiveWorkoutUiState.Success, actions: ActiveWorkoutActions, onDismiss: () -> Unit) {
+    if (state.completedSetCount == 0) {
+        DiscardWorkoutDialog(
+            onDiscard = {
+                onDismiss()
+                actions.onDiscard()
+            },
+            onDismiss = onDismiss,
+        )
+    } else {
+        FinishWorkoutDialog(
+            openSetCount = state.openSetCount,
+            onFinish = {
+                onDismiss()
+                actions.onFinish()
+            },
+            onDismiss = onDismiss,
+        )
     }
 }
 
-/** The rest countdown, while there is one, above the exercise navigation. */
+/** The rest on its own screen while [showRest] (and there is a rest), otherwise the workout. */
+@Composable
+private fun WorkoutBody(
+    uiState: ActiveWorkoutUiState,
+    showRest: Boolean,
+    actions: ActiveWorkoutActions,
+    innerPadding: PaddingValues,
+    onMinimizeRest: (RestUi) -> Unit,
+) {
+    val success = uiState as? ActiveWorkoutUiState.Success
+    val rest = success?.rest
+    if (showRest && rest != null) {
+        RestScreen(
+            rest = rest,
+            upNext = restUpNext(success),
+            actions = actions.rest,
+            onMinimize = { onMinimizeRest(rest) },
+            modifier = Modifier.padding(innerPadding),
+        )
+    } else {
+        WorkoutStateContent(uiState, actions, innerPadding)
+    }
+}
+
+/**
+ * What follows the rest: the next exercise after the rest between exercises, otherwise the
+ * set waiting on this one, with last time's (or the planned) value.
+ */
+@Composable
+private fun restUpNext(state: ActiveWorkoutUiState.Success): RestUpNext? {
+    val nextExercise = state.nextOpenExercise
+    if (state.rest?.kind == RestKind.BETWEEN_EXERCISES && state.allSetsDone && nextExercise != null) {
+        return RestUpNext(nextExercise.name, detail = null)
+    }
+    val next = state.sets.filterIsInstance<SetRowUi.Active>().firstOrNull() ?: return null
+    val value = next.lastTime?.let { stringResource(R.string.workout_last_time_set, it.text()) }
+    return RestUpNext(state.exercise.name, listOfNotNull(setName(next.type, next.number), value).joinToString(" · "))
+}
+
+/** The rest countdown, while it is shrunk to a bar, above the exercise navigation. */
 @Composable
 private fun WorkoutBottomBar(
     state: ActiveWorkoutUiState.Success,
     actions: ActiveWorkoutActions,
     onFinish: () -> Unit,
+    onExpandRest: () -> Unit,
 ) {
     Column {
         // Keeps the last rest while it slides away, since the state drops it at once.
@@ -281,7 +344,7 @@ private fun WorkoutBottomBar(
             enter = expandVertically(),
             exit = shrinkVertically(),
         ) {
-            shownRest?.let { RestTimerBar(it, actions.rest) }
+            shownRest?.let { RestTimerBar(it, actions.rest, onExpand = onExpandRest) }
         }
         WorkoutFooter(
             hasPrevious = state.previousExerciseName != null,

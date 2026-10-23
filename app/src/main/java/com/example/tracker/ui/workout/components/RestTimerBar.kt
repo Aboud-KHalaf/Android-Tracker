@@ -1,5 +1,6 @@
 package com.example.tracker.ui.workout.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +24,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import com.example.tracker.R
 import com.example.tracker.domain.workout.RestKind
@@ -33,7 +35,7 @@ import com.example.tracker.ui.workout.RestUi
 import java.time.Instant
 
 /** Seconds the −/+ buttons take off or add to a rest. */
-private const val REST_ADJUST_SECONDS = 15
+internal const val REST_ADJUST_SECONDS = 15
 
 /** Ticks fast enough that the shown second never lags noticeably. */
 private const val REST_TICK_MILLIS = 250L
@@ -46,11 +48,11 @@ data class RestTimerActions(
 )
 
 /**
- * The rest countdown after a completed set: time left, −15s / +15s and Skip, over a bar that
- * empties as the rest runs out. When it runs out on screen the phone gives a haptic buzz.
+ * The current time while [rest] counts down, ticking often enough for its clock. When it
+ * runs out, [onEnd] is called, with a haptic buzz if it ran out on screen.
  */
 @Composable
-fun RestTimerBar(rest: RestUi, actions: RestTimerActions, modifier: Modifier = Modifier) {
+fun rememberRestNow(rest: RestUi, onEnd: () -> Unit): Instant {
     val now = rememberTickingNow(intervalMillis = REST_TICK_MILLIS)
     val remaining = rest.remainingSecondsAt(now)
     val haptics = LocalHapticFeedback.current
@@ -59,18 +61,34 @@ fun RestTimerBar(rest: RestUi, actions: RestTimerActions, modifier: Modifier = M
     LaunchedEffect(rest.endsAt, remaining <= 0) {
         if (remaining <= 0) {
             if (endsOnScreen) haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-            actions.onEnd()
+            onEnd()
         }
     }
+    return now
+}
 
-    val label = stringResource(
-        when (rest.kind) {
-            RestKind.BETWEEN_SETS -> R.string.rest_between_sets
-            RestKind.BETWEEN_EXERCISES -> R.string.rest_before_exercise
-        },
-    )
+/** "Next set in" or "Next exercise in". */
+@Composable
+fun RestUi.label(): String = stringResource(
+    when (kind) {
+        RestKind.BETWEEN_SETS -> R.string.rest_between_sets
+        RestKind.BETWEEN_EXERCISES -> R.string.rest_before_exercise
+    },
+)
+
+/**
+ * The rest countdown after a completed set, collapsed to a bar above the exercise navigation:
+ * time left, −15s / +15s and Skip, over a bar that empties as the rest runs out. Tapping the
+ * time opens the full rest screen again ([onExpand]).
+ */
+@Composable
+fun RestTimerBar(rest: RestUi, actions: RestTimerActions, modifier: Modifier = Modifier, onExpand: () -> Unit = {}) {
+    val now = rememberRestNow(rest, actions.onEnd)
+    val remaining = rest.remainingSecondsAt(now)
+    val label = rest.label()
     val timeText = formatClock(remaining)
     val description = stringResource(R.string.rest_remaining_description, label, timeText)
+    val expandLabel = stringResource(R.string.rest_expand)
     val spacing = MaterialTheme.spacing
 
     Surface(color = MaterialTheme.colorScheme.secondaryContainer, modifier = modifier) {
@@ -88,7 +106,11 @@ fun RestTimerBar(rest: RestUi, actions: RestTimerActions, modifier: Modifier = M
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .clearAndSetSemantics { contentDescription = description },
+                        .clickable(onClickLabel = expandLabel, onClick = onExpand)
+                        .clearAndSetSemantics {
+                            contentDescription = description
+                            onClick(label = expandLabel) { onExpand(); true }
+                        },
                 ) {
                     Text(label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
                     Text(timeText, style = MaterialTheme.typography.headlineMedium.tabularNumbers())
@@ -114,11 +136,11 @@ fun RestTimerBar(rest: RestUi, actions: RestTimerActions, modifier: Modifier = M
 }
 
 @Composable
-private fun RestAdjustButton(label: String, description: String, onClick: () -> Unit) {
+internal fun RestAdjustButton(label: String, description: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     FilledTonalButton(
         onClick = onClick,
         contentPadding = ButtonDefaults.TextButtonContentPadding,
-        modifier = Modifier.semantics { contentDescription = description },
+        modifier = modifier.semantics { contentDescription = description },
     ) {
         Text(label, style = MaterialTheme.typography.labelLarge)
     }

@@ -22,6 +22,7 @@ All data stays on your device, and you don't need an account. When you want your
 - **Targets per exercise**: sets, reps and weight, or hold time, edited on their own without starting a workout. They prefill each new workout; what you actually lift is recorded separately and shown next to them as "Recorded last workout"
 - Log weight-and-reps sets during an active workout
 - Mark a set as a **warm-up**, **drop set** or **to failure**; add warm-ups before the working sets with one tap. Warm-ups are numbered apart and left out of progress, records, volume and "last time" comparisons
+- **Rest screen**: after a set, the rest countdown takes over the screen with what comes next (the next set and last time's value, or the next exercise), −15s / +15s and Skip; "Show workout" shrinks it to a bar. When the rest between exercises ends, the next exercise opens
 - Optionally rate each weighted set's effort on the **RPE** scale (6–10), shown next to the set once it's done
 - **Notes**: a note on the whole workout (shown in history) and on each exercise (shown in its progress history and, next time, under the exercise as "Last time")
 - **Supersets**: pair exercises on a training day ("Superset with next"); during the workout, completing a set goes straight to the next exercise of the superset, and the rest comes after each round
