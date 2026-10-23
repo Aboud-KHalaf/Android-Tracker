@@ -115,6 +115,12 @@ class ActiveWorkoutViewModel(
 
     fun onRepsStep(steps: Int) = editActive { it.copy(repsText = SetInput.stepReps(it.repsText, steps)) }
 
+    /** Fills the active set with the weight and reps of the same set last time. */
+    fun onUseLastTime() {
+        val last = activeSet()?.lastTime as? SetValueUi.WeightReps ?: return
+        editActive { it.copy(weightText = SetInput.formatWeight(last.weightKg), repsText = SetInput.formatReps(last.reps)) }
+    }
+
     /** Starts, pauses or resumes the active hold's timer. */
     fun onToggleTimer() = editHold { hold, now ->
         if (hold.runningSince == null) {

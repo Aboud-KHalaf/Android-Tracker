@@ -142,6 +142,7 @@
     <string name="workout_go_to_set">انتقل إلى المجموعة</string>
     <string name="workout_value_not_set">غير محدد</string>
     <string name="workout_last_time_set">آخر مرة %1$s</string>
+    <string name="workout_use_last_time">مثل المرة السابقة: %1$s</string>
     <string name="workout_new_set">مجموعة جديدة</string>
     <string name="workout_remove_set">إزالة %1$s</string>
     <string name="workout_weight_label">الوزن (كغ)</string>
