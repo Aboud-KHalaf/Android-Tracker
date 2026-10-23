@@ -165,6 +165,7 @@
     <string name="workout_last_time">Last time · %1$s</string>
     <string name="workout_last_time_weights">%1$s kg</string>
     <string name="workout_note">Workout note</string>
+    <string name="summary_exercise_note_description">Note: %1$s</string>
     <string name="workout_note_hint">How did it go?</string>
     <string name="workout_exercise_note_add">Add note</string>
     <string name="workout_exercise_note_title">Note on %1$s</string>

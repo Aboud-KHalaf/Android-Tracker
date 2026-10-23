@@ -791,6 +791,7 @@
     <string name="home_calendar_less">أقل</string>
     <string name="home_calendar_more">أكثر</string>
     <string name="workout_note">ملاحظة التمرين</string>
+    <string name="summary_exercise_note_description">ملاحظة: %1$s</string>
     <string name="workout_note_hint">كيف كان التمرين؟</string>
     <string name="workout_exercise_note_add">إضافة ملاحظة</string>
     <string name="workout_exercise_note_title">ملاحظة على %1$s</string>

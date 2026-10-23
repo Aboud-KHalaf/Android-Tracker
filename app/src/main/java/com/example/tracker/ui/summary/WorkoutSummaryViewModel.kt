@@ -99,8 +99,10 @@ class WorkoutSummaryViewModel(
                     name = exercise.exercise.name,
                     sets = exercise.sets.mapNotNull { it.toSetValue() },
                     isPersonalBest = exercise.exercise.id in bestExercises,
+                    note = exercise.note,
                 )
             },
+            note = workout.note,
         )
     }
 

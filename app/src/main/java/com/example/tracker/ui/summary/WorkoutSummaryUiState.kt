@@ -24,6 +24,8 @@ sealed interface WorkoutSummaryUiState {
         val volumeChangeKg: Double?,
         val personalBests: List<PersonalBestUi>,
         val exercises: List<ExerciseSummaryUi>,
+        /** The note on the whole workout, if one was left. */
+        val note: String? = null,
     ) : WorkoutSummaryUiState
 }
 
@@ -34,4 +36,6 @@ data class ExerciseSummaryUi(
     val name: String,
     val sets: List<SetValueUi>,
     val isPersonalBest: Boolean,
+    /** The note left on the exercise in this workout. */
+    val note: String? = null,
 )
