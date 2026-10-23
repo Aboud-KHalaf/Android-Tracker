@@ -2,6 +2,7 @@ package com.example.tracker.ui.history
 
 import com.example.tracker.ui.common.WorkoutSummaryUi
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.YearMonth
 
 /** Everything the History screen renders. */
@@ -16,6 +17,8 @@ sealed interface HistoryUiState {
         val selectedPlanId: String?,
         /** Newest month first; empty when nothing matches the filter. */
         val months: List<MonthGroupUi>,
+        /** Every workout's streak and calendar, whatever the filter. */
+        val consistency: ConsistencyUi = ConsistencyUi(weekStreak = 0, weeks = emptyList()),
     ) : HistoryUiState
 
 }
@@ -24,3 +27,14 @@ sealed interface HistoryUiState {
 data class PlanFilterUi(val planId: String?, val name: String?, val dayOfWeek: DayOfWeek? = null)
 
 data class MonthGroupUi(val month: YearMonth, val workouts: List<WorkoutSummaryUi>)
+
+/**
+ * The training calendar: [weeks] are columns, oldest first, each Monday to Sunday.
+ * [weekStreak] counts weeks in a row with a workout.
+ */
+data class ConsistencyUi(val weekStreak: Int, val weeks: List<List<CalendarDayUi>>) {
+    val trainedDayCount: Int get() = weeks.sumOf { week -> week.count { it.workoutCount > 0 } }
+}
+
+/** A day of the training calendar; [isFuture] days (later this week) are left blank. */
+data class CalendarDayUi(val date: LocalDate, val workoutCount: Int, val isToday: Boolean, val isFuture: Boolean)

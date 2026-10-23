@@ -16,17 +16,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
-/** History: finished workouts by month, optionally filtered to one plan. */
+/** History: training consistency, and finished workouts by month, optionally filtered to one plan. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class HistoryViewModel(
     private val planRepository: PlanRepository,
     private val workoutRepository: WorkoutRepository,
-    time: TimeProvider,
+    private val time: TimeProvider,
 ) : ViewModel() {
 
     private val mapper = HistoryStateMapper(time.zone())
@@ -38,8 +37,9 @@ class HistoryViewModel(
             planRepository.observePlans().flatMapLatest { plans ->
                 // A deleted plan's filter falls back to all workouts.
                 val planId = requested?.takeIf { id -> plans.any { it.id == id } }
-                workoutRepository.observeHistory(planId).map { workouts ->
-                    mapper.map(plans, planId, workouts) as HistoryUiState
+                // The calendar counts every workout, whichever plan is picked.
+                combine(workoutRepository.observeHistory(planId), workoutRepository.observeHistory()) { workouts, all ->
+                    mapper.map(plans, planId, workouts, today(), all) as HistoryUiState
                 }
             }
                 .onStart { emit(HistoryUiState.Loading) }
@@ -55,6 +55,8 @@ class HistoryViewModel(
     fun onRetry() {
         loadAttempt.update { it + 1 }
     }
+
+    private fun today() = time.now().atZone(time.zone()).toLocalDate()
 
     companion object {
         private const val STOP_TIMEOUT_MILLIS = 5_000L
