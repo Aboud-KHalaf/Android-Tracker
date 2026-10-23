@@ -46,6 +46,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.domain.model.ExerciseConfig
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.ui.common.AnimatedFab
 import com.example.tracker.ui.common.ErrorContent
 import com.example.tracker.ui.common.LoadingContent
@@ -158,13 +159,14 @@ data class PlanActions(
     val onRemoveExercise: (planExerciseId: String) -> Unit = {},
     val onSupersetWithNext: (planExerciseId: String) -> Unit = {},
     val onRemoveFromSuperset: (planExerciseId: String) -> Unit = {},
-    val onReplaceExercise: (planExerciseId: String, exerciseId: String) -> Unit = { _, _ -> },
-    val onCreateReplacement: (planExerciseId: String, name: String, type: ExerciseType) -> Unit = { _, _, _ -> },
+    val onReplaceExercise: (planExerciseId: String, exerciseId: String, muscleGroup: MuscleGroup?) -> Unit = { _, _, _ -> },
+    val onCreateReplacement: (planExerciseId: String, name: String, type: ExerciseType, muscleGroup: MuscleGroup) -> Unit =
+        { _, _, _, _ -> },
     val onEditExercise: (planExerciseId: String) -> Unit = {},
     val onSaveExerciseConfig: (planExerciseId: String, config: ExerciseConfig) -> Unit = { _, _ -> },
     val onDismissEditor: () -> Unit = {},
-    val onAddExercise: (exerciseId: String) -> Unit = {},
-    val onCreateExercise: (name: String, type: ExerciseType) -> Unit = { _, _ -> },
+    val onAddExercise: (exerciseId: String, muscleGroup: MuscleGroup?) -> Unit = { _, _ -> },
+    val onCreateExercise: (name: String, type: ExerciseType, muscleGroup: MuscleGroup) -> Unit = { _, _, _ -> },
     val onBrowseCatalog: () -> Unit = {},
     val onRenamePlan: (name: String) -> Unit = {},
     val onDeletePlan: () -> Unit = {},
@@ -299,8 +301,8 @@ private fun PlanOverlays(
         } else {
             AddExerciseSheet(
                 options = state.availableExercises,
-                onAdd = { exerciseId -> actions.onReplaceExercise(replacing.id, exerciseId) },
-                onCreate = { name, type -> actions.onCreateReplacement(replacing.id, name, type) },
+                onAdd = { exerciseId, muscleGroup -> actions.onReplaceExercise(replacing.id, exerciseId, muscleGroup) },
+                onCreate = { name, type, muscleGroup -> actions.onCreateReplacement(replacing.id, name, type, muscleGroup) },
                 onBrowseCatalog = null,
                 onDismiss = onDismiss,
                 title = stringResource(R.string.replace_exercise_title, replacing.name),

@@ -36,8 +36,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import com.example.tracker.R
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.ui.common.ExerciseTypeSelector
 import com.example.tracker.ui.common.IconAvatar
+import com.example.tracker.ui.common.MuscleGroupSelector
 import com.example.tracker.ui.common.icon
 import com.example.tracker.ui.common.label
 import com.example.tracker.ui.plan.ExerciseOptionUi
@@ -47,14 +49,16 @@ import com.example.tracker.ui.theme.spacing
 /**
  * Picks an exercise from the library, creates a new one, or opens the online catalog. Used to
  * add an exercise to the day and, with its own [title] and no catalog, to replace one.
+ * Every exercise added this way has a target muscle: a new one asks for it, and a library
+ * exercise without one asks before it's added ([onAdd] then gets the choice, otherwise null).
  * Calls [onDismiss] after any of these.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddExerciseSheet(
     options: List<ExerciseOptionUi>,
-    onAdd: (exerciseId: String) -> Unit,
-    onCreate: (name: String, type: ExerciseType) -> Unit,
+    onAdd: (exerciseId: String, muscleGroup: MuscleGroup?) -> Unit,
+    onCreate: (name: String, type: ExerciseType, muscleGroup: MuscleGroup) -> Unit,
     onBrowseCatalog: (() -> Unit)?,
     onDismiss: () -> Unit,
     title: String = stringResource(R.string.add_exercise_title),
@@ -62,24 +66,40 @@ fun AddExerciseSheet(
     createLabel: String = stringResource(R.string.add_exercise_confirm),
 ) {
     var isCreating by rememberSaveable { mutableStateOf(false) }
+    // A library exercise without a muscle group, waiting for one before it's added.
+    var needsMuscleId by rememberSaveable { mutableStateOf<String?>(null) }
+    val needsMuscle = needsMuscleId?.let { id -> options.firstOrNull { it.id == id } }
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
-        if (isCreating) {
-            NewExerciseForm(
+        when {
+            isCreating -> NewExerciseForm(
                 confirmLabel = createLabel,
-                onCreate = { name, type ->
-                    onCreate(name, type)
+                onCreate = { name, type, muscleGroup ->
+                    onCreate(name, type, muscleGroup)
                     onDismiss()
                 },
             )
-        } else {
-            ExercisePicker(
+
+            needsMuscle != null -> MuscleGroupForm(
+                exerciseName = needsMuscle.name,
+                confirmLabel = createLabel,
+                onConfirm = { muscleGroup ->
+                    onAdd(needsMuscle.id, muscleGroup)
+                    onDismiss()
+                },
+            )
+
+            else -> ExercisePicker(
                 title = title,
                 emptyText = emptyText,
                 options = options,
-                onPick = { id ->
-                    onAdd(id)
-                    onDismiss()
+                onPick = { option ->
+                    if (option.muscleGroup == null) {
+                        needsMuscleId = option.id
+                    } else {
+                        onAdd(option.id, null)
+                        onDismiss()
+                    }
                 },
                 onCreateNew = { isCreating = true },
                 onBrowseCatalog = onBrowseCatalog?.let { browse ->
@@ -98,7 +118,7 @@ private fun ExercisePicker(
     title: String,
     emptyText: String,
     options: List<ExerciseOptionUi>,
-    onPick: (String) -> Unit,
+    onPick: (ExerciseOptionUi) -> Unit,
     onCreateNew: () -> Unit,
     onBrowseCatalog: (() -> Unit)?,
 ) {
@@ -152,7 +172,9 @@ private fun ExercisePicker(
         items(options, key = { it.id }) { option ->
             ListItem(
                 headlineContent = { Text(option.name) },
-                supportingContent = { Text(option.type.label()) },
+                supportingContent = {
+                    Text(listOfNotNull(option.type.label(), option.muscleGroup?.label()).joinToString(" · "))
+                },
                 leadingContent = {
                     IconAvatar(
                         icon = option.type.icon,
@@ -161,16 +183,17 @@ private fun ExercisePicker(
                     )
                 },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                modifier = Modifier.clickable { onPick(option.id) },
+                modifier = Modifier.clickable { onPick(option) },
             )
         }
     }
 }
 
 @Composable
-private fun NewExerciseForm(confirmLabel: String, onCreate: (String, ExerciseType) -> Unit) {
+private fun NewExerciseForm(confirmLabel: String, onCreate: (String, ExerciseType, MuscleGroup) -> Unit) {
     var name by rememberSaveable { mutableStateOf("") }
     var type by rememberSaveable { mutableStateOf(ExerciseType.WEIGHT_REPS) }
+    var muscleGroup by rememberSaveable { mutableStateOf<MuscleGroup?>(null) }
     val spacing = MaterialTheme.spacing
 
     Column(
@@ -190,9 +213,41 @@ private fun NewExerciseForm(confirmLabel: String, onCreate: (String, ExerciseTyp
             modifier = Modifier.fillMaxWidth(),
         )
         ExerciseTypeSelector(selected = type, onSelect = { type = it })
+        MuscleGroupSelector(selected = muscleGroup, onSelect = { muscleGroup = it })
+        val chosenMuscle = muscleGroup
         Button(
-            onClick = { onCreate(name, type) },
-            enabled = name.isNotBlank(),
+            onClick = { if (chosenMuscle != null) onCreate(name, type, chosenMuscle) },
+            enabled = name.isNotBlank() && chosenMuscle != null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = Dimens.minTouchTarget),
+        ) { Text(confirmLabel) }
+    }
+}
+
+/** Asks which muscle a library exercise trains before it's added. */
+@Composable
+private fun MuscleGroupForm(exerciseName: String, confirmLabel: String, onConfirm: (MuscleGroup) -> Unit) {
+    var muscleGroup by rememberSaveable { mutableStateOf<MuscleGroup?>(null) }
+    val spacing = MaterialTheme.spacing
+
+    Column(
+        modifier = Modifier.padding(start = spacing.lg, end = spacing.lg, bottom = spacing.xl),
+        verticalArrangement = Arrangement.spacedBy(spacing.lg),
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+            SheetTitle(stringResource(R.string.add_exercise_muscle_title, exerciseName))
+            Text(
+                text = stringResource(R.string.add_exercise_muscle_body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        MuscleGroupSelector(selected = muscleGroup, onSelect = { muscleGroup = it })
+        val chosenMuscle = muscleGroup
+        Button(
+            onClick = { if (chosenMuscle != null) onConfirm(chosenMuscle) },
+            enabled = chosenMuscle != null,
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = Dimens.minTouchTarget),
