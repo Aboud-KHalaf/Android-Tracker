@@ -60,8 +60,10 @@ class PhotoCaptureViewModel(
         controls.update { it.copy(pose = pose) }
     }
 
-    fun onCycleTimer() {
-        controls.update { it.copy(timer = it.timer.next()) }
+    /** Picks the self-timer length; it can't change while it counts down. */
+    fun onSelectTimer(timer: CaptureTimer) {
+        if (controls.value.countdown != null) return
+        controls.update { it.copy(timer = timer) }
     }
 
     fun onSwitchCamera() {

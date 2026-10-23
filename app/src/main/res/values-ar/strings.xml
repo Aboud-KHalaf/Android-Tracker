@@ -459,6 +459,9 @@
     <string name="capture_switch_camera">تبديل الكاميرا</string>
     <string name="capture_timer_off">المؤقّت متوقف</string>
     <string name="capture_timer_seconds">مؤقّت %1$d ث</string>
+    <string name="capture_timer_off_short">إيقاف</string>
+    <string name="capture_timer_seconds_short">%1$d ث</string>
+    <string name="capture_timer_description">المؤقّت الذاتي: %1$s. اضغط للتغيير</string>
     <string name="capture_overlay_description">إظهار صورتك السابقة فوق الكاميرا</string>
     <string name="capture_retake">إعادة الالتقاط</string>
     <string name="capture_use">استخدام الصورة</string>
