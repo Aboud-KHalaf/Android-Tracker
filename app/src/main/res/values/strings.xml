@@ -548,6 +548,9 @@
     <string name="capture_switch_camera">Switch camera</string>
     <string name="capture_timer_off">Timer off</string>
     <string name="capture_timer_seconds">%1$d s timer</string>
+    <string name="capture_timer_off_short">Off</string>
+    <string name="capture_timer_seconds_short">%1$d s</string>
+    <string name="capture_timer_description">Self-timer: %1$s. Tap to change</string>
     <string name="capture_overlay_description">Show your last photo over the camera</string>
     <string name="capture_retake">Retake</string>
     <string name="capture_use">Use photo</string>

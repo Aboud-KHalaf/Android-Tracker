@@ -57,7 +57,7 @@ All data stays on your device, and you don't need an account. When you want your
 - A human outline with head, feet, shoulder, waist, hip and knee marks shows where and how to stand, so every photo is framed the same way
 - Optionally note measurements with each session (weight, body fat, waist, chest, arms, thighs and more, or your own); the ones you measured last time are ready to fill in
 - Your last photo of each pose shows faintly over the camera, so you can line up in the same spot
-- A 3 or 10 second self-timer gives you time to step back from a propped-up phone; switch between the front and back camera
+- A 3, 5 or 10 second self-timer (picked from a menu) gives you time to step back from a propped-up phone; switch between the front and back camera
 - See every session's photos and measurements with their change, and compare your first and latest photo of a pose side by side
 - Photos stay inside the app: they aren't added to your gallery or included in cloud backups
 

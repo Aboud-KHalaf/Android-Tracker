@@ -11,8 +11,8 @@ import androidx.compose.material.icons.outlined.Cameraswitch
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.Stop
-import androidx.compose.material.icons.outlined.Timer10
-import androidx.compose.material.icons.outlined.Timer3
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.TimerOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -25,6 +25,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -41,7 +53,7 @@ fun CameraControls(
     state: PhotoCaptureUiState,
     canSwitchCamera: Boolean,
     onShutter: () -> Unit,
-    onCycleTimer: () -> Unit,
+    onSelectTimer: (CaptureTimer) -> Unit,
     onToggleGuidePhoto: () -> Unit,
     onSwitchCamera: () -> Unit,
     modifier: Modifier = Modifier,
@@ -49,9 +61,7 @@ fun CameraControls(
     val timerRunning = state.countdown != null
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.Start) {
-            IconButton(onClick = onCycleTimer, enabled = !timerRunning) {
-                Icon(state.timer.icon(), contentDescription = state.timer.label())
-            }
+            TimerMenu(selected = state.timer, enabled = !timerRunning, onSelect = onSelectTimer)
             if (state.guidePhotoPath != null) {
                 IconToggleButton(
                     checked = state.showGuidePhoto,
@@ -106,12 +116,55 @@ fun ReviewControls(
     }
 }
 
-private fun CaptureTimer.icon() = when (this) {
-    CaptureTimer.OFF -> Icons.Outlined.TimerOff
-    CaptureTimer.THREE -> Icons.Outlined.Timer3
-    CaptureTimer.TEN -> Icons.Outlined.Timer10
+/** The self-timer's length ("Off", "3 s", …); tapping offers every length to pick from. */
+@Composable
+private fun TimerMenu(selected: CaptureTimer, enabled: Boolean, onSelect: (CaptureTimer) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val description = stringResource(R.string.capture_timer_description, selected.label())
+    Box {
+        TextButton(
+            onClick = { expanded = true },
+            enabled = enabled,
+            colors = ButtonDefaults.textButtonColors(contentColor = LocalContentColor.current),
+            modifier = Modifier
+                .heightIn(min = Dimens.minTouchTarget)
+                .semantics { contentDescription = description },
+        ) {
+            Icon(selected.icon(), contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+            Text(selected.shortLabel())
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            CaptureTimer.entries.forEach { timer ->
+                DropdownMenuItem(
+                    text = { Text(timer.label()) },
+                    leadingIcon = { Icon(timer.icon(), contentDescription = null) },
+                    trailingIcon = if (timer == selected) {
+                        { Icon(Icons.Outlined.Check, contentDescription = null) }
+                    } else {
+                        null
+                    },
+                    onClick = {
+                        expanded = false
+                        onSelect(timer)
+                    },
+                )
+            }
+        }
+    }
 }
 
+private fun CaptureTimer.icon() = if (this == CaptureTimer.OFF) Icons.Outlined.TimerOff else Icons.Outlined.Timer
+
+/** "Timer off" or "5 s timer". */
 @Composable
 private fun CaptureTimer.label(): String =
     if (this == CaptureTimer.OFF) stringResource(R.string.capture_timer_off) else stringResource(R.string.capture_timer_seconds, seconds)
+
+/** "Off" or "5 s", short enough to sit beside the shutter. */
+@Composable
+private fun CaptureTimer.shortLabel(): String = if (this == CaptureTimer.OFF) {
+    stringResource(R.string.capture_timer_off_short)
+} else {
+    stringResource(R.string.capture_timer_seconds_short, seconds)
+}

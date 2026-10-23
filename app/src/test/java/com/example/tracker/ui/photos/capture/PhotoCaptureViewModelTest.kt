@@ -42,7 +42,7 @@ class PhotoCaptureViewModelTest {
 
     /** Presses the shutter with the timer off and plays the camera's part: it writes the picture. */
     private suspend fun TestScope.takePhoto(viewModel: PhotoCaptureViewModel): File {
-        while (viewModel.uiState.value.timer != CaptureTimer.OFF) viewModel.onCycleTimer()
+        viewModel.onSelectTimer(CaptureTimer.OFF)
         viewModel.onShutter()
         runCurrent()
         val event = viewModel.events.first() as PhotoCaptureEvent.TakePicture
@@ -92,6 +92,24 @@ class PhotoCaptureViewModelTest {
         assertNull(viewModel.uiState.value.countdown)
         assertTrue(viewModel.uiState.value.isTakingPicture)
         assertTrue(viewModel.events.first() is PhotoCaptureEvent.TakePicture)
+    }
+
+    @Test
+    fun selectedTimer_countsDownItsSeconds() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.onSelectTimer(CaptureTimer.FIVE)
+        viewModel.onShutter()
+        runCurrent()
+
+        assertEquals(CaptureTimer.FIVE, viewModel.uiState.value.timer)
+        assertEquals(5, viewModel.uiState.value.countdown)
+        // The length can't change mid-countdown.
+        viewModel.onSelectTimer(CaptureTimer.THREE)
+        assertEquals(CaptureTimer.FIVE, viewModel.uiState.value.timer)
+        advanceTimeBy(5_000)
+        runCurrent()
+        assertTrue(viewModel.uiState.value.isTakingPicture)
     }
 
     @Test
@@ -217,7 +235,7 @@ class PhotoCaptureViewModelTest {
     @Test
     fun failedPicture_showsErrorAndDiscardsTheFile() = runTest {
         val viewModel = createViewModel()
-        while (viewModel.uiState.value.timer != CaptureTimer.OFF) viewModel.onCycleTimer()
+        viewModel.onSelectTimer(CaptureTimer.OFF)
         viewModel.onShutter()
         runCurrent()
         val event = viewModel.events.first() as PhotoCaptureEvent.TakePicture
