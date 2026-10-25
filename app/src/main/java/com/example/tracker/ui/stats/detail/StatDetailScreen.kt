@@ -24,6 +24,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -56,8 +58,8 @@ import com.example.tracker.ui.stats.detail.components.StatRow
 import com.example.tracker.ui.stats.imageVector
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
-import java.time.LocalDate
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 /** Space below the list so the last row can scroll clear of the floating button. */
 private val FabClearance = 88.dp
@@ -146,8 +148,9 @@ fun StatDetailScreen(
     exportButton: @Composable () -> Unit = {},
 ) {
     val success = uiState as? StatDetailUiState.Success
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 title = { Text(success?.stat?.name.orEmpty(), maxLines = 1, overflow = TextOverflow.Ellipsis) },
@@ -164,6 +167,7 @@ fun StatDetailScreen(
                         }
                     }
                 },
+                scrollBehavior = scrollBehavior,
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -245,12 +249,11 @@ private fun StatDetailContent(
                 }
             }
             state.months.forEach { group ->
-                item(key = "month-${group.month}") {
+                stickyHeader(key = "month-${group.month}") {
                     val count = group.entries.size
                     MonthHeader(
                         month = group.month,
                         countText = pluralStringResource(R.plurals.stat_entry_count, count, count),
-                        modifier = Modifier.animateItem(),
                     )
                 }
                 items(group.entries, key = { it.entry.date.toEpochDay() }) { row ->

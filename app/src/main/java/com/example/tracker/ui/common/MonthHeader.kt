@@ -1,6 +1,8 @@
 package com.example.tracker.ui.common
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -14,12 +16,17 @@ import com.example.tracker.ui.theme.tabularNumbers
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
-/** "October 2026 ........ 3 workouts": a month in a list, with how many items it has. */
+/**
+ * "October 2026 ........ 3 workouts": a month in a list, with how many items it has. It has the
+ * screen's background, so it can stay pinned over the list as a sticky header.
+ */
 @Composable
 fun MonthHeader(month: YearMonth, countText: String, modifier: Modifier = Modifier) {
     val color = MaterialTheme.colorScheme.onSurfaceVariant
     Row(
         modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
             .padding(
                 start = MaterialTheme.spacing.lg,
                 end = MaterialTheme.spacing.lg,
