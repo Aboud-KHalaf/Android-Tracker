@@ -14,14 +14,16 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -68,16 +70,18 @@ fun HistoryScreen(
     modifier: Modifier = Modifier,
     onOpenWorkout: (workoutId: String) -> Unit = {},
 ) {
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
+            LargeTopAppBar(
                 title = { Text(stringResource(R.string.history_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
+                scrollBehavior = scrollBehavior,
             )
         },
     ) { innerPadding ->
@@ -142,12 +146,11 @@ private fun HistoryContent(
                 }
             }
             state.months.forEach { group ->
-                item(key = "month-${group.month}") {
+                stickyHeader(key = "month-${group.month}") {
                     val count = group.workouts.size
                     MonthHeader(
                         month = group.month,
                         countText = pluralStringResource(R.plurals.workout_count, count, count),
-                        modifier = Modifier.animateItem(),
                     )
                 }
                 items(group.workouts, key = { it.id }) { workout ->

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -24,16 +25,17 @@ import androidx.compose.material.icons.outlined.Backup
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Restore
-import androidx.compose.material.icons.outlined.Timer
-import androidx.compose.material.icons.outlined.TimerOff
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.TimerOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -43,7 +45,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -66,26 +69,25 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import com.example.tracker.BuildConfig
-import androidx.compose.foundation.selection.toggleable
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tracker.BuildConfig
 import com.example.tracker.R
 import com.example.tracker.domain.export.ExportFormat
+import com.example.tracker.domain.health.HealthAvailability
 import com.example.tracker.domain.model.ThemeMode
 import com.example.tracker.domain.workout.RestKind
+import com.example.tracker.reminder.canScheduleExactAlarms
 import com.example.tracker.ui.common.DestructiveConfirmDialog
-import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.ExportFormatMenu
+import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.SectionHeader
 import com.example.tracker.ui.common.formatRestTime
-import com.example.tracker.ui.common.rememberExportLauncher
-import com.example.tracker.reminder.canScheduleExactAlarms
 import com.example.tracker.ui.common.openAppNotificationSettings
 import com.example.tracker.ui.common.openExactAlarmSettings
+import com.example.tracker.ui.common.rememberExportLauncher
 import com.example.tracker.ui.common.rememberNotificationPermissionRequest
-import com.example.tracker.domain.health.HealthAvailability
 import com.example.tracker.ui.settings.components.DeleteDataDialog
 import com.example.tracker.ui.settings.components.HealthConnectActions
 import com.example.tracker.ui.settings.components.HealthConnectSection
@@ -94,9 +96,9 @@ import com.example.tracker.ui.settings.components.RestTimeDialog
 import com.example.tracker.ui.settings.components.ThemeModeOptions
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
+import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import kotlinx.coroutines.launch
 
 /** Settings destination: connects [SettingsViewModel] to [SettingsScreen]. */
 @Composable
@@ -207,10 +209,11 @@ fun SettingsScreen(
     val is24Hour = DateFormat.is24HourFormat(LocalContext.current)
     val spacing = MaterialTheme.spacing
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
+            LargeTopAppBar(
                 title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -220,6 +223,7 @@ fun SettingsScreen(
                         )
                     }
                 },
+                scrollBehavior = scrollBehavior,
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
