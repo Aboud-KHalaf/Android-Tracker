@@ -13,6 +13,7 @@ import com.example.tracker.domain.model.ProgressPhoto
 import com.example.tracker.domain.photos.PhotoCheckIn
 import com.example.tracker.domain.repository.ProgressPhotoRepository
 import java.io.File
+import java.io.InputStream
 import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.CoroutineDispatcher
@@ -56,6 +57,20 @@ class LocalProgressPhotoRepository(
     }
 
     override suspend fun createCaptureFile(): File = withContext(ioDispatcher) { store.newCaptureFile() }
+
+    // Whatever fails, the partial copy goes before the failure propagates.
+    @Suppress("TooGenericExceptionCaught")
+    override suspend fun importCapture(open: () -> InputStream): File = withContext(ioDispatcher) {
+        val capture = store.newCaptureFile()
+        try {
+            open().use { input -> capture.outputStream().use { input.copyTo(it) } }
+            require(capture.length() > 0) { "Nothing to import" }
+            capture
+        } catch (e: Throwable) {
+            store.discard(capture)
+            throw e
+        }
+    }
 
     // Whatever fails, the copied file goes before the failure propagates.
     @Suppress("TooGenericExceptionCaught")

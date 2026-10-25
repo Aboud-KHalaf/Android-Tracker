@@ -177,4 +177,30 @@ class LocalProgressPhotoRepositoryTest {
         val photos = repository()
         photos.savePhoto(null, PhotoPose.FRONT, photos.createCaptureFile())
     }
+
+    @Test
+    fun importCapture_copiesThePicture_andItCanBeSavedLikeACameraOne() = runTest {
+        val photos = repository()
+
+        val capture = photos.importCapture { "from gallery".byteInputStream() }
+        photos.savePhoto(null, PhotoPose.FRONT, capture)
+
+        val saved = photos.observeCheckIns().first().single().photos.getValue(PhotoPose.FRONT)
+        assertEquals("from gallery", File(saved.filePath).readText())
+    }
+
+    @Test
+    fun importCapture_empty_isRejectedAndLeavesNoFile() = runTest {
+        val photos = repository()
+        var rejected = false
+
+        try {
+            photos.importCapture { ByteArray(0).inputStream() }
+        } catch (e: IllegalArgumentException) {
+            rejected = true
+        }
+
+        assertTrue(rejected)
+        assertTrue(store.files().isEmpty())
+    }
 }

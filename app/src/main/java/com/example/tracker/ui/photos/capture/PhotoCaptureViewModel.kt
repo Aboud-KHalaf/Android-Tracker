@@ -15,6 +15,7 @@ import com.example.tracker.domain.repository.ProgressPhotoRepository
 import com.example.tracker.ui.common.launchCatching
 import com.example.tracker.ui.photos.measurements.MeasurementsForm
 import java.io.File
+import java.io.InputStream
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -101,6 +102,22 @@ class PhotoCaptureViewModel(
     private suspend fun onTakePictureFailed() {
         controls.update { it.copy(isTakingPicture = false) }
         showMessage(R.string.capture_error_take)
+    }
+
+    /**
+     * The user picked a picture from the gallery, which [open] reads: it is copied in and shown
+     * for review, just like one from the camera.
+     */
+    fun onPickFromGallery(open: () -> InputStream) {
+        if (!controls.value.canShoot) return
+        stopCountdown()
+        controls.update { it.copy(isTakingPicture = true) }
+        viewModelScope.launchCatching(
+            onError = {
+                controls.update { it.copy(isTakingPicture = false) }
+                showMessage(R.string.capture_error_import)
+            },
+        ) { onPictureTaken(photoRepository.importCapture(open)) }
     }
 
     /** The camera wrote the picture into [file]; show it for review. */

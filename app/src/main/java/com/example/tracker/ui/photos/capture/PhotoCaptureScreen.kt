@@ -8,6 +8,7 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -20,18 +21,24 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -79,8 +86,9 @@ import com.example.tracker.ui.photos.measurements.MeasurementsActions
 import com.example.tracker.ui.photos.measurements.MeasurementsScreen
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
-import java.io.File
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.IOException
 
 /** How faint the last photo is over the camera: visible enough to line up with, faint enough to see through. */
 private const val GUIDE_PHOTO_ALPHA = 0.4f
@@ -108,6 +116,17 @@ fun PhotoCaptureRoute(
     val controller = remember { createCameraController(context) }
     val available = rememberLenses(controller, hasPermission)
     SelectCamera(controller, available, useFrontCamera = uiState.useFrontCamera)
+    // The system photo picker needs no storage permission and shows only pictures.
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            viewModel.onPickFromGallery {
+                context.contentResolver.openInputStream(uri) ?: throw IOException("Can't read $uri")
+            }
+        }
+    }
+    val pickFromGallery = {
+        galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
@@ -156,6 +175,7 @@ fun PhotoCaptureRoute(
         onSelectTimer = viewModel::onSelectTimer,
         onToggleGuidePhoto = viewModel::onToggleGuidePhoto,
         onSwitchCamera = viewModel::onSwitchCamera,
+        onPickFromGallery = pickFromGallery,
         onRetake = viewModel::onRetake,
         onUsePhoto = viewModel::onUsePhoto,
         onRequestPermission = permission.request,
@@ -286,6 +306,7 @@ fun PhotoCaptureScreen(
     onRetake: () -> Unit,
     onUsePhoto: () -> Unit,
     onRequestPermission: () -> Unit,
+    onPickFromGallery: () -> Unit = {},
     onOpenAppSettings: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
@@ -321,9 +342,24 @@ fun PhotoCaptureScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        when (cameraStatus) {
-            CameraStatus.NEEDS_PERMISSION -> PermissionContent(onRequestPermission, onOpenAppSettings, Modifier.padding(innerPadding))
-            CameraStatus.UNAVAILABLE -> MessageContent(stringResource(R.string.capture_error_camera), Modifier.padding(innerPadding))
+        // A picture from the gallery is reviewed even without a camera.
+        val status = if (state.reviewPath != null) CameraStatus.READY else cameraStatus
+        when (status) {
+            CameraStatus.NEEDS_PERMISSION -> PermissionContent(
+                onRequestPermission = onRequestPermission,
+                onOpenAppSettings = onOpenAppSettings,
+                onPickFromGallery = onPickFromGallery,
+                modifier = Modifier.padding(innerPadding),
+            )
+
+            CameraStatus.UNAVAILABLE -> Column(
+                modifier = Modifier.padding(innerPadding).fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                MessageContent(stringResource(R.string.capture_error_camera), Modifier.weight(1f))
+                GalleryButton(onPickFromGallery, enabled = state.canShoot, modifier = Modifier.padding(bottom = MaterialTheme.spacing.xl))
+            }
+
             CameraStatus.READY -> Box(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -338,6 +374,7 @@ fun PhotoCaptureScreen(
                     onSelectTimer = onSelectTimer,
                     onToggleGuidePhoto = onToggleGuidePhoto,
                     onSwitchCamera = onSwitchCamera,
+                    onPickFromGallery = onPickFromGallery,
                     onRetake = onRetake,
                     onUsePhoto = onUsePhoto,
                     viewfinder = viewfinder,
@@ -357,6 +394,7 @@ private fun CaptureContent(
     onSelectTimer: (CaptureTimer) -> Unit,
     onToggleGuidePhoto: () -> Unit,
     onSwitchCamera: () -> Unit,
+    onPickFromGallery: () -> Unit,
     onRetake: () -> Unit,
     onUsePhoto: () -> Unit,
     viewfinder: @Composable (Modifier) -> Unit,
@@ -440,6 +478,7 @@ private fun CaptureContent(
                 onSelectTimer = onSelectTimer,
                 onToggleGuidePhoto = onToggleGuidePhoto,
                 onSwitchCamera = onSwitchCamera,
+                onPickFromGallery = onPickFromGallery,
             )
         }
     }
@@ -449,6 +488,7 @@ private fun CaptureContent(
 private fun PermissionContent(
     onRequestPermission: () -> Unit,
     onOpenAppSettings: () -> Unit,
+    onPickFromGallery: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -468,5 +508,16 @@ private fun PermissionContent(
         FilledTonalButton(onClick = onRequestPermission) { Text(stringResource(R.string.capture_permission_allow)) }
         // Once the user has denied twice, Android stops asking; only settings can allow it then.
         TextButton(onClick = onOpenAppSettings) { Text(stringResource(R.string.capture_permission_settings)) }
+        GalleryButton(onPickFromGallery)
+    }
+}
+
+/** Offers a picture from the gallery in place of the camera. */
+@Composable
+private fun GalleryButton(onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    OutlinedButton(onClick = onClick, enabled = enabled, modifier = modifier) {
+        Icon(Icons.Outlined.PhotoLibrary, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+        Text(stringResource(R.string.capture_from_gallery))
     }
 }

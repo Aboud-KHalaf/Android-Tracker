@@ -4,12 +4,14 @@ import com.example.tracker.domain.model.PhotoMeasurement
 import com.example.tracker.domain.model.PhotoPose
 import com.example.tracker.domain.photos.PhotoCheckIn
 import java.io.File
+import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 
 /**
  * Progress photos, kept only on this device and grouped into check-ins (photo sessions).
- * The camera writes into a file from [createCaptureFile]; [savePhoto] then keeps it, or
- * [discardCapture] throws it away. Storage failures propagate as exceptions.
+ * The camera writes into a file from [createCaptureFile], or [importCapture] copies a picture
+ * from elsewhere, such as the gallery; [savePhoto] then keeps it, or [discardCapture] throws it
+ * away. Storage failures propagate as exceptions.
  */
 interface ProgressPhotoRepository {
     /** Every check-in, newest first; their photos are in [PhotoPose] order. */
@@ -17,6 +19,12 @@ interface ProgressPhotoRepository {
 
     /** A new, empty file for the camera to write one picture into. */
     suspend fun createCaptureFile(): File
+
+    /**
+     * Copies the picture [open] reads into a new capture file and returns it. Throws
+     * [IllegalArgumentException] when there is nothing to read; the partial copy is removed.
+     */
+    suspend fun importCapture(open: () -> InputStream): File
 
     /**
      * Keeps [capture] as the [pose] photo of the check-in [checkInId], replacing one already

@@ -267,4 +267,28 @@ class PhotoCaptureViewModelTest {
         assertEquals(PhotoPose.BACK, PhotoCaptureViewModel.nextPose(PhotoPose.FRONT, setOf(PhotoPose.FRONT, PhotoPose.SIDE)))
         assertNull(PhotoCaptureViewModel.nextPose(PhotoPose.SIDE, PhotoPose.entries.toSet()))
     }
+
+    @Test
+    fun pickFromGallery_copiesThePictureForReview_andUsingItSavesIt() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.onPickFromGallery { "picture".byteInputStream() }
+        val review = viewModel.uiState.value.reviewPath
+        assertEquals("picture", File(requireNotNull(review)).readText())
+        viewModel.onUsePhoto()
+
+        assertEquals(setOf(PhotoPose.FRONT), photos.checkIns.value.single().photos.keys)
+        assertNull(viewModel.uiState.value.reviewPath)
+    }
+
+    @Test
+    fun pickFromGallery_unreadable_showsAMessageAndKeepsTheCamera() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.onPickFromGallery { throw IOException("gone") }
+
+        assertEquals(PhotoCaptureEvent.ShowMessage(R.string.capture_error_import), viewModel.events.first())
+        assertNull(viewModel.uiState.value.reviewPath)
+        assertTrue(viewModel.uiState.value.canShoot)
+    }
 }
