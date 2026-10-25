@@ -625,6 +625,10 @@
     <string name="program_new_day_title">New training day</string>
     <string name="program_new_day_confirm">Add</string>
     <string name="program_day_options">More options for %1$s</string>
+    <string name="program_days_reorder_hint">Drag the handle, or touch and hold a day, to put them in your own order</string>
+    <string name="program_day_drag_handle">Reorder %1$s</string>
+    <string name="program_move_day_up">Move up</string>
+    <string name="program_move_day_down">Move down</string>
     <string name="program_change_weekday">Change weekday</string>
     <string name="program_remove_day">Remove day</string>
     <string name="program_remove_day_title">Remove %1$s?</string>

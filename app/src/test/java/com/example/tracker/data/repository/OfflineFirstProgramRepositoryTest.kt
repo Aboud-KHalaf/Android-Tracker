@@ -135,4 +135,23 @@ class OfflineFirstProgramRepositoryTest {
 
         assertEquals(listOf("Lower"), programs.observeProgram(id).first()!!.days.map { it.name })
     }
+
+    @Test
+    fun reorderDays_isKeptWhenTheProgramIsReadAgain() = runTest {
+        val id = programs.createProgram("PPL", mapOf(MONDAY to "Push", WEDNESDAY to "Pull", FRIDAY to "Legs"))
+        val days = programs.observeProgram(id).first()!!.days.map { it.id }
+
+        programs.reorderDays(id, listOf(days[2], days[0], days[1]))
+
+        val reopened = OfflineFirstProgramRepository(database, time, ids).observeProgram(id).first()!!
+        assertEquals(listOf("Legs", "Push", "Pull"), reopened.days.map { it.name })
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun reorderDays_missingADay_isRejected() = runTest {
+        val id = programs.createProgram("PPL", mapOf(MONDAY to "Push", WEDNESDAY to "Pull"))
+        val days = programs.observeProgram(id).first()!!.days.map { it.id }
+
+        programs.reorderDays(id, listOf(days[0]))
+    }
 }

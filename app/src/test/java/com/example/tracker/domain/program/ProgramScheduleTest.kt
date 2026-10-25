@@ -98,4 +98,23 @@ class ProgramScheduleTest {
     fun nextWorkout_isNullWhenNothingCanBeStarted() {
         assertNull(nextWorkout(program(day("wed", WEDNESDAY, exercises = 0)), today, ZoneOffset.UTC))
     }
+
+    @Test
+    fun orderDays_beforeArranging_isWeekdayOrderThenUnscheduled() {
+        val days = listOf(day("any", null), day("fri", FRIDAY), day("mon", MONDAY))
+
+        assertEquals(listOf("mon", "fri", "any"), orderDays(days).map { it.id })
+    }
+
+    @Test
+    fun orderDays_followsTheUsersOrder_andDaysAddedSinceGoLast() {
+        val days = listOf(
+            day("mon", MONDAY).copy(position = 2),
+            day("any", null).copy(position = 0),
+            day("fri", FRIDAY).copy(position = 1),
+            day("new", TUESDAY),
+        )
+
+        assertEquals(listOf("any", "fri", "mon", "new"), orderDays(days).map { it.id })
+    }
 }

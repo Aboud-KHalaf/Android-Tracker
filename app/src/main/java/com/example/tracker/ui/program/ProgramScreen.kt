@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -52,12 +53,18 @@ import com.example.tracker.ui.common.MessageContent
 import com.example.tracker.ui.common.NameInputDialog
 import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.RenameDeleteTopBar
+import com.example.tracker.ui.common.ReorderHandle
+import com.example.tracker.ui.common.ReorderableItem
 import com.example.tracker.ui.common.SectionHeader
 import com.example.tracker.ui.common.StateCrossfade
 import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.common.fullName
 import com.example.tracker.ui.common.groupedListItemShape
+import com.example.tracker.ui.common.longPressDraggable
+import com.example.tracker.ui.common.moveByKey
+import com.example.tracker.ui.common.rememberReorderableListState
 import com.example.tracker.ui.program.components.ProgramDayRow
+import com.example.tracker.ui.program.components.ProgramDayRowActions
 import com.example.tracker.ui.program.components.ScheduleDayDialog
 import com.example.tracker.ui.program.components.WeekdaySelector
 import com.example.tracker.ui.theme.Dimens
@@ -98,6 +105,7 @@ fun ProgramRoute(
             onConfirmRemoveDay = viewModel::onConfirmRemoveDay,
             onCancelRemoveDay = viewModel::onCancelRemoveDay,
             onScheduleDay = viewModel::onScheduleDay,
+            onReorderDays = viewModel::onReorderDays,
             onMakeActive = viewModel::onMakeActive,
             onRenameProgram = viewModel::onRenameProgram,
             onDeleteProgram = viewModel::onDeleteProgram,
@@ -117,6 +125,8 @@ data class ProgramActions(
     val onConfirmRemoveDay: () -> Unit = {},
     val onCancelRemoveDay: () -> Unit = {},
     val onScheduleDay: (planId: String, dayOfWeek: DayOfWeek?) -> Unit = { _, _ -> },
+    /** Every day's id, in the new order. */
+    val onReorderDays: (dayIds: List<String>) -> Unit = {},
     val onMakeActive: () -> Unit = {},
     val onRenameProgram: (name: String) -> Unit = {},
     val onDeleteProgram: () -> Unit = {},
@@ -277,8 +287,30 @@ private fun ProgramContent(
     contentPadding: PaddingValues,
 ) {
     val spacing = MaterialTheme.spacing
+    // The order shown while dragging; saved on drop, then replaced by the stored order.
+    var order by remember { mutableStateOf(state.days) }
+    var storedOrder by remember { mutableStateOf(state.days) }
+    val listState = rememberLazyListState()
+    val reorderState = rememberReorderableListState(
+        listState = listState,
+        canMove = { key -> order.any { it.id == key } },
+        onMove = { from, to -> order = order.moveByKey(from, to) { it.id } },
+        onDrop = {
+            // Days added or removed during the drag make the order incomplete; keep the stored one.
+            val ids = order.map { it.id }
+            val storedIds = state.days.map { it.id }
+            if (ids != storedIds && ids.toSet() == storedIds.toSet()) actions.onReorderDays(ids)
+        },
+    )
+    // Show the stored order when it changes, but never mid-drag, which would drop the drag.
+    if (state.days != storedOrder && reorderState.draggingKey == null) {
+        storedOrder = state.days
+        order = state.days
+    }
+    fun moveDay(from: Int, to: Int) = actions.onReorderDays(order.map { it.id }.toMutableList().apply { add(to, removeAt(from)) })
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .widthIn(max = Dimens.maxContentWidth)
                 .fillMaxSize(),
@@ -307,10 +339,16 @@ private fun ProgramContent(
                 }
             }
             item(key = "days-header") {
-                SectionHeader(
-                    title = stringResource(R.string.program_days),
-                    modifier = Modifier.padding(top = spacing.lg, bottom = spacing.sm),
-                )
+                Column(modifier = Modifier.padding(top = spacing.lg, bottom = spacing.sm)) {
+                    SectionHeader(title = stringResource(R.string.program_days))
+                    if (order.size > 1) {
+                        Text(
+                            text = stringResource(R.string.program_days_reorder_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
             }
             if (state.days.isEmpty()) {
                 item(key = "days-empty") {
@@ -322,17 +360,28 @@ private fun ProgramContent(
                     )
                 }
             }
-            itemsIndexed(state.days, key = { _, day -> day.id }) { index, day ->
-                ProgramDayRow(
-                    day = day,
-                    shape = groupedListItemShape(index, state.days.size),
-                    onClick = { actions.onOpenDay(day.id) },
-                    onChangeWeekday = { onChangeWeekday(day.id) },
-                    onRemove = { onRemoveDay(day.id) },
-                    modifier = Modifier
-                        .animateItem()
-                        .padding(top = if (index == 0) 0.dp else GroupedListGap),
-                )
+            itemsIndexed(order, key = { _, day -> day.id }) { index, day ->
+                ReorderableItem(reorderState, key = day.id, modifier = Modifier.padding(top = if (index == 0) 0.dp else GroupedListGap)) {
+                    ProgramDayRow(
+                        day = day,
+                        shape = groupedListItemShape(index, order.size),
+                        onClick = { actions.onOpenDay(day.id) },
+                        actions = ProgramDayRowActions(
+                            onChangeWeekday = { onChangeWeekday(day.id) },
+                            onRemove = { onRemoveDay(day.id) },
+                            onMoveUp = if (index > 0) ({ moveDay(index, index - 1) }) else null,
+                            onMoveDown = if (index < order.lastIndex) ({ moveDay(index, index + 1) }) else null,
+                        ),
+                        dragHandle = {
+                            ReorderHandle(
+                                state = reorderState,
+                                key = day.id,
+                                contentDescription = stringResource(R.string.program_day_drag_handle, day.name),
+                            )
+                        },
+                        modifier = Modifier.longPressDraggable(reorderState, day.id),
+                    )
+                }
             }
             item(key = "add-day") {
                 OutlinedButton(

@@ -77,8 +77,9 @@ class ProgramViewModelTest {
 
         viewModel.onAddDay(null, " Legs ")
         viewModel.onScheduleDay("extra", DayOfWeek.SUNDAY)
+        viewModel.onReorderDays(listOf("extra", "push"))
 
-        assertEquals(listOf("add ppl null Legs", "schedule extra SUNDAY"), programs.writes)
+        assertEquals(listOf("add ppl null Legs", "schedule extra SUNDAY", "reorder ppl [extra, push]"), programs.writes)
     }
 
     @Test

@@ -459,4 +459,24 @@ class TrackerDatabaseMigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate16To17_existingDaysAreNotArrangedYet() {
+        helper.createDatabase(DB_NAME, 16).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO workout_plans (id, name, program_id, day_of_week, created_at, updated_at, deleted_at, sync_state)
+                VALUES ('d1', 'Push', NULL, 1, 0, 0, NULL, 'SYNCED')
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 17, true).use { db ->
+            db.query("SELECT name, position FROM workout_plans WHERE id = 'd1'").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals("Push", cursor.getString(0))
+                assertTrue(cursor.isNull(1))
+            }
+        }
+    }
 }

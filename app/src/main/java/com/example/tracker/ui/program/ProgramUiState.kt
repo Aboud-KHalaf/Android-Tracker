@@ -13,7 +13,7 @@ sealed interface ProgramUiState {
     data class Success(
         val name: String,
         val isActive: Boolean,
-        /** Scheduled days Monday to Sunday, then days without a fixed weekday. */
+        /** In the user's order; until they arrange them, Monday to Sunday, then days without a fixed weekday. */
         val days: List<ProgramDayUi>,
         /** A day with exercises the user asked to remove; they confirm first. */
         val removalToConfirm: ProgramDayUi? = null,

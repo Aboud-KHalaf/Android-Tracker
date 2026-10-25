@@ -6,7 +6,8 @@ import java.time.Instant
 /**
  * A training day as shown in lists: one exercise list of a program, scheduled on [dayOfWeek]
  * or, when that is null, done whenever the user likes. [lastDoneAt] is when a workout from it
- * last finished.
+ * last finished. [position] is where the user placed it in the program, or null until they
+ * arrange its days.
  */
 data class WorkoutPlan(
     val id: String,
@@ -15,6 +16,7 @@ data class WorkoutPlan(
     val lastDoneAt: Instant?,
     val programId: String? = null,
     val dayOfWeek: DayOfWeek? = null,
+    val position: Int? = null,
 )
 
 /** A training day with its exercises in order. */
@@ -63,7 +65,7 @@ data class Program(
     val id: String,
     val name: String,
     val isActive: Boolean,
-    /** Scheduled days Monday to Sunday, then unscheduled ones. */
+    /** In the order of [com.example.tracker.domain.program.orderDays]. */
     val days: List<WorkoutPlan>,
 ) {
     val trainingDays: Set<DayOfWeek> get() = days.mapNotNullTo(mutableSetOf()) { it.dayOfWeek }

@@ -131,6 +131,7 @@ class FakeProgramRepository : ProgramRepository {
     }
 
     override suspend fun scheduleDay(planId: String, dayOfWeek: DayOfWeek?) = write("schedule $planId $dayOfWeek")
+    override suspend fun reorderDays(programId: String, dayIds: List<String>) = write("reorder $programId $dayIds")
 
     private fun write(description: String) {
         writeError?.let { throw it }

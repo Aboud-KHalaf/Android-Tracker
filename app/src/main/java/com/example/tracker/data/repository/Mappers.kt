@@ -34,6 +34,7 @@ internal fun PlanSummaryRow.toDomain() = WorkoutPlan(
     lastDoneAt = lastDoneAt?.toInstant(),
     programId = programId,
     dayOfWeek = dayOfWeek?.toDayOfWeek(),
+    position = position,
 )
 
 internal fun PlanExerciseRow.toDomain() = PlanExercise(
