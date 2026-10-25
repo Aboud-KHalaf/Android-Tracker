@@ -540,6 +540,8 @@
     <string name="capture_shutter">Take photo</string>
     <string name="capture_cancel_timer">Stop timer</string>
     <string name="capture_switch_camera">Switch camera</string>
+    <string name="capture_from_gallery">Choose from gallery</string>
+    <string name="capture_error_import">Couldn\'t use that picture. Try another one.</string>
     <string name="capture_timer_off">Timer off</string>
     <string name="capture_timer_seconds">%1$d s timer</string>
     <string name="capture_timer_off_short">Off</string>

@@ -35,6 +35,7 @@ import com.example.tracker.domain.workout.RestAlarm
 import com.example.tracker.domain.workout.RestKind
 import com.example.tracker.domain.workout.RestTimes
 import java.io.File
+import java.io.InputStream
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
@@ -403,6 +404,13 @@ class FakeProgressPhotoRepository(
     override suspend fun saveMeasurements(checkInId: String, measurements: List<PhotoMeasurement>) {
         writeError?.let { throw it }
         replace(checkIns.value.first { it.id == checkInId }.copy(measurements = measurements))
+    }
+
+    override suspend fun importCapture(open: () -> InputStream): File {
+        writeError?.let { throw it }
+        val capture = File.createTempFile("capture-", ".jpg", capturesDirectory)
+        open().use { input -> capture.outputStream().use { input.copyTo(it) } }
+        return capture
     }
 
     override suspend fun discardCapture(capture: File) {

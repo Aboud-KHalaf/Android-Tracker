@@ -451,6 +451,8 @@
     <string name="capture_shutter">التقاط صورة</string>
     <string name="capture_cancel_timer">إيقاف المؤقّت</string>
     <string name="capture_switch_camera">تبديل الكاميرا</string>
+    <string name="capture_from_gallery">اختيار من المعرض</string>
+    <string name="capture_error_import">تعذّر استخدام هذه الصورة. جرّب صورة أخرى.</string>
     <string name="capture_timer_off">المؤقّت متوقف</string>
     <string name="capture_timer_seconds">مؤقّت %1$d ث</string>
     <string name="capture_timer_off_short">إيقاف</string>

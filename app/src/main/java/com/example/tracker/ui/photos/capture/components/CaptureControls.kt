@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cameraswitch
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Timer
@@ -47,7 +48,7 @@ import com.example.tracker.ui.photos.capture.PhotoCaptureUiState
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 
-/** The shutter with the timer, last-photo overlay and camera switch around it. */
+/** The shutter with the timer, last-photo overlay, gallery and camera switch around it. */
 @Composable
 fun CameraControls(
     state: PhotoCaptureUiState,
@@ -56,6 +57,7 @@ fun CameraControls(
     onSelectTimer: (CaptureTimer) -> Unit,
     onToggleGuidePhoto: () -> Unit,
     onSwitchCamera: () -> Unit,
+    onPickFromGallery: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val timerRunning = state.countdown != null
@@ -82,7 +84,10 @@ fun CameraControls(
                 else -> Icon(Icons.Outlined.PhotoCamera, contentDescription = stringResource(R.string.capture_shutter))
             }
         }
-        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+        Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.End) {
+            IconButton(onClick = onPickFromGallery, enabled = state.canShoot) {
+                Icon(Icons.Outlined.PhotoLibrary, contentDescription = stringResource(R.string.capture_from_gallery))
+            }
             if (canSwitchCamera) {
                 IconButton(onClick = onSwitchCamera, enabled = !timerRunning) {
                     Icon(Icons.Outlined.Cameraswitch, contentDescription = stringResource(R.string.capture_switch_camera))
