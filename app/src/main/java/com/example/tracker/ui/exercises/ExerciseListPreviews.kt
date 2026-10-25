@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.tracker.domain.model.ExerciseType
+import com.example.tracker.domain.model.MuscleGroup
 import com.example.tracker.ui.theme.TrackerTheme
 
 @Preview(name = "Light", showBackground = true, heightDp = 600)
@@ -14,14 +15,26 @@ private fun ExerciseListPreview() {
         ExerciseListScreen(
             uiState = ExerciseListUiState.Success(
                 listOf(
-                    ExerciseItemUi("bench", "Bench Press", ExerciseType.WEIGHT_REPS),
-                    ExerciseItemUi("incline", "Incline Dumbbell Press", ExerciseType.WEIGHT_REPS),
-                    ExerciseItemUi("plank", "Plank", ExerciseType.DURATION),
+                    ExerciseItemUi("bench", "Bench Press", ExerciseType.WEIGHT_REPS, MuscleGroup.CHEST),
+                    ExerciseItemUi("incline", "Incline Dumbbell Press", ExerciseType.WEIGHT_REPS, MuscleGroup.CHEST),
+                    ExerciseItemUi("plank", "Plank", ExerciseType.DURATION, MuscleGroup.CORE),
                 ),
+                muscleOptions = listOf(MuscleGroup.CHEST, MuscleGroup.CORE),
             ),
-            onOpenExercise = {},
-            onOpenHistory = {},
-            onRetry = {},
+            query = "",
+            actions = ExerciseListActions(),
+        )
+    }
+}
+
+@Preview(name = "No matches", showBackground = true, heightDp = 500)
+@Composable
+private fun ExerciseListNoMatchesPreview() {
+    TrackerTheme {
+        ExerciseListScreen(
+            uiState = ExerciseListUiState.Success(emptyList(), hasExercises = true, muscleOptions = listOf(MuscleGroup.CHEST)),
+            query = "squat",
+            actions = ExerciseListActions(),
         )
     }
 }
@@ -29,5 +42,5 @@ private fun ExerciseListPreview() {
 @Preview(name = "Empty", showBackground = true, heightDp = 500)
 @Composable
 private fun ExerciseListEmptyPreview() {
-    TrackerTheme { ExerciseListScreen(ExerciseListUiState.Success(emptyList()), onOpenExercise = {}, onOpenHistory = {}, onRetry = {}) }
+    TrackerTheme { ExerciseListScreen(ExerciseListUiState.Success(emptyList()), query = "", actions = ExerciseListActions()) }
 }

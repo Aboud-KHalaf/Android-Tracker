@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -88,5 +90,65 @@ class ExerciseListViewModelTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
 
         assertEquals(emptyList<MuscleSetsUi>(), (viewModel.uiState.value as ExerciseListUiState.Success).muscleWeek)
+    }
+
+    @Test
+    fun onQueryChange_keepsExercisesWhoseNameContainsIt_ignoringCase() = runTest {
+        exercises.exercises.value = listOf(
+            Exercise("bench", "Bench Press", ExerciseType.WEIGHT_REPS, MuscleGroup.CHEST),
+            Exercise("incline", "Incline Dumbbell Press", ExerciseType.WEIGHT_REPS, MuscleGroup.CHEST),
+            Exercise("squat", "Squat", ExerciseType.WEIGHT_REPS, MuscleGroup.LEGS),
+        )
+        val viewModel = ExerciseListViewModel(exercises, workouts, time)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+
+        viewModel.onQueryChange("  PRESS ")
+
+        val state = viewModel.uiState.value as ExerciseListUiState.Success
+        assertEquals(listOf("bench", "incline"), state.exercises.map { it.id })
+        assertEquals("  PRESS ", viewModel.query.value)
+        assertTrue(state.hasExercises)
+    }
+
+    @Test
+    fun onMuscleFilterChange_keepsExercisesOfThatGroup_andCombinesWithTheSearch() = runTest {
+        exercises.exercises.value = listOf(
+            Exercise("bench", "Bench Press", ExerciseType.WEIGHT_REPS, MuscleGroup.CHEST),
+            Exercise("ohp", "Overhead Press", ExerciseType.WEIGHT_REPS, MuscleGroup.SHOULDERS),
+            Exercise("fly", "Cable Fly", ExerciseType.WEIGHT_REPS, MuscleGroup.CHEST),
+            Exercise("plank", "Plank", ExerciseType.DURATION),
+        )
+        val viewModel = ExerciseListViewModel(exercises, workouts, time)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+
+        viewModel.onMuscleFilterChange(MuscleGroup.CHEST)
+        var state = viewModel.uiState.value as ExerciseListUiState.Success
+        assertEquals(listOf("bench", "fly"), state.exercises.map { it.id })
+        assertEquals(MuscleGroup.CHEST, state.muscleFilter)
+        // Only groups some exercise trains are offered, in their usual order.
+        assertEquals(listOf(MuscleGroup.CHEST, MuscleGroup.SHOULDERS), state.muscleOptions)
+
+        viewModel.onQueryChange("press")
+        state = viewModel.uiState.value as ExerciseListUiState.Success
+        assertEquals(listOf("bench"), state.exercises.map { it.id })
+
+        viewModel.onClearFilters()
+        state = viewModel.uiState.value as ExerciseListUiState.Success
+        assertEquals(4, state.exercises.size)
+        assertNull(state.muscleFilter)
+        assertEquals("", viewModel.query.value)
+    }
+
+    @Test
+    fun noMatches_isAnEmptyListOfALibraryThatHasExercises() = runTest {
+        exercises.exercises.value = listOf(Exercise("bench", "Bench Press", ExerciseType.WEIGHT_REPS))
+        val viewModel = ExerciseListViewModel(exercises, workouts, time)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+
+        viewModel.onQueryChange("deadlift")
+
+        val state = viewModel.uiState.value as ExerciseListUiState.Success
+        assertTrue(state.exercises.isEmpty())
+        assertTrue(state.hasExercises)
     }
 }

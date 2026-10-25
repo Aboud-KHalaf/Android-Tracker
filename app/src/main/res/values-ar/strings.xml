@@ -284,6 +284,12 @@
     <string name="exercises_error_load">تعذّر تحميل تمارينك.</string>
     <string name="exercises_empty_title">لا توجد تمارين بعد</string>
     <string name="exercises_empty_body">أضف تمارين إلى يوم تمرين لتتابع تقدّمها هنا.</string>
+    <string name="exercises_search">ابحث عن تمرين</string>
+    <string name="exercises_search_clear">مسح البحث</string>
+    <string name="exercises_filter_all">الكل</string>
+    <string name="exercises_no_matches_title">لا توجد تمارين مطابقة</string>
+    <string name="exercises_no_matches_body">جرّب اسمًا أو مجموعة عضلية أخرى.</string>
+    <string name="exercises_clear_filters">مسح البحث والتصفية</string>
 
     <!-- Settings -->
     <string name="settings_title">الإعدادات</string>

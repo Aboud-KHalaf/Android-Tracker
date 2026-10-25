@@ -20,6 +20,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -29,7 +30,7 @@ import kotlinx.coroutines.flow.update
 
 /**
  * Progress tab: this week's working sets per muscle group, and the exercise library, each
- * opening its Exercise details.
+ * opening its Exercise details. The library can be searched by name and filtered by muscle group.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExerciseListViewModel(
@@ -40,16 +41,31 @@ class ExerciseListViewModel(
 
     private val loadAttempt = MutableStateFlow(0)
 
+    private val _query = MutableStateFlow("")
+
+    /** The search text, kept apart from [uiState] so the field updates as the user types. */
+    val query: StateFlow<String> = _query.asStateFlow()
+
+    private val muscleFilter = MutableStateFlow<MuscleGroup?>(null)
+
     val uiState: StateFlow<ExerciseListUiState> = loadAttempt
         .flatMapLatest {
+            // The weekly volume only changes with the data, not with every search keystroke.
             combine(exerciseRepository.observeExercises(), workoutRepository.observeAllSessions()) { exercises, sessions ->
-                ExerciseListUiState.Success(
-                    exercises = exercises
-                        .sortedBy { it.name.lowercase() }
-                        .map { ExerciseItemUi(it.id, it.name, it.type) },
-                    muscleWeek = muscleWeek(exercises, sessions),
-                ) as ExerciseListUiState
+                exercises.sortedBy { it.name.lowercase() } to muscleWeek(exercises, sessions)
             }
+                .combine(combine(_query, muscleFilter, ::Pair)) { (exercises, muscleWeek), (query, filter) ->
+                    ExerciseListUiState.Success(
+                        exercises = exercises.matching(query, filter)
+                            .map { ExerciseItemUi(it.id, it.name, it.type, it.muscleGroup) },
+                        muscleWeek = muscleWeek,
+                        hasExercises = exercises.isNotEmpty(),
+                        muscleFilter = filter,
+                        muscleOptions = MuscleGroup.entries.filter { group ->
+                            group == filter || exercises.any { it.muscleGroup == group }
+                        },
+                    ) as ExerciseListUiState
+                }
                 .onStart { emit(ExerciseListUiState.Loading) }
                 .catch { emit(ExerciseListUiState.Error) }
         }
@@ -57,6 +73,21 @@ class ExerciseListViewModel(
 
     fun onRetry() {
         loadAttempt.update { it + 1 }
+    }
+
+    fun onQueryChange(query: String) {
+        _query.value = query
+    }
+
+    /** Shows only exercises training [group], or every exercise for null. */
+    fun onMuscleFilterChange(group: MuscleGroup?) {
+        muscleFilter.value = group
+    }
+
+    /** Clears the search and the muscle filter. */
+    fun onClearFilters() {
+        _query.value = ""
+        muscleFilter.value = null
     }
 
     /** Every muscle group (and "none" when it has sets), this week against last. */
@@ -81,5 +112,16 @@ class ExerciseListViewModel(
                 ExerciseListViewModel(container.exerciseRepository, container.workoutRepository, container.time)
             }
         }
+    }
+}
+
+/**
+ * The exercises whose name contains [query] (ignoring case and surrounding spaces) and, unless
+ * [muscle] is null, that train [muscle].
+ */
+internal fun List<Exercise>.matching(query: String, muscle: MuscleGroup?): List<Exercise> {
+    val text = query.trim()
+    return filter { exercise ->
+        (muscle == null || exercise.muscleGroup == muscle) && exercise.name.contains(text, ignoreCase = true)
     }
 }
