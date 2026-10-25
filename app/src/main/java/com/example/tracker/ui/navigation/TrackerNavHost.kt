@@ -4,8 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.example.tracker.ui.catalog.exerciseCatalogScreen
-import com.example.tracker.ui.catalog.navigateToExerciseCatalog
 import com.example.tracker.ui.exercise.exerciseDetailsScreen
 import com.example.tracker.ui.exercise.navigateToExerciseDetails
 import com.example.tracker.ui.exercises.exerciseListScreen
@@ -103,7 +101,6 @@ fun TrackerNavHost(
         planScreen(
             onBack = navController::popBackStack,
             onOpenWorkout = navController::navigateToActiveWorkout,
-            onBrowseCatalog = navController::navigateToExerciseCatalog,
         )
         activeWorkoutScreen(
             onMinimize = navController::popBackStack,
@@ -116,7 +113,6 @@ fun TrackerNavHost(
             },
             onOpenExerciseProgress = navController::navigateToExerciseDetails,
         )
-        exerciseCatalogScreen(onBack = navController::popBackStack)
         exerciseDetailsScreen(onBack = navController::popBackStack)
         settingsScreen(onBack = navController::popBackStack)
         progressPhotosScreen(onBack = navController::popBackStack, onTakePhotos = navController::navigateToPhotoCapture)
