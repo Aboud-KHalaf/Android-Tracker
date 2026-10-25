@@ -8,7 +8,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.tracker.data.local.SyncMetadata
 
-/** A number the user tracks. [icon] and [color] are enum names, read leniently. */
+/** A number the user tracks. [icon], [color] and [goal] are enum names, read leniently. */
 @Entity(
     tableName = "custom_stats",
     indices = [Index("sync_state")],
@@ -22,6 +22,7 @@ data class CustomStatEntity(
     @ColumnInfo(name = "icon") val icon: String,
     @ColumnInfo(name = "color") val color: String,
     @Embedded val sync: SyncMetadata,
+    @ColumnInfo(name = "goal", defaultValue = "CHANGE") val goal: String = "CHANGE",
 )
 
 /** A stat's value on one day; the stat and day are the key, so there is one per day. */

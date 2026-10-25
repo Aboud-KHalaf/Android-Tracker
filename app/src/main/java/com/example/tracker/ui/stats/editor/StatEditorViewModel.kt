@@ -12,6 +12,7 @@ import com.example.tracker.R
 import com.example.tracker.TrackerApplication
 import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.StatColor
+import com.example.tracker.domain.model.StatGoal
 import com.example.tracker.domain.model.StatIcon
 import com.example.tracker.domain.repository.CustomStatRepository
 import com.example.tracker.ui.common.launchCatching
@@ -30,7 +31,7 @@ import kotlinx.coroutines.flow.update
 
 /**
  * Creates a stat starting from [newForm], or edits the stat [statId]: its name, unit,
- * decimals, target, icon and colour. Results are sent once through [events].
+ * decimals, target and its goal, icon and colour. Results are sent once through [events].
  */
 class StatEditorViewModel(
     private val statId: String?,
@@ -80,6 +81,8 @@ class StatEditorViewModel(
         it.copy(form = it.form.copy(target = sanitizeStatInput(text, it.form.decimals)), targetError = false)
     }
 
+    fun onGoalChange(goal: StatGoal) = updateEditing { it.copy(form = it.form.copy(goal = goal)) }
+
     fun onIconChange(icon: StatIcon) = updateEditing { it.copy(form = it.form.copy(icon = icon)) }
 
     fun onColorChange(color: StatColor) = updateEditing { it.copy(form = it.form.copy(color = color)) }
@@ -103,6 +106,7 @@ class StatEditorViewModel(
             target = target?.let { roundTo(it, form.decimals) },
             icon = form.icon,
             color = form.color,
+            goal = form.goal,
         )
         _uiState.value = editing.copy(isSaving = true)
         viewModelScope.launchCatching(
@@ -159,6 +163,7 @@ class StatEditorViewModel(
                             decimals = it.decimals,
                             icon = it.icon,
                             color = it.color,
+                            goal = it.goal,
                         )
                     } ?: StatForm(),
                     repository = application.container.customStatRepository,
@@ -175,4 +180,5 @@ private fun CustomStat.toForm() = StatForm(
     target = target?.toStatInput(decimals).orEmpty(),
     icon = icon,
     color = color,
+    goal = goal,
 )

@@ -8,6 +8,7 @@ import com.example.tracker.data.local.entity.CustomStatEntity
 import com.example.tracker.data.local.entity.CustomStatEntryEntity
 import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.StatColor
+import com.example.tracker.domain.model.StatGoal
 import com.example.tracker.domain.model.StatEntry
 import com.example.tracker.domain.model.StatIcon
 import com.example.tracker.domain.model.StatOverview
@@ -108,6 +109,7 @@ class OfflineFirstCustomStatRepository(
         icon = icon.name,
         color = color.name,
         sync = sync,
+        goal = goal.name,
     )
 
     private fun CustomStatEntity.toDomain() = CustomStat(
@@ -118,6 +120,7 @@ class OfflineFirstCustomStatRepository(
         target = target,
         icon = StatIcon.entries.firstOrNull { it.name == icon } ?: StatIcon.CHART,
         color = StatColor.entries.firstOrNull { it.name == color } ?: StatColor.BLUE,
+        goal = StatGoal.entries.firstOrNull { it.name == goal } ?: StatGoal.CHANGE,
     )
 
     private fun CustomStatEntryEntity.toDomain() = StatEntry(statId, LocalDate.ofEpochDay(epochDay), value)

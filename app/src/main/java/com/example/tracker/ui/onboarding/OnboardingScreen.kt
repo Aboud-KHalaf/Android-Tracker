@@ -184,6 +184,7 @@ private fun StatsStep(isSaving: Boolean, actions: OnboardingActions) {
                         target = null,
                         icon = template.icon,
                         color = template.color,
+                        goal = template.goal,
                     )
                 },
             )

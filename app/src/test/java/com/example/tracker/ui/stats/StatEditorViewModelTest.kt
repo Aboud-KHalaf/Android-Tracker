@@ -2,6 +2,7 @@ package com.example.tracker.ui.stats
 
 import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.StatColor
+import com.example.tracker.domain.model.StatGoal
 import com.example.tracker.domain.model.StatIcon
 import com.example.tracker.testing.FakeCustomStatRepository
 import com.example.tracker.testing.MainDispatcherRule
@@ -88,6 +89,18 @@ class StatEditorViewModelTest {
 
         assertEquals(StatEditorEvent.Saved, viewModel.events.first())
         assertEquals(bodyFat.copy(target = null), repository.getStat("fat"))
+    }
+
+    @Test
+    fun onGoalChange_isSavedWithTheStat() = runTest {
+        repository.stats.value = listOf(bodyFat)
+        val viewModel = StatEditorViewModel("fat", StatForm(), repository)
+
+        viewModel.onGoalChange(StatGoal.DAILY)
+        viewModel.onSave()
+
+        assertEquals(StatEditorEvent.Saved, viewModel.events.first())
+        assertEquals(bodyFat.copy(goal = StatGoal.DAILY), repository.getStat("fat"))
     }
 
     @Test

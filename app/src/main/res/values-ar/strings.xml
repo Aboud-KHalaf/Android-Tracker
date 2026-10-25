@@ -695,7 +695,11 @@
     <string name="stat_unit_placeholder" formatted="false">مثلًا %، سم، كغ</string>
     <string name="stat_decimals">المنازل العشرية</string>
     <string name="stat_target_optional">الهدف (اختياري)</string>
-    <string name="stat_target_hint">يُحدَّد إن كان الهدف صعودًا أو نزولًا من أول إدخال لك.</string>
+    <string name="stat_goal">نوع الهدف</string>
+    <string name="stat_goal_daily">كل يوم</string>
+    <string name="stat_goal_change">مع الوقت</string>
+    <string name="stat_goal_daily_hint">كمية تصل إليها كل يوم، مثل الخطوات أو الماء. تجاوزها يُحسب وصولًا.</string>
+    <string name="stat_goal_change_hint">تغيير تحققه مع الوقت، مثل الوزن. يُحدَّد إن كان الهدف صعودًا أو نزولًا من أول إدخال لك.</string>
     <string name="stat_icon">الأيقونة</string>
     <string name="stat_color">اللون</string>
     <string name="stat_delete">حذف الإحصاء</string>

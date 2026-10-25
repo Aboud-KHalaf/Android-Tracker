@@ -22,7 +22,7 @@ sealed interface StatDetailUiState {
         val stat: CustomStat,
         /** The most recent entry ever, or null when nothing is logged yet. */
         val latest: StatEntry?,
-        /** From 0 to 1, from the first entry ever toward the target; null without either. */
+        /** From 0 to 1 toward the target, measured as the stat's goal says; null without a target or entries. */
         val progress: Float?,
         val period: DatePeriod,
         val rangeStart: LocalDate,

@@ -2,6 +2,7 @@ package com.example.tracker.ui.stats.editor
 
 import androidx.annotation.StringRes
 import com.example.tracker.domain.model.StatColor
+import com.example.tracker.domain.model.StatGoal
 import com.example.tracker.domain.model.StatIcon
 
 /** The stat as typed; [target] is kept as text so it can be edited freely, and empty means none. */
@@ -12,6 +13,7 @@ data class StatForm(
     val target: String = "",
     val icon: StatIcon = StatIcon.CHART,
     val color: StatColor = StatColor.BLUE,
+    val goal: StatGoal = StatGoal.CHANGE,
 )
 
 /** Everything the stat editor renders. */

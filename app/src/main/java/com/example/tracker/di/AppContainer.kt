@@ -112,6 +112,7 @@ class AppContainer(context: Context) {
                 target = null,
                 icon = template.icon,
                 color = template.color,
+                goal = template.goal,
             )
         }
     }

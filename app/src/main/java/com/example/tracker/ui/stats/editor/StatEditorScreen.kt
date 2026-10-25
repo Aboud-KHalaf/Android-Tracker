@@ -57,6 +57,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracker.R
 import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.StatColor
+import com.example.tracker.domain.model.StatGoal
 import com.example.tracker.domain.model.StatIcon
 import com.example.tracker.ui.common.DestructiveConfirmDialog
 import com.example.tracker.ui.common.ErrorContent
@@ -110,6 +111,7 @@ fun StatEditorRoute(
             onUnitChange = viewModel::onUnitChange,
             onDecimalsChange = viewModel::onDecimalsChange,
             onTargetChange = viewModel::onTargetChange,
+            onGoalChange = viewModel::onGoalChange,
             onIconChange = viewModel::onIconChange,
             onColorChange = viewModel::onColorChange,
         ),
@@ -129,6 +131,7 @@ data class StatEditorActions(
     val onUnitChange: (String) -> Unit = {},
     val onDecimalsChange: (Int) -> Unit = {},
     val onTargetChange: (String) -> Unit = {},
+    val onGoalChange: (StatGoal) -> Unit = {},
     val onIconChange: (StatIcon) -> Unit = {},
     val onColorChange: (StatColor) -> Unit = {},
 )
@@ -262,8 +265,10 @@ private fun StatForm(
                 label = { Text(stringResource(R.string.stat_target_optional)) },
                 suffix = form.unit.takeIf { it.isNotBlank() }?.let { unit -> { Text(unit) } },
                 isError = state.targetError,
-                supportingText = {
-                    Text(stringResource(if (state.targetError) R.string.stat_error_value else R.string.stat_target_hint))
+                supportingText = if (state.targetError) {
+                    { Text(stringResource(R.string.stat_error_value)) }
+                } else {
+                    null
                 },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -272,6 +277,7 @@ private fun StatForm(
                 ),
                 modifier = Modifier.fillMaxWidth(),
             )
+            if (form.target.isNotBlank()) GoalSelector(form.goal, actions.onGoalChange)
             Section(stringResource(R.string.stat_icon)) {
                 StatIconPicker(selected = form.icon, accent = accent, onSelect = actions.onIconChange)
             }
@@ -313,6 +319,33 @@ private fun DecimalsSelector(selected: Int, onSelect: (Int) -> Unit) {
 }
 
 private const val EXAMPLE_VALUE = 72.5
+
+/** Whether the target is an amount to reach each day or a change over time, with what that means. */
+@Composable
+private fun GoalSelector(selected: StatGoal, onSelect: (StatGoal) -> Unit) {
+    Section(stringResource(R.string.stat_goal)) {
+        val options = listOf(StatGoal.DAILY to R.string.stat_goal_daily, StatGoal.CHANGE to R.string.stat_goal_change)
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            options.forEachIndexed { index, (goal, labelRes) ->
+                SegmentedButton(
+                    selected = goal == selected,
+                    onClick = { onSelect(goal) },
+                    shape = SegmentedButtonDefaults.itemShape(index, options.size),
+                ) { Text(stringResource(labelRes)) }
+            }
+        }
+        Text(
+            text = stringResource(
+                when (selected) {
+                    StatGoal.DAILY -> R.string.stat_goal_daily_hint
+                    StatGoal.CHANGE -> R.string.stat_goal_change_hint
+                },
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
 
 @Composable
 private fun Section(title: String, content: @Composable () -> Unit) {

@@ -119,7 +119,7 @@ internal fun StatOverview.toCardUi(): StatCardUi {
         latest = latest,
         changeSinceStart = if (first != null && latest != null && first.date != latest.date) latest.value - first.value else null,
         progress = stat.target?.let { target ->
-            if (first != null && latest != null) progressToward(target, first.value, latest.value) else null
+            if (first != null && latest != null) progressToward(stat.goal, target, first.value, latest.value) else null
         },
     )
 }
