@@ -352,6 +352,12 @@
     <string name="exercises_error_load">Couldn\'t load your exercises.</string>
     <string name="exercises_empty_title">No exercises yet</string>
     <string name="exercises_empty_body">Add exercises to a training day to track their progress here.</string>
+    <string name="exercises_search">Search exercises</string>
+    <string name="exercises_search_clear">Clear search</string>
+    <string name="exercises_filter_all">All</string>
+    <string name="exercises_no_matches_title">No matching exercises</string>
+    <string name="exercises_no_matches_body">Try another name or muscle group.</string>
+    <string name="exercises_clear_filters">Clear search and filter</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
