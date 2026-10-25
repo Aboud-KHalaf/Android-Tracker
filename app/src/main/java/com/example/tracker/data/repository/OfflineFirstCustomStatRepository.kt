@@ -1,5 +1,6 @@
 package com.example.tracker.data.repository
 
+import androidx.room.withTransaction
 import com.example.tracker.core.IdGenerator
 import com.example.tracker.core.TimeProvider
 import com.example.tracker.data.local.SyncMetadata
@@ -23,7 +24,7 @@ import kotlinx.coroutines.flow.map
  * Deleting a stat leaves a tombstone on the stat only: its entries are hidden with it.
  */
 class OfflineFirstCustomStatRepository(
-    database: TrackerDatabase,
+    private val database: TrackerDatabase,
     private val time: TimeProvider,
     private val ids: IdGenerator,
 ) : CustomStatRepository {
@@ -54,16 +55,36 @@ class OfflineFirstCustomStatRepository(
 
     override suspend fun createStat(stat: CustomStat): String {
         validate(stat)
-        val id = ids.newId()
-        dao.upsertStat(stat.copy(id = id).toEntity(SyncMetadata.created(time.now().toEpochMilli())))
-        return id
+        return database.withTransaction {
+            val id = ids.newId()
+            // New stats go last.
+            val position = dao.maxPosition() + 1
+            dao.upsertStat(stat.copy(id = id).toEntity(SyncMetadata.created(time.now().toEpochMilli()), position))
+            id
+        }
     }
 
     override suspend fun updateStat(stat: CustomStat) {
         validate(stat)
         val existing = dao.getStatIncludingDeleted(stat.id)
         require(existing != null && existing.sync.deletedAt == null) { "No stat ${stat.id}" }
-        dao.upsertStat(stat.toEntity(existing.sync.touched(time.now().toEpochMilli())))
+        dao.upsertStat(stat.toEntity(existing.sync.touched(time.now().toEpochMilli()), existing.position))
+    }
+
+    override suspend fun reorderStats(statIds: List<String>) {
+        database.withTransaction {
+            val stats = dao.getStats()
+            require(statIds.toSet() == stats.mapTo(mutableSetOf()) { it.id } && statIds.size == stats.size) {
+                "Order must list every stat once: $statIds"
+            }
+            val now = time.now().toEpochMilli()
+            val byId = stats.associateBy { it.id }
+            val changed = statIds.mapIndexedNotNull { index, id ->
+                val stat = byId.getValue(id)
+                if (stat.position == index) null else stat.copy(position = index, sync = stat.sync.touched(now))
+            }
+            dao.upsertStats(changed)
+        }
     }
 
     override suspend fun deleteStat(id: String) {
@@ -100,7 +121,7 @@ class OfflineFirstCustomStatRepository(
         stat.target?.let { require(it.isFinite() && it in CustomStat.MIN_VALUE..CustomStat.MAX_VALUE) { "Invalid target: $it" } }
     }
 
-    private fun CustomStat.toEntity(sync: SyncMetadata) = CustomStatEntity(
+    private fun CustomStat.toEntity(sync: SyncMetadata, position: Int) = CustomStatEntity(
         id = id,
         name = name.trim(),
         unit = unit.trim(),
@@ -110,6 +131,7 @@ class OfflineFirstCustomStatRepository(
         color = color.name,
         sync = sync,
         goal = goal.name,
+        position = position,
     )
 
     private fun CustomStatEntity.toDomain() = CustomStat(

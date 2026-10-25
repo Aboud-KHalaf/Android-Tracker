@@ -112,4 +112,26 @@ class OfflineFirstCustomStatRepositoryTest {
 
         assertEquals(bodyFat.copy(id = id, target = null, color = StatColor.TEAL), repository.getStat(id))
     }
+
+    @Test
+    fun reorderStats_keepsTheNewOrder_andNewStatsGoLast() = runTest {
+        val fat = repository.createStat(bodyFat)
+        val waist = repository.createStat(bodyFat.copy(name = "Waist"))
+        val steps = repository.createStat(bodyFat.copy(name = "Steps"))
+
+        repository.reorderStats(listOf(steps, fat, waist))
+        val weight = repository.createStat(bodyFat.copy(name = "Weight"))
+        // Editing a stat keeps its place.
+        repository.updateStat(bodyFat.copy(id = fat, name = "Fat"))
+
+        assertEquals(listOf(steps, fat, waist, weight), repository.observeOverviews().first().map { it.stat.id })
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun reorderStats_missingAStat_isRejected() = runTest {
+        val fat = repository.createStat(bodyFat)
+        repository.createStat(bodyFat.copy(name = "Waist"))
+
+        repository.reorderStats(listOf(fat))
+    }
 }

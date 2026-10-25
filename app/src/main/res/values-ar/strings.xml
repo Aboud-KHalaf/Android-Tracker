@@ -623,7 +623,8 @@
     <string name="stats_mine">إحصاءاتي</string>
     <string name="stats_new">إحصاء جديد</string>
     <string name="stats_empty_title">تتبّع أي شيء</string>
-    <string name="stats_empty_body">أنشئ إحصاءً لأي شيء تقيسه، مثل وزنك أو سعراتك أو محيط خصرك، وسجّله كل يوم. ابدأ بأحد هذه الاقتراحات، أو اضغط «إحصاء جديد».</string>
+    <string name="stats_empty_body">أنشئ إحصاءً لأي شيء تقيسه، مثل وزنك أو سعراتك أو محيط خصرك، وسجّله كل يوم. اضغط «إحصاء جديد» لتبدأ من اقتراح أو تنشئ إحصاءك الخاص.</string>
+    <string name="stats_reorder_hint">المس إحصاءً مطولًا ثم اسحبه لتغيير الترتيب</string>
     <string name="stats_suggestions">اقتراحات</string>
     <string name="stat_today">اليوم</string>
     <string name="stat_log_today">سجّل اليوم</string>
@@ -694,7 +695,9 @@
     <string name="stat_delete_title">حذف %1$s؟</string>
     <string name="stat_delete_body">سيُحذف الإحصاء وكل القيم المسجّلة له.</string>
     <string name="stat_edit_action">تعديل الإحصاء</string>
-    <string name="stat_more_actions">تعديل أو حذف</string>
+    <string name="stat_move_up">نقل للأعلى</string>
+    <string name="stat_move_down">نقل للأسفل</string>
+    <string name="stat_error_reorder">تعذّر حفظ الترتيب الجديد.</string>
     <string name="stat_deleted">حُذف الإحصاء</string>
     <string name="stat_error_save_stat">تعذّر حفظ الإحصاء.</string>
     <string name="stat_error_delete_stat">تعذّر حذف الإحصاء.</string>

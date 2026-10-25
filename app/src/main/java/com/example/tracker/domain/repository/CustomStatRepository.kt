@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
  * throw [IllegalArgumentException] for invalid input; storage failures propagate as exceptions.
  */
 interface CustomStatRepository {
-    /** Every stat, oldest first, with its first and latest entries. */
+    /** Every stat in the user's order (oldest first until reordered), with its first and latest entries. */
     fun observeOverviews(): Flow<List<StatOverview>>
 
     /** Entries of [statId] from [from] to [to], both inclusive, newest first. */
@@ -26,6 +26,9 @@ interface CustomStatRepository {
     suspend fun createStat(stat: CustomStat): String
 
     suspend fun updateStat(stat: CustomStat)
+
+    /** Puts the stats in the order of [statIds], which must list every stat once. */
+    suspend fun reorderStats(statIds: List<String>)
 
     /** Deletes the stat; its entries go with it. */
     suspend fun deleteStat(id: String)

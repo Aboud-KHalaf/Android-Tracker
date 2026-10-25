@@ -11,7 +11,7 @@ sealed interface StatsUiState {
 
     data class Success(
         val today: LocalDate,
-        /** The user's stats, oldest first. */
+        /** The user's stats, in the order they arranged them. */
         val stats: List<StatCardUi>,
     ) : StatsUiState
 }

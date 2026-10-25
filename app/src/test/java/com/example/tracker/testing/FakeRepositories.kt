@@ -493,6 +493,11 @@ class FakeCustomStatRepository : CustomStatRepository {
         stats.value = stats.value.map { if (it.id == stat.id) stat else it }
     }
 
+    override suspend fun reorderStats(statIds: List<String>) {
+        writeError?.let { throw it }
+        stats.value = statIds.map { id -> stats.value.first { it.id == id } }
+    }
+
     override suspend fun deleteStat(id: String) {
         writeError?.let { throw it }
         stats.value = stats.value.filterNot { it.id == id }

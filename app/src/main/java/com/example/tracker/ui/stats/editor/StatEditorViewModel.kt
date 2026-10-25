@@ -26,17 +26,21 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 
 /**
  * Creates a stat starting from [newForm], or edits the stat [statId]: its name, unit,
- * decimals, target and its goal, icon and colour. Results are sent once through [events].
+ * decimals, target and its goal, icon and colour. A new stat can start from a suggestion,
+ * whose form [templateForm] gives; suggestions the user already has are left out. Results are
+ * sent once through [events].
  */
 class StatEditorViewModel(
     private val statId: String?,
     private val newForm: StatForm,
     private val repository: CustomStatRepository,
+    private val templateForm: (StatTemplate) -> StatForm,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<StatEditorUiState>(StatEditorUiState.Loading)
@@ -54,6 +58,7 @@ class StatEditorViewModel(
     private fun load() {
         if (statId == null) {
             _uiState.value = StatEditorUiState.Editing(newForm, isNew = true)
+            loadSuggestions()
             return
         }
         _uiState.value = StatEditorUiState.Loading
@@ -61,6 +66,20 @@ class StatEditorViewModel(
             val stat = repository.getStat(statId)
             _uiState.value = if (stat == null) StatEditorUiState.Error else StatEditorUiState.Editing(stat.toForm(), isNew = false)
         }
+    }
+
+    /** Suggestions are only a shortcut, so failing to read the existing stats just leaves them out. */
+    private fun loadSuggestions() {
+        viewModelScope.launchCatching(onError = {}) {
+            val taken = repository.observeOverviews().first().mapTo(mutableSetOf()) { it.stat.name.trim().lowercase() }
+            val suggestions = StatTemplate.entries.filter { templateForm(it).name.trim().lowercase() !in taken }
+            updateEditing { it.copy(suggestions = suggestions) }
+        }
+    }
+
+    /** Fills the form from [template], replacing what was typed. */
+    fun onPickSuggestion(template: StatTemplate) = updateEditing {
+        it.copy(form = templateForm(template), suggestion = template, nameError = false, targetError = false)
     }
 
     fun onNameChange(name: String) = updateEditing {
@@ -154,19 +173,21 @@ class StatEditorViewModel(
                 val application = this[APPLICATION_KEY] as TrackerApplication
                 val route = createSavedStateHandle().toRoute<StatEditorDestination>()
                 val template = StatTemplate.entries.firstOrNull { it.name == route.template }
+                val templateForm = { it: StatTemplate ->
+                    StatForm(
+                        name = application.getString(it.nameRes),
+                        unit = application.getString(it.unitRes),
+                        decimals = it.decimals,
+                        icon = it.icon,
+                        color = it.color,
+                        goal = it.goal,
+                    )
+                }
                 StatEditorViewModel(
                     statId = route.statId,
-                    newForm = template?.let {
-                        StatForm(
-                            name = application.getString(it.nameRes),
-                            unit = application.getString(it.unitRes),
-                            decimals = it.decimals,
-                            icon = it.icon,
-                            color = it.color,
-                            goal = it.goal,
-                        )
-                    } ?: StatForm(),
+                    newForm = template?.let(templateForm) ?: StatForm(),
                     repository = application.container.customStatRepository,
+                    templateForm = templateForm,
                 )
             }
         }

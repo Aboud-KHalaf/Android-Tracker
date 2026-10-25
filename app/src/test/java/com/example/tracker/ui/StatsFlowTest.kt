@@ -42,7 +42,7 @@ class StatsFlowTest {
     @Test
     fun createStatAndLogToday_showsTheValue() {
         compose.onNodeWithText("Stats").performClick()
-        waitForNode(hasText("Weight"))
+        waitForNode(hasText("My stats"))
         // The floating button's label is still animating in, so it's only in the unmerged tree.
         compose.onNodeWithText("New stat", useUnmergedTree = true).performClick()
 

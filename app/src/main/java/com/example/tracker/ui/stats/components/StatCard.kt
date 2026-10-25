@@ -23,6 +23,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.example.tracker.ui.common.IconAvatar
@@ -35,6 +37,7 @@ import com.example.tracker.ui.theme.tabularNumbers
  * One stat on the Stats tab: its icon, name, current [value] and a line of context, with an
  * optional [progress] bar (0 to 1) toward a target and a [trailing] action. Tapping opens it;
  * a long press, when [onLongClick] is given, offers more (read out as [onLongClickLabel]).
+ * [accessibilityActions] are offered to screen readers in place of gestures they can't make.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -51,6 +54,7 @@ fun StatCard(
     trailing: @Composable (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
     onLongClickLabel: String? = null,
+    accessibilityActions: List<CustomAccessibilityAction> = emptyList(),
 ) {
     val haptics = LocalHapticFeedback.current
     Card(
@@ -65,7 +69,8 @@ fun StatCard(
                     }
                 },
                 onLongClickLabel = onLongClickLabel,
-            ),
+            )
+            .semantics { if (accessibilityActions.isNotEmpty()) customActions = accessibilityActions },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
         Column(
