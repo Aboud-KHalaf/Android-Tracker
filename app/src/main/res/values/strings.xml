@@ -704,7 +704,8 @@
     <string name="stats_mine">My stats</string>
     <string name="stats_new">New stat</string>
     <string name="stats_empty_title">Track anything</string>
-    <string name="stats_empty_body">Create a stat for anything you measure, such as your weight, calories or waist size, and log it each day. Start from one of these, or tap New stat.</string>
+    <string name="stats_empty_body">Create a stat for anything you measure, such as your weight, calories or waist size, and log it each day. Tap New stat to start from a suggestion or make your own.</string>
+    <string name="stats_reorder_hint">Touch and hold a stat, then drag to reorder</string>
     <string name="stats_suggestions">Suggestions</string>
     <string name="stat_today">Today</string>
     <string name="stat_log_today">Log today</string>
@@ -771,7 +772,9 @@
     <string name="stat_delete_title">Delete %1$s?</string>
     <string name="stat_delete_body">The stat and every value logged for it will be deleted.</string>
     <string name="stat_edit_action">Edit stat</string>
-    <string name="stat_more_actions">Edit or delete</string>
+    <string name="stat_move_up">Move up</string>
+    <string name="stat_move_down">Move down</string>
+    <string name="stat_error_reorder">Couldn\'t save the new order.</string>
     <string name="stat_deleted">Stat deleted</string>
     <string name="stat_error_save_stat">Couldn\'t save the stat.</string>
     <string name="stat_error_delete_stat">Couldn\'t delete the stat.</string>

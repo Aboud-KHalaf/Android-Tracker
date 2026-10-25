@@ -67,8 +67,10 @@ import com.example.tracker.ui.common.ObserveAsEvents
 import com.example.tracker.ui.common.currentLocale
 import com.example.tracker.ui.stats.formatStatNumber
 import com.example.tracker.ui.stats.imageVector
+import com.example.tracker.ui.stats.StatTemplate
 import com.example.tracker.ui.stats.editor.components.StatColorPicker
 import com.example.tracker.ui.stats.editor.components.StatIconPicker
+import com.example.tracker.ui.stats.editor.components.StatSuggestions
 import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 import com.example.tracker.ui.theme.statColors
@@ -111,6 +113,7 @@ fun StatEditorRoute(
             onUnitChange = viewModel::onUnitChange,
             onDecimalsChange = viewModel::onDecimalsChange,
             onTargetChange = viewModel::onTargetChange,
+            onPickSuggestion = viewModel::onPickSuggestion,
             onGoalChange = viewModel::onGoalChange,
             onIconChange = viewModel::onIconChange,
             onColorChange = viewModel::onColorChange,
@@ -131,6 +134,7 @@ data class StatEditorActions(
     val onUnitChange: (String) -> Unit = {},
     val onDecimalsChange: (Int) -> Unit = {},
     val onTargetChange: (String) -> Unit = {},
+    val onPickSuggestion: (StatTemplate) -> Unit = {},
     val onGoalChange: (StatGoal) -> Unit = {},
     val onIconChange: (StatIcon) -> Unit = {},
     val onColorChange: (StatColor) -> Unit = {},
@@ -219,6 +223,7 @@ private fun StatForm(
                 .padding(horizontal = spacing.lg, vertical = spacing.md),
             verticalArrangement = Arrangement.spacedBy(spacing.lg),
         ) {
+            StatSuggestions(suggestions = state.suggestions, selected = state.suggestion, onPick = actions.onPickSuggestion)
             // How the stat will look on the Stats tab.
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing.lg)) {
                 IconAvatar(

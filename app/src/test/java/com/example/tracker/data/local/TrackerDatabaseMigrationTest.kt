@@ -436,4 +436,27 @@ class TrackerDatabaseMigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate15To16_existingStatsKeepTheirCreationOrder() {
+        helper.createDatabase(DB_NAME, 15).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO custom_stats (id, name, unit, decimals, target, icon, color, goal, created_at, updated_at, deleted_at, sync_state)
+                VALUES ('later', 'Waist', 'cm', 1, NULL, 'RULER', 'PINK', 'CHANGE', 2, 2, NULL, 'SYNCED'),
+                    ('first', 'Weight', 'kg', 1, NULL, 'SCALE', 'BLUE', 'CHANGE', 1, 1, NULL, 'SYNCED')
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 16, true).use { db ->
+            db.query("SELECT id, position FROM custom_stats ORDER BY position, created_at, id").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals("first", cursor.getString(0))
+                assertEquals(0, cursor.getInt(1))
+                cursor.moveToNext()
+                assertEquals("later", cursor.getString(0))
+            }
+        }
+    }
 }

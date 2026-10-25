@@ -23,6 +23,8 @@ data class CustomStatEntity(
     @ColumnInfo(name = "color") val color: String,
     @Embedded val sync: SyncMetadata,
     @ColumnInfo(name = "goal", defaultValue = "CHANGE") val goal: String = "CHANGE",
+    /** Where the user placed it on the Stats tab; stats with the same position go oldest first. */
+    @ColumnInfo(name = "position", defaultValue = "0") val position: Int = 0,
 )
 
 /** A stat's value on one day; the stat and day are the key, so there is one per day. */

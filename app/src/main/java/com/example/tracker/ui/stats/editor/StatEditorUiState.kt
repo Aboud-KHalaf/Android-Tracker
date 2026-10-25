@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import com.example.tracker.domain.model.StatColor
 import com.example.tracker.domain.model.StatGoal
 import com.example.tracker.domain.model.StatIcon
+import com.example.tracker.ui.stats.StatTemplate
 
 /** The stat as typed; [target] is kept as text so it can be edited freely, and empty means none. */
 data class StatForm(
@@ -30,6 +31,10 @@ sealed interface StatEditorUiState {
         val nameError: Boolean = false,
         val targetError: Boolean = false,
         val isSaving: Boolean = false,
+        /** Ready-made stats a new one can start from; empty when editing. */
+        val suggestions: List<StatTemplate> = emptyList(),
+        /** The suggestion the form was last filled from, if any. */
+        val suggestion: StatTemplate? = null,
     ) : StatEditorUiState
 }
 

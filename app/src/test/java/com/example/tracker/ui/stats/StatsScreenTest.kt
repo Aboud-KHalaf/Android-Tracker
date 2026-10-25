@@ -58,4 +58,53 @@ class StatsScreenTest {
 
         assertEquals(listOf("waist"), deleted)
     }
+
+    @Test
+    fun menu_moveDownReordersTheStats() {
+        val bodyFat = waist.copy(id = "fat", name = "Body fat")
+        val twoStats = state.copy(
+            stats = state.stats + StatCardUi(bodyFat, latest = null, changeSinceStart = null, progress = null),
+        )
+        val orders = mutableListOf<List<String>>()
+        compose.setContent {
+            TrackerTheme { StatsScreen(uiState = twoStats, actions = StatsActions(onReorderStats = { orders += it })) }
+        }
+
+        compose.onNodeWithText("Waist").performTouchInput { longClick() }
+        // The first stat can only move down.
+        compose.onNodeWithText("Move up").assertDoesNotExist()
+        compose.onNodeWithText("Move down").performClick()
+
+        assertEquals(listOf(listOf("fat", "waist")), orders)
+    }
+
+    @Test
+    fun longPressAndDrag_reordersWithoutOpeningTheMenuOrTheStat() {
+        val bodyFat = waist.copy(id = "fat", name = "Body fat")
+        val twoStats = state.copy(
+            stats = state.stats + StatCardUi(bodyFat, latest = null, changeSinceStart = null, progress = null),
+        )
+        val orders = mutableListOf<List<String>>()
+        val opened = mutableListOf<String>()
+        compose.setContent {
+            TrackerTheme {
+                StatsScreen(
+                    uiState = twoStats,
+                    actions = StatsActions(onReorderStats = { orders += it }, onOpenStat = { id, _ -> opened += id }),
+                )
+            }
+        }
+
+        compose.onNodeWithText("Waist").performTouchInput {
+            down(center)
+            advanceEventTime(viewConfiguration.longPressTimeoutMillis + 100)
+            // Well past the next card's middle.
+            moveBy(androidx.compose.ui.geometry.Offset(0f, height * 1.5f))
+            up()
+        }
+
+        assertEquals(listOf(listOf("fat", "waist")), orders)
+        assertEquals(emptyList<String>(), opened)
+        compose.onNodeWithText("Edit stat").assertDoesNotExist()
+    }
 }

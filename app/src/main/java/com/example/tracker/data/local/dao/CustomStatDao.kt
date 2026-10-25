@@ -10,14 +10,23 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CustomStatDao {
 
-    @Query("SELECT * FROM custom_stats WHERE deleted_at IS NULL ORDER BY created_at, id")
+    @Query("SELECT * FROM custom_stats WHERE deleted_at IS NULL ORDER BY position, created_at, id")
     fun observeStats(): Flow<List<CustomStatEntity>>
+
+    @Query("SELECT * FROM custom_stats WHERE deleted_at IS NULL ORDER BY position, created_at, id")
+    suspend fun getStats(): List<CustomStatEntity>
+
+    @Query("SELECT COALESCE(MAX(position), -1) FROM custom_stats WHERE deleted_at IS NULL")
+    suspend fun maxPosition(): Int
 
     @Query("SELECT * FROM custom_stats WHERE id = :id")
     suspend fun getStatIncludingDeleted(id: String): CustomStatEntity?
 
     @Upsert
     suspend fun upsertStat(stat: CustomStatEntity)
+
+    @Upsert
+    suspend fun upsertStats(stats: List<CustomStatEntity>)
 
     /** Each stat's first and latest live entry (one row when they are the same). */
     @Query(

@@ -32,7 +32,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 /**
- * Stats: the user's stats with their latest values, suggestions for new ones, and the latest
+ * Stats: the user's stats in their chosen order with their latest values, and the latest
  * progress photos. Messages are sent once through [events].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -82,6 +82,13 @@ class StatsViewModel(
 
     fun onRetry() {
         loadAttempt.update { it + 1 }
+    }
+
+    /** Saves the order the user dragged the stats into, listing every stat once. */
+    fun onReorderStats(statIds: List<String>) {
+        viewModelScope.launchCatching(onError = { _events.send(StatsEvent.ShowMessage(R.string.stat_error_reorder)) }) {
+            customStatRepository.reorderStats(statIds)
+        }
     }
 
     /** Deletes a stat and everything logged for it, after the screen has asked. */

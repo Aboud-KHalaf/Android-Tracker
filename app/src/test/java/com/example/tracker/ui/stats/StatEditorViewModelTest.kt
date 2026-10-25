@@ -30,11 +30,16 @@ class StatEditorViewModelTest {
 
     private val bodyFat = CustomStat("fat", "Body fat", "%", 1, 15.0, StatIcon.PERCENT, StatColor.ORANGE)
 
+    /** Names a template after its enum name, so tests needn't read resources. */
+    private val templateForm = { template: StatTemplate ->
+        StatForm(name = template.name, decimals = template.decimals, icon = template.icon, color = template.color, goal = template.goal)
+    }
+
     private fun StatEditorViewModel.editing() = uiState.value as StatEditorUiState.Editing
 
     @Test
     fun newStat_startsFromTheGivenForm_andCreatesIt() = runTest {
-        val viewModel = StatEditorViewModel(null, StatForm(name = "Waist", unit = "cm"), repository)
+        val viewModel = StatEditorViewModel(null, StatForm(name = "Waist", unit = "cm"), repository, templateForm)
         assertTrue(viewModel.editing().isNew)
 
         viewModel.onTargetChange("80,25")
@@ -50,7 +55,7 @@ class StatEditorViewModelTest {
 
     @Test
     fun onSave_blankName_showsErrorAndSavesNothing() = runTest {
-        val viewModel = StatEditorViewModel(null, StatForm(name = "  "), repository)
+        val viewModel = StatEditorViewModel(null, StatForm(name = "  "), repository, templateForm)
 
         viewModel.onSave()
 
@@ -60,7 +65,7 @@ class StatEditorViewModelTest {
 
     @Test
     fun onSave_invalidTarget_showsError() = runTest {
-        val viewModel = StatEditorViewModel(null, StatForm(name = "Steps"), repository)
+        val viewModel = StatEditorViewModel(null, StatForm(name = "Steps"), repository, templateForm)
         viewModel.onTargetChange("-")
 
         viewModel.onSave()
@@ -70,7 +75,7 @@ class StatEditorViewModelTest {
 
     @Test
     fun onDecimalsChange_trimsTheTarget() = runTest {
-        val viewModel = StatEditorViewModel(null, StatForm(name = "Fat", decimals = 2, target = "15.25"), repository)
+        val viewModel = StatEditorViewModel(null, StatForm(name = "Fat", decimals = 2, target = "15.25"), repository, templateForm)
 
         viewModel.onDecimalsChange(1)
 
@@ -80,7 +85,7 @@ class StatEditorViewModelTest {
     @Test
     fun existingStat_loadsIt_andSavesChanges() = runTest {
         repository.stats.value = listOf(bodyFat)
-        val viewModel = StatEditorViewModel("fat", StatForm(), repository)
+        val viewModel = StatEditorViewModel("fat", StatForm(), repository, templateForm)
         assertEquals(StatForm("Body fat", "%", 1, "15.0", StatIcon.PERCENT, StatColor.ORANGE), viewModel.editing().form)
         assertFalse(viewModel.editing().isNew)
 
@@ -94,7 +99,7 @@ class StatEditorViewModelTest {
     @Test
     fun onGoalChange_isSavedWithTheStat() = runTest {
         repository.stats.value = listOf(bodyFat)
-        val viewModel = StatEditorViewModel("fat", StatForm(), repository)
+        val viewModel = StatEditorViewModel("fat", StatForm(), repository, templateForm)
 
         viewModel.onGoalChange(StatGoal.DAILY)
         viewModel.onSave()
@@ -105,7 +110,7 @@ class StatEditorViewModelTest {
 
     @Test
     fun existingStat_missing_isAnError() = runTest {
-        val viewModel = StatEditorViewModel("gone", StatForm(), repository)
+        val viewModel = StatEditorViewModel("gone", StatForm(), repository, templateForm)
 
         assertEquals(StatEditorUiState.Error, viewModel.uiState.value)
     }
@@ -113,7 +118,7 @@ class StatEditorViewModelTest {
     @Test
     fun onDelete_deletesTheStat() = runTest {
         repository.stats.value = listOf(bodyFat)
-        val viewModel = StatEditorViewModel("fat", StatForm(), repository)
+        val viewModel = StatEditorViewModel("fat", StatForm(), repository, templateForm)
 
         viewModel.onDelete()
 
@@ -124,11 +129,40 @@ class StatEditorViewModelTest {
     @Test
     fun onSave_failure_keepsTheFormAndReports() = runTest {
         repository.writeError = IOException("disk")
-        val viewModel = StatEditorViewModel(null, StatForm(name = "Fat"), repository)
+        val viewModel = StatEditorViewModel(null, StatForm(name = "Fat"), repository, templateForm)
 
         viewModel.onSave()
 
         assertTrue(viewModel.events.first() is StatEditorEvent.ShowMessage)
         assertFalse(viewModel.editing().isSaving)
+    }
+
+    @Test
+    fun newStat_suggestsTemplatesTheUserDoesNotHaveYet() = runTest {
+        repository.stats.value = listOf(bodyFat.copy(name = " weight "))
+        val viewModel = StatEditorViewModel(null, StatForm(), repository, templateForm)
+
+        val suggestions = viewModel.editing().suggestions
+        assertFalse(StatTemplate.WEIGHT in suggestions)
+        assertEquals(StatTemplate.entries.size - 1, suggestions.size)
+    }
+
+    @Test
+    fun onPickSuggestion_fillsTheFormFromIt() = runTest {
+        val viewModel = StatEditorViewModel(null, StatForm(name = "Typed"), repository, templateForm)
+
+        viewModel.onPickSuggestion(StatTemplate.STEPS)
+
+        assertEquals(templateForm(StatTemplate.STEPS), viewModel.editing().form)
+        assertEquals(StatTemplate.STEPS, viewModel.editing().suggestion)
+        assertEquals(StatGoal.DAILY, viewModel.editing().form.goal)
+    }
+
+    @Test
+    fun existingStat_hasNoSuggestions() = runTest {
+        repository.stats.value = listOf(bodyFat)
+        val viewModel = StatEditorViewModel("fat", StatForm(), repository, templateForm)
+
+        assertTrue(viewModel.editing().suggestions.isEmpty())
     }
 }
