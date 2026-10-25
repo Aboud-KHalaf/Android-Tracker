@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tracker — Workouts, Stats &amp; Progress Photos</title>
-<meta name="description" content="Tracker is a free, offline-first Android app for weekly workout programs, logging sets, any stat you measure (weight, calories, steps, sleep...) and progress photos, with an online exercise catalog to build your plans. No account, no cloud — your data stays on your phone.">
+<meta name="description" content="Tracker is a free, offline-first Android app for weekly workout programs, logging sets, any stat you measure (weight, calories, steps, sleep...) and progress photos, that never goes online. No account, no cloud — your data stays on your phone.">
 <meta name="theme-color" content="#2A5FA8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
@@ -395,7 +395,7 @@ section { position:relative; }
 .ph-thumb.taken .ok { opacity:1; transform:none; }
 @media (max-width:420px){ .ph-demo { grid-template-columns:1fr; } .ph-frame { max-width:240px; justify-self:center; width:100%; } }
 
-/* Exercise catalog demo */
+/* Program and exercise search demo */
 .span-6 { grid-column:1 / -1; }
 .catalog-card, .export-card { display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:center; }
 .catalog-card .demo, .export-card .demo { margin-top:0; }
@@ -432,6 +432,10 @@ section { position:relative; }
 .cat-row .thumb { width:48px; height:48px; border-radius:var(--r-md); background:var(--sc-highest); color:var(--on-surface-variant); display:grid; place-items:center; flex:none; }
 .cat-row .in-plan { margin-left:auto; color:var(--primary); font-size:22px; transform:scale(0); transition:transform 400ms var(--ease-emph); }
 .cat-row.added .in-plan { transform:none; }
+.f-chips { display:flex; gap:8px; margin-bottom:8px; font-size:13px; }
+.f-chip { padding:6px 14px; border-radius:var(--r-sm); box-shadow:inset 0 0 0 1px var(--outline-variant); transition:background-color 300ms, color 300ms; }
+.f-chip.on { background:var(--secondary-container, var(--primary-container)); color:var(--on-secondary-container, var(--on-primary-container)); box-shadow:none; }
+.cat-row.hide { opacity:0; transform:translateX(-12px); }
 .cat-toast { margin-top:8px; padding:12px 16px; border-radius:var(--r-sm); background:var(--inverse-surface); color:var(--inverse-on-surface); font-size:13px;
   opacity:0; transform:translateY(8px); transition:opacity 300ms, transform 300ms var(--ease-decel); }
 .cat-toast.show { opacity:1; transform:none; }
@@ -671,7 +675,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         <span class="word"><span style="--i:2">Track.</span></span><br>
         <span class="word"><span style="--i:3" class="grad-text">All on your phone.</span></span>
       </h1>
-      <p class="body-l fade-up" style="--delay:500ms">Tracker brings your <strong>weekly training program</strong>, every <strong>set you log</strong>, any <strong>stat you measure</strong> (weight, calories, steps, sleep...) and <strong>progress photos</strong> into one beautiful Android app. It's offline-first: you don't need an account, and only the optional exercise catalog uses the internet.</p>
+      <p class="body-l fade-up" style="--delay:500ms">Tracker brings your <strong>weekly training program</strong>, every <strong>set you log</strong>, any <strong>stat you measure</strong> (weight, calories, steps, sleep...) and <strong>progress photos</strong> into one beautiful Android app. It works fully offline: you don't need an account, and the app doesn't even ask for internet access.</p>
       <div class="cta-row fade-up" style="--delay:650ms">
         <a class="btn lg" data-apk href="https://github.com/Aboud-KHalaf/Android-Tracker/releases/latest/download/app-release.apk">
           <span class="icon">download</span>Download APK
@@ -766,7 +770,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
 <div class="strip" aria-hidden="true">
   <div class="marquee" id="marquee">
     <span><span class="icon">calendar_month</span>Weekly programs</span>
-    <span><span class="icon">travel_explore</span>Exercise catalog</span>
+    <span><span class="icon">search</span>Search &amp; muscle filters</span>
     <span><span class="icon">fitness_center</span>Warm-ups, drop sets &amp; RPE</span>
     <span><span class="icon">link</span>Supersets</span>
     <span><span class="icon">timer</span>Rest &amp; hold timers</span>
@@ -793,22 +797,22 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     </div>
 
     <div class="bento">
-      <!-- Exercise catalog -->
+      <!-- Programs and exercise search -->
       <article class="card span-6 catalog-card reveal" data-demo="catalog">
         <div>
-          <div class="feat-ic"><span class="icon">travel_explore</span></div>
-          <h3 class="title-l">Plan your week from hundreds of exercises</h3>
-          <p class="body-m">Start a program from a <strong>Full Body</strong>, <strong>Upper/Lower</strong> or <strong>Push/Pull/Legs</strong> template, pick your training days, and Home shows today's workout. Fill each day from the free wger exercise catalog: every exercise shows a picture, the muscles it works, the equipment and how to do it. Set targets, reorder by dragging, or pair two exercises as a superset.</p>
-          <p class="body-m catalog-note"><span class="icon">info</span>Needs a connection only while you browse. Exercise data from wger.de, licensed CC-BY-SA.</p>
+          <div class="feat-ic"><span class="icon">calendar_month</span></div>
+          <h3 class="title-l">Plan your week, your way</h3>
+          <p class="body-m">Start a program from a <strong>Full Body</strong>, <strong>Upper/Lower</strong> or <strong>Push/Pull/Legs</strong> template, pick your training days, and Home shows today's workout. <strong>Drag the days into your own order</strong>, fill each one from your exercise library, set targets, reorder exercises or pair two as a superset. On the Progress tab, <strong>search</strong> your exercises and <strong>filter by target muscle</strong>.</p>
+          <p class="body-m catalog-note"><span class="icon">lock</span>Your exercises live on your phone; nothing is looked up online.</p>
         </div>
         <div class="demo surface" aria-hidden="true">
           <div class="search-field"><span class="icon">search</span><span class="q" id="catQuery"></span><span class="caret"></span></div>
+          <div class="f-chips"><span class="f-chip" id="chipAll">All</span><span class="f-chip" id="chipChest">Chest</span><span class="f-chip">Shoulders</span></div>
           <div class="cat-list" id="catList">
-            <div class="m-list-item cat-row" data-cat="0"><div class="thumb"><span class="icon">fitness_center</span></div><div><div class="t">Bench Press</div><div class="s">Chest · Barbell, Bench</div></div><span class="icon fill in-plan">check_circle</span></div>
-            <div class="m-list-item cat-row" data-cat="1"><div class="thumb"><span class="icon">fitness_center</span></div><div><div class="t">Benchpress Dumbbells</div><div class="s">Chest · Bench, Dumbbell</div></div><span class="icon fill in-plan">check_circle</span></div>
-            <div class="m-list-item cat-row" data-cat="2"><div class="thumb"><span class="icon">fitness_center</span></div><div><div class="t">Bench Press Narrow Grip</div><div class="s">Arms · Barbell, Bench</div></div><span class="icon fill in-plan">check_circle</span></div>
+            <div class="m-list-item cat-row" data-cat="0"><div class="thumb"><span class="icon">fitness_center</span></div><div><div class="t">Bench Press</div><div class="s">Weight &amp; reps · Chest</div></div><span class="icon in-plan">chevron_right</span></div>
+            <div class="m-list-item cat-row" data-cat="1"><div class="thumb"><span class="icon">fitness_center</span></div><div><div class="t">Incline Dumbbell Press</div><div class="s">Weight &amp; reps · Chest</div></div><span class="icon in-plan">chevron_right</span></div>
+            <div class="m-list-item cat-row" data-cat="2"><div class="thumb"><span class="icon">fitness_center</span></div><div><div class="t">Overhead Press</div><div class="s">Weight &amp; reps · Shoulders</div></div><span class="icon in-plan">chevron_right</span></div>
           </div>
-          <div class="cat-toast" id="catToast">Bench Press added to the plan</div>
         </div>
       </article>
 
@@ -861,7 +865,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
       <article class="card span-2 reveal" style="--d:100ms" data-demo="stats">
         <div class="feat-ic"><span class="icon">query_stats</span></div>
         <h3 class="title-l">Track any number</h3>
-        <p class="body-m">Weight, body fat, waist, calories, protein, steps, sleep or your own: each stat gets a target, a chart and its full history.</p>
+        <p class="body-m">Weight, body fat, waist, calories, protein, steps, sleep or your own: each stat gets a target (a daily amount or a change over time), a chart and its full history. Touch and hold a card to drag your stats into any order.</p>
         <div class="demo" aria-hidden="true">
           <div class="macro"><div class="top"><span>Water</span><span class="num"><span data-count="2.1" data-dec="1">0</span> / 3 L</span></div><div class="lp"><div class="f" data-w="70"></div><div class="t"></div></div></div>
           <div class="macro"><div class="top"><span>Protein</span><span class="num"><span data-count="142">0</span> / 160 g</span></div><div class="lp"><div class="f" data-w="89"></div><div class="t"></div></div></div>
@@ -887,8 +891,8 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         <div>
           <div class="feat-ic pb"><span class="icon">photo_camera</span></div>
           <h3 class="title-l">See the change the scale misses</h3>
-          <p class="body-m">Take a front, side and back photo in a few taps. A body outline with head, shoulder, waist, hip and knee marks shows where to stand, your last photo appears faintly over the camera so you can line up in the same spot, and a self-timer gives you time to step back. Note measurements with each session, then compare your first and latest photo side by side.</p>
-          <p class="body-m catalog-note"><span class="icon">lock</span>Photos are stored only inside the app on your phone. They aren't added to your gallery or uploaded to cloud backups.</p>
+          <p class="body-m">Take a front, side and back photo in a few taps. A body outline with head, shoulder, waist, hip and knee marks shows where to stand, your last photo appears faintly over the camera so you can line up in the same spot, and a self-timer gives you time to step back. Already have the photo? Pick it from your gallery. Note measurements with each session, then compare your first and latest photo side by side.</p>
+          <p class="body-m catalog-note"><span class="icon">lock</span>Photos are stored only inside the app on your phone. The ones you take aren't added to your gallery, and none are uploaded to cloud backups.</p>
         </div>
         <div class="demo surface ph-demo" aria-hidden="true">
           <div class="ph-seg" id="phSeg"><span data-step="0"><span class="icon">check</span>Front</span><span data-step="1"><span class="icon">check</span>Side</span><span data-step="2"><span class="icon">check</span>Back</span></div>
@@ -1061,7 +1065,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     <div class="reveal">
       <p class="overline">Privacy</p>
       <h2 class="display-s">Your data never leaves your phone</h2>
-      <p class="body-l" style="margin:16px 0 32px">There are no accounts, no cloud sync, no ads and no analytics. Everything you log, progress photos included, is stored on your device. From Settings you can export your data as a PDF or Excel file, back it all up to a file you keep, or delete everything with one tap. Health Connect sync is optional and only reads what's already on your phone. The app only goes online when you browse the exercise catalog, and then it sends just your search to wger.de.</p>
+      <p class="body-l" style="margin:16px 0 32px">There are no accounts, no cloud sync, no ads and no analytics. Everything you log, progress photos included, is stored on your device. From Settings you can export your data as a PDF or Excel file, back it all up to a file you keep, or delete everything with one tap. Health Connect sync is optional and only reads what's already on your phone. The app never goes online, and it doesn't ask for internet access.</p>
       <div class="stats">
         <div class="stat"><span class="icon">no_accounts</span><b class="num"><span data-count="0">0</span></b><span>accounts needed</span></div>
         <div class="stat"><span class="icon">cloud_off</span><b class="num"><span data-count="0">0</span></b><span>servers storing your data</span></div>
@@ -1093,7 +1097,7 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
     </div>
     <div class="tech reveal">
       <span class="chip">Kotlin</span><span class="chip">Jetpack Compose</span><span class="chip">Material 3</span><span class="chip">MVVM</span>
-      <span class="chip">StateFlow</span><span class="chip">Navigation Compose</span><span class="chip">Room</span><span class="chip">kotlinx.serialization</span><span class="chip">Coil</span><span class="chip">CameraX</span><span class="chip">Jetpack Glance</span><span class="chip">Health Connect</span><span class="chip">wger REST API</span>
+      <span class="chip">StateFlow</span><span class="chip">Navigation Compose</span><span class="chip">Room</span><span class="chip">kotlinx.serialization</span><span class="chip">Coil</span><span class="chip">CameraX</span><span class="chip">Jetpack Glance</span><span class="chip">Health Connect</span>
       <span class="chip">AlarmManager</span><span class="chip">JUnit</span><span class="chip">Robolectric</span><span class="chip">Compose UI tests</span><span class="chip">detekt</span><span class="chip">Baseline Profile</span>
     </div>
     <div class="cta-row reveal" style="justify-content:center">
@@ -1326,20 +1330,22 @@ footer .links { display:flex; gap:20px; flex-wrap:wrap; }
         ring.classList.add("done"); lbl.textContent = "Done!"; await sleep(2200);
       }
     },
+    // The Progress tab: type a search, then narrow it to one muscle group.
     async catalog(card) {
-      const q = $("#catQuery"), rows = $$(".cat-row", card), toast = $("#catToast");
+      const q = $("#catQuery"), rows = $$(".cat-row", card), all = $("#chipAll"), chest = $("#chipChest");
       while (true) {
-        q.textContent = ""; toast.classList.remove("show");
-        rows.forEach(r => r.classList.remove("show", "added", "press"));
+        q.textContent = ""; all.classList.add("on"); chest.classList.remove("on");
+        rows.forEach(r => r.classList.remove("show", "hide", "press"));
         await sleep(700);
-        for (const ch of "bench") { q.textContent += ch; await sleep(reduce ? 0 : 160); }
+        for (const ch of "press") { q.textContent += ch; await sleep(reduce ? 0 : 160); }
         await sleep(400);
         rows.forEach((r, i) => { r.style.setProperty("--rd", `${i * 120}ms`); r.classList.add("show"); });
-        await sleep(1500);
+        await sleep(1600);
+        all.classList.remove("on"); chest.classList.add("on");
+        rows[2].style.setProperty("--rd", "0ms"); rows[2].classList.add("hide");
+        await sleep(1200);
         rows[0].classList.add("press"); await sleep(250); rows[0].classList.remove("press");
-        await sleep(500);
-        rows[0].classList.add("added"); toast.classList.add("show");
-        await sleep(4000);
+        await sleep(3500);
       }
     },
     async photos(card) {
