@@ -411,4 +411,29 @@ class TrackerDatabaseMigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate14To15_dailyAmountsBecomeDailyGoalsAndOthersAChange() {
+        helper.createDatabase(DB_NAME, 14).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO custom_stats (id, name, unit, decimals, target, icon, color, created_at, updated_at, deleted_at, sync_state)
+                VALUES ('steps', 'Steps', 'steps', 0, 100, 'STEPS', 'TEAL', 0, 0, NULL, 'SYNCED'),
+                    ('weight', 'Weight', 'kg', 1, 75, 'SCALE', 'BLUE', 0, 0, NULL, 'SYNCED')
+                """
+            )
+        }
+
+        helper.runMigrationsAndValidate(DB_NAME, 15, true).use { db ->
+            db.query("SELECT id, goal, target FROM custom_stats ORDER BY id").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals("steps", cursor.getString(0))
+                assertEquals("DAILY", cursor.getString(1))
+                assertEquals(100.0, cursor.getDouble(2), 0.0)
+                cursor.moveToNext()
+                assertEquals("weight", cursor.getString(0))
+                assertEquals("CHANGE", cursor.getString(1))
+            }
+        }
+    }
 }

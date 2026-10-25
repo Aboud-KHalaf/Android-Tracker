@@ -6,6 +6,7 @@ import com.example.tracker.core.TimeProvider
 import com.example.tracker.data.local.LegacyLogsMigration.LegacyStat
 import com.example.tracker.data.local.dao.CustomStatDao
 import com.example.tracker.data.local.entity.CustomStatEntity
+import com.example.tracker.domain.model.StatGoal
 
 /**
  * The daily log's calorie, protein and steps targets were kept in preferences. Once, after
@@ -33,7 +34,8 @@ class LegacyNutritionTargets(
     }
 
     private fun LegacyStat.toEntity(target: Double, sync: SyncMetadata) =
-        CustomStatEntity(id, name, unit, decimals, target, icon, color, sync)
+        // Calories, protein and steps were all daily targets.
+        CustomStatEntity(id, name, unit, decimals, target, icon, color, sync, goal = StatGoal.DAILY.name)
 
     private companion object {
         val TARGETS = listOf(

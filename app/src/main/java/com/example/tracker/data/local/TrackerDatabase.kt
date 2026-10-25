@@ -40,7 +40,7 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         PhotoSessionEntity::class,
         PhotoMeasurementEntity::class,
     ],
-    version = 14,
+    version = 15,
     exportSchema = true,
     autoMigrations = [
         // Adds daily_nutrition.
@@ -67,6 +67,8 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         AutoMigration(from = 12, to = 13),
         // Adds exercises.muscle_group.
         AutoMigration(from = 13, to = 14),
+        // Adds custom_stats.goal, making the daily amounts among the existing stats daily goals.
+        AutoMigration(from = 14, to = 15, spec = StatGoalMigration::class),
     ],
 )
 abstract class TrackerDatabase : RoomDatabase() {

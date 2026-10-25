@@ -772,7 +772,11 @@
     <string name="stat_unit_placeholder" formatted="false">e.g. %, cm, kg</string>
     <string name="stat_decimals">Decimal places</string>
     <string name="stat_target_optional">Target (optional)</string>
-    <string name="stat_target_hint">Whether it means going up or down follows from your first entry.</string>
+    <string name="stat_goal">Target type</string>
+    <string name="stat_goal_daily">Each day</string>
+    <string name="stat_goal_change">Over time</string>
+    <string name="stat_goal_daily_hint">An amount to reach each day, like steps or water. Going past it counts as reached.</string>
+    <string name="stat_goal_change_hint">A change to make over time, like weight. Whether it means going up or down follows from your first entry.</string>
     <string name="stat_icon">Icon</string>
     <string name="stat_color">Colour</string>
     <string name="stat_delete">Delete stat</string>

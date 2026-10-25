@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 /**
  * A number the user tracks once a day, such as body fat or waist size. [target] is optional;
- * whether it means going up or down follows from where the first entry started.
+ * [goal] says how progress toward it is measured.
  */
 data class CustomStat(
     val id: String,
@@ -16,6 +16,7 @@ data class CustomStat(
     val target: Double?,
     val icon: StatIcon,
     val color: StatColor,
+    val goal: StatGoal = StatGoal.CHANGE,
 ) {
     companion object {
         const val MAX_NAME_LENGTH = 40
@@ -40,6 +41,18 @@ enum class StatIcon { CHART, SCALE, RULER, PERCENT, FIRE, WATER, SLEEP, HEART, B
 
 /** The accent a custom stat is drawn in. The theme maps each to light and dark colours. */
 enum class StatColor { BLUE, TEAL, GREEN, AMBER, ORANGE, RED, PINK, PURPLE }
+
+/** How progress toward a stat's target is measured. */
+enum class StatGoal {
+    /**
+     * A change over time, such as weight from 80 to 75 kg: progress runs from the first entry
+     * to the target, and going up or down follows from where the first entry started.
+     */
+    CHANGE,
+
+    /** An amount to reach each day, such as 10,000 steps: progress is the latest value against the target. */
+    DAILY,
+}
 
 /** A stat with its first and latest entries ever, or nulls before the first is logged. */
 data class StatOverview(

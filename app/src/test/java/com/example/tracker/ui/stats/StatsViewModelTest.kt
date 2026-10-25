@@ -5,6 +5,7 @@ import com.example.tracker.data.repository.FakeTimeProvider
 import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.PhotoPose
 import com.example.tracker.domain.model.StatColor
+import com.example.tracker.domain.model.StatGoal
 import com.example.tracker.domain.model.StatEntry
 import com.example.tracker.domain.model.StatIcon
 import com.example.tracker.testing.FakeCustomStatRepository
@@ -58,6 +59,16 @@ class StatsViewModelTest {
         assertEquals(StatEntry("fat", today, 18.0), card.latest)
         assertEquals(-3.0, card.changeSinceStart!!, 1e-9)
         assertEquals(0.5f, card.progress!!, 1e-6f)
+    }
+
+    @Test
+    fun uiState_dailyGoalPastItsTarget_isFullProgress() = runTest {
+        val steps = CustomStat("steps", "Steps", "steps", 0, 100.0, StatIcon.STEPS, StatColor.TEAL, StatGoal.DAILY)
+        stats.stats.value = listOf(steps)
+        stats.put(StatEntry("steps", today, 110.0))
+        val card = (collectState(createViewModel())() as StatsUiState.Success).stats.single()
+
+        assertEquals(1f, card.progress!!, 0f)
     }
 
     @Test
