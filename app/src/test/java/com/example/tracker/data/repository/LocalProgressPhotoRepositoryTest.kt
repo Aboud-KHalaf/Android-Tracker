@@ -192,15 +192,10 @@ class LocalProgressPhotoRepositoryTest {
     @Test
     fun importCapture_empty_isRejectedAndLeavesNoFile() = runTest {
         val photos = repository()
-        var rejected = false
 
-        try {
-            photos.importCapture { ByteArray(0).inputStream() }
-        } catch (e: IllegalArgumentException) {
-            rejected = true
-        }
+        val result = runCatching { photos.importCapture { ByteArray(0).inputStream() } }
 
-        assertTrue(rejected)
+        assertTrue(result.exceptionOrNull() is IllegalArgumentException)
         assertTrue(store.files().isEmpty())
     }
 }
