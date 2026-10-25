@@ -9,5 +9,5 @@
     <integer name="splash_dumbbell_duration_ms">600</integer>
     <integer name="splash_spark_duration_ms">300</integer>
     <integer name="splash_icon_duration_ms">900</integer>
-    <integer name="splash_exit_duration_ms">350</integer>
+    <integer name="splash_exit_duration_ms">500</integer>
 </resources>
