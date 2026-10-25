@@ -173,14 +173,14 @@ class StatEditorViewModel(
                 val application = this[APPLICATION_KEY] as TrackerApplication
                 val route = createSavedStateHandle().toRoute<StatEditorDestination>()
                 val template = StatTemplate.entries.firstOrNull { it.name == route.template }
-                val templateForm = { it: StatTemplate ->
+                val templateForm = { template: StatTemplate ->
                     StatForm(
-                        name = application.getString(it.nameRes),
-                        unit = application.getString(it.unitRes),
-                        decimals = it.decimals,
-                        icon = it.icon,
-                        color = it.color,
-                        goal = it.goal,
+                        name = application.getString(template.nameRes),
+                        unit = application.getString(template.unitRes),
+                        decimals = template.decimals,
+                        icon = template.icon,
+                        color = template.color,
+                        goal = template.goal,
                     )
                 }
                 StatEditorViewModel(

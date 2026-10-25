@@ -1,5 +1,6 @@
 package com.example.tracker.ui.history
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -100,6 +101,7 @@ fun HistoryScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun HistoryContent(
     state: HistoryUiState.Success,

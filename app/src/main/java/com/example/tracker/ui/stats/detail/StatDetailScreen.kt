@@ -1,5 +1,6 @@
 package com.example.tracker.ui.stats.detail
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -196,6 +197,7 @@ fun StatDetailScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun StatDetailContent(
     state: StatDetailUiState.Success,
