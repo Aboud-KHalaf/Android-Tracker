@@ -1,9 +1,12 @@
 package com.example.tracker.ui.program.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditCalendar
 import androidx.compose.material.icons.outlined.EventRepeat
@@ -39,15 +42,27 @@ import com.example.tracker.ui.program.ProgramDayUi
 
 private val WeekdayBadgeSize = 40.dp
 
-/** One training day of the program; opens its exercise list, with a menu to move or remove it. */
+/** What a day's menu offers; a null move means the day is already at that end. */
+data class ProgramDayRowActions(
+    val onChangeWeekday: () -> Unit = {},
+    val onRemove: () -> Unit = {},
+    val onMoveUp: (() -> Unit)? = null,
+    val onMoveDown: (() -> Unit)? = null,
+)
+
+/**
+ * One training day of the program; opens its exercise list. It is reordered with [dragHandle]
+ * or a long press (Move up and Move down in its menu do the same without dragging), and its
+ * menu also changes its weekday or removes it.
+ */
 @Composable
 fun ProgramDayRow(
     day: ProgramDayUi,
     shape: Shape,
     onClick: () -> Unit,
-    onChangeWeekday: () -> Unit,
-    onRemove: () -> Unit,
+    actions: ProgramDayRowActions,
     modifier: Modifier = Modifier,
+    dragHandle: @Composable () -> Unit = {},
 ) {
     val locale = currentLocale()
     val whenText = day.dayOfWeek?.fullName(locale) ?: stringResource(R.string.program_any_day)
@@ -72,7 +87,12 @@ fun ProgramDayRow(
                     WeekdayBadge(weekday.shortName(locale))
                 }
             },
-            trailingContent = { DayOptionsMenu(day.name, onChangeWeekday = onChangeWeekday, onRemove = onRemove) },
+            trailingContent = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    DayOptionsMenu(day.name, actions)
+                    dragHandle()
+                }
+            },
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         )
     }
@@ -93,7 +113,7 @@ private fun WeekdayBadge(text: String) {
 }
 
 @Composable
-private fun DayOptionsMenu(dayName: String, onChangeWeekday: () -> Unit, onRemove: () -> Unit) {
+private fun DayOptionsMenu(dayName: String, actions: ProgramDayRowActions) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { expanded = true }) {
@@ -105,9 +125,29 @@ private fun DayOptionsMenu(dayName: String, onChangeWeekday: () -> Unit, onRemov
                 leadingIcon = { Icon(Icons.Outlined.EditCalendar, contentDescription = null) },
                 onClick = {
                     expanded = false
-                    onChangeWeekday()
+                    actions.onChangeWeekday()
                 },
             )
+            actions.onMoveUp?.let { onMoveUp ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.program_move_day_up)) },
+                    leadingIcon = { Icon(Icons.Outlined.ArrowUpward, contentDescription = null) },
+                    onClick = {
+                        expanded = false
+                        onMoveUp()
+                    },
+                )
+            }
+            actions.onMoveDown?.let { onMoveDown ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.program_move_day_down)) },
+                    leadingIcon = { Icon(Icons.Outlined.ArrowDownward, contentDescription = null) },
+                    onClick = {
+                        expanded = false
+                        onMoveDown()
+                    },
+                )
+            }
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.program_remove_day)) },
                 leadingIcon = { Icon(Icons.Outlined.Delete, contentDescription = null) },
@@ -117,7 +157,7 @@ private fun DayOptionsMenu(dayName: String, onChangeWeekday: () -> Unit, onRemov
                 ),
                 onClick = {
                     expanded = false
-                    onRemove()
+                    actions.onRemove()
                 },
             )
         }

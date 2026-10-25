@@ -40,7 +40,7 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         PhotoSessionEntity::class,
         PhotoMeasurementEntity::class,
     ],
-    version = 16,
+    version = 17,
     exportSchema = true,
     autoMigrations = [
         // Adds daily_nutrition.
@@ -71,6 +71,8 @@ import com.example.tracker.data.local.entity.WorkoutSetEntity
         AutoMigration(from = 14, to = 15, spec = StatGoalMigration::class),
         // Adds custom_stats.position; existing stats share 0 and so keep their creation order.
         AutoMigration(from = 15, to = 16),
+        // Adds workout_plans.position; existing days stay unarranged, in weekday order.
+        AutoMigration(from = 16, to = 17),
     ],
 )
 abstract class TrackerDatabase : RoomDatabase() {

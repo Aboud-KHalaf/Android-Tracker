@@ -12,7 +12,7 @@ interface PlanDao {
 
     @Query(
         """
-        SELECT p.id, p.name, p.program_id, p.day_of_week,
+        SELECT p.id, p.name, p.program_id, p.day_of_week, p.position,
             (SELECT COUNT(*) FROM plan_exercises pe
                 JOIN exercises e ON e.id = pe.exercise_id
                 WHERE pe.plan_id = p.id AND pe.deleted_at IS NULL AND e.deleted_at IS NULL
@@ -56,6 +56,9 @@ interface PlanDao {
     suspend fun getPlanExercises(planId: String): List<PlanExerciseEntity>
 
     /** The active day of [programId] scheduled on [dayOfWeek], if any. */
+    @Query("SELECT * FROM workout_plans WHERE program_id = :programId AND deleted_at IS NULL")
+    suspend fun getDaysOf(programId: String): List<PlanEntity>
+
     @Query("SELECT * FROM workout_plans WHERE program_id = :programId AND day_of_week = :dayOfWeek AND deleted_at IS NULL")
     suspend fun getDayOn(programId: String, dayOfWeek: Int): PlanEntity?
 

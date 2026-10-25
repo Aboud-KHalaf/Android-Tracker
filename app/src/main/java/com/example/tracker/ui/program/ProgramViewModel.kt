@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 /**
- * Program screen: the weekly schedule and the training days of one program.
+ * Program screen: the weekly schedule and the training days of one program, in the user's order.
  * State is exposed as [uiState]; navigation and messages are sent once through [events].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -109,6 +109,9 @@ class ProgramViewModel(
     }
 
     fun onScheduleDay(dayId: String, dayOfWeek: DayOfWeek?) = update { programRepository.scheduleDay(dayId, dayOfWeek) }
+
+    /** Saves the order the user arranged the days in, listing every day once. */
+    fun onReorderDays(dayIds: List<String>) = update { programRepository.reorderDays(programId, dayIds) }
 
     fun onMakeActive() = update { programRepository.setActiveProgram(programId) }
 

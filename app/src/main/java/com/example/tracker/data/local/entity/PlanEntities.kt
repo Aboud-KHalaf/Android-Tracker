@@ -22,7 +22,8 @@ data class ProgramEntity(
 
 /**
  * A training day of a program with its own exercise list. [dayOfWeek] is the ISO weekday
- * (1 = Monday) it is scheduled on, or null when it isn't tied to a weekday.
+ * (1 = Monday) it is scheduled on, or null when it isn't tied to a weekday. [position] is
+ * where the user placed it in the program, or null until they arrange the days.
  */
 @Entity(
     tableName = "workout_plans",
@@ -42,6 +43,7 @@ data class PlanEntity(
     @ColumnInfo(name = "program_id") val programId: String?,
     @ColumnInfo(name = "day_of_week") val dayOfWeek: Int?,
     @Embedded val sync: SyncMetadata,
+    @ColumnInfo(name = "position") val position: Int? = null,
 )
 
 /**

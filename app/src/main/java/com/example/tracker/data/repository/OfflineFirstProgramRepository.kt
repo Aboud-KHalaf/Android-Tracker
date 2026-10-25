@@ -9,6 +9,7 @@ import com.example.tracker.data.local.entity.PlanEntity
 import com.example.tracker.data.local.entity.ProgramEntity
 import com.example.tracker.domain.model.Program
 import com.example.tracker.domain.model.WorkoutPlan
+import com.example.tracker.domain.program.orderDays
 import com.example.tracker.domain.repository.ProgramRepository
 import java.time.DayOfWeek
 import kotlinx.coroutines.flow.Flow
@@ -107,6 +108,23 @@ class OfflineFirstProgramRepository(
         }
     }
 
+    override suspend fun reorderDays(programId: String, dayIds: List<String>) {
+        database.withTransaction {
+            requireProgram(programId)
+            val days = planDao.getDaysOf(programId)
+            require(dayIds.size == days.size && dayIds.toSet() == days.mapTo(mutableSetOf()) { it.id }) {
+                "Order must list every day of $programId once: $dayIds"
+            }
+            val now = now()
+            val byId = days.associateBy { it.id }
+            val changed = dayIds.mapIndexedNotNull { index, id ->
+                val day = byId.getValue(id)
+                if (day.position == index) null else day.copy(position = index, sync = day.sync.touched(now))
+            }
+            planDao.upsertPlans(changed)
+        }
+    }
+
     private suspend fun requireFree(programId: String, dayOfWeek: DayOfWeek) {
         require(planDao.getDayOn(programId, dayOfWeek.value) == null) { "$dayOfWeek already has a training day" }
     }
@@ -117,10 +135,10 @@ class OfflineFirstProgramRepository(
         requireNotNull(programDao.get(id)) { "Program $id not found" }
 }
 
-/** Scheduled days Monday to Sunday, then unscheduled ones in the order they were added. */
+/** [days] come in the order they were added, which breaks ties in [orderDays]. */
 private fun ProgramEntity.toDomain(days: List<WorkoutPlan>) = Program(
     id = id,
     name = name,
     isActive = isActive,
-    days = days.sortedWith(compareBy(nullsLast()) { it.dayOfWeek }),
+    days = orderDays(days),
 )

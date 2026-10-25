@@ -536,6 +536,10 @@
     <string name="program_new_day_title">يوم تمرين جديد</string>
     <string name="program_new_day_confirm">إضافة</string>
     <string name="program_day_options">خيارات إضافية لـ %1$s</string>
+    <string name="program_days_reorder_hint">اسحب المقبض، أو المس يومًا مطولًا، لترتيب الأيام كما تريد</string>
+    <string name="program_day_drag_handle">إعادة ترتيب %1$s</string>
+    <string name="program_move_day_up">نقل للأعلى</string>
+    <string name="program_move_day_down">نقل للأسفل</string>
     <string name="program_change_weekday">تغيير يوم الأسبوع</string>
     <string name="program_remove_day">إزالة اليوم</string>
     <string name="program_remove_day_title">إزالة %1$s؟</string>

@@ -32,4 +32,7 @@ interface ProgramRepository {
 
     /** Moves a day to [dayOfWeek], which must be free in its program, or unschedules it (null). */
     suspend fun scheduleDay(planId: String, dayOfWeek: DayOfWeek?)
+
+    /** Puts the days of [programId] in the order of [dayIds], which must list every day once. */
+    suspend fun reorderDays(programId: String, dayIds: List<String>)
 }

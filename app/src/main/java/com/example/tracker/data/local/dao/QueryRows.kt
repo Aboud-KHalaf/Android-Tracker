@@ -11,6 +11,7 @@ data class PlanSummaryRow(
     @ColumnInfo(name = "day_of_week") val dayOfWeek: Int?,
     @ColumnInfo(name = "exercise_count") val exerciseCount: Int,
     @ColumnInfo(name = "last_done_at") val lastDoneAt: Long?,
+    @ColumnInfo(name = "position") val position: Int?,
 )
 
 /** A plan exercise joined with its exercise. */

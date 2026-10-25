@@ -21,6 +21,14 @@ fun nameTrainingDays(
         day to if (labels.isEmpty()) fallback(day) else labels[index % labels.size]
     }
 
+/**
+ * A program's days in the order the user arranged them; days they haven't placed yet (all of
+ * them before the first arrangement, or ones added since) follow, scheduled days Monday to
+ * Sunday and then unscheduled ones. Days that tie keep their order in [days].
+ */
+fun orderDays(days: List<WorkoutPlan>): List<WorkoutPlan> =
+    days.sortedWith(compareBy<WorkoutPlan, Int?>(nullsLast()) { it.position }.thenBy(nullsLast()) { it.dayOfWeek })
+
 /** A training day to do next; [date] is null for a day not tied to a weekday. */
 data class NextWorkout(val day: WorkoutPlan, val date: LocalDate?)
 
