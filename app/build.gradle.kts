@@ -28,9 +28,9 @@ android {
         minSdk = 24
         targetSdk = 36
         // CI passes -PversionCode=<n> and -PversionName=<major.minor.patch> so every pipeline build is a new version.
-        // Bump the "1.2" fallback to start a new major/minor line; CI derives the patch from git tags.
-        versionCode = providers.gradleProperty("versionCode").orNull?.toInt() ?: 3
-        versionName = providers.gradleProperty("versionName").orNull ?: "1.2"
+        // Bump the "1.3" fallback to start a new major/minor line; CI derives the patch from git tags.
+        versionCode = providers.gradleProperty("versionCode").orNull?.toInt() ?: 4
+        versionName = providers.gradleProperty("versionName").orNull ?: "1.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
