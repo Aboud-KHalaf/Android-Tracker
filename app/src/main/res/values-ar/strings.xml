@@ -94,8 +94,6 @@
 
     <!-- Add exercise sheet -->
     <string name="add_exercise_title">إضافة تمرين</string>
-    <string name="add_exercise_browse">تصفّح دليل التمارين</string>
-    <string name="add_exercise_browse_body">صور وعضلات وتعليمات</string>
     <string name="add_exercise_create">إنشاء تمرين جديد</string>
     <string name="add_exercise_library_empty">كل تمارين مكتبتك موجودة بالفعل في هذا اليوم.</string>
     <string name="add_exercise_new_title">تمرين جديد</string>
@@ -106,22 +104,6 @@
     <string name="add_exercise_muscle_body">تُحتسب مجموعاته في \"مجموعات هذا الأسبوع حسب العضلة\" في شاشة التقدّم.</string>
     <string name="add_exercise_confirm">إضافة إلى اليوم</string>
 
-    <!-- Exercise catalog -->
-    <string name="catalog_title">دليل التمارين</string>
-    <string name="catalog_search_label">ابحث عن تمرين</string>
-    <string name="catalog_search_clear">مسح البحث</string>
-    <string name="catalog_error_load">تعذّر تحميل دليل التمارين. تحقّق من الاتصال وحاول مرة أخرى.</string>
-    <string name="catalog_error_add">تعذّرت إضافة التمرين. حاول مرة أخرى.</string>
-    <string name="catalog_empty_title">لا توجد تمارين مطابقة</string>
-    <string name="catalog_empty_body">جرّب اسمًا آخر، أو أنشئ تمرينك الخاص من يوم التمرين.</string>
-    <string name="catalog_in_plan">مُضاف</string>
-    <string name="catalog_added">أُضيف %1$s إلى اليوم</string>
-    <string name="catalog_muscles">العضلات</string>
-    <string name="catalog_secondary_muscles">يشغّل أيضًا</string>
-    <string name="catalog_equipment">المعدات</string>
-    <string name="catalog_image_description">طريقة أداء %1$s</string>
-    <string name="catalog_already_in_plan">موجود في هذا اليوم</string>
-    <string name="catalog_attribution">بيانات التمارين من wger.de، بترخيص CC-BY-SA.</string>
 
     <!-- Active workout -->
     <string name="workout_error_load">تعذّر تحميل التمرين.</string>

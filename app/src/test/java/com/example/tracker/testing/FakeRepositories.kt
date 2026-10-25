@@ -1,6 +1,5 @@
 package com.example.tracker.testing
 
-import com.example.tracker.domain.model.CatalogExercise
 import com.example.tracker.domain.model.CustomStat
 import com.example.tracker.domain.model.Exercise
 import com.example.tracker.domain.model.ExerciseConfig
@@ -26,7 +25,6 @@ import com.example.tracker.domain.model.WorkoutSummary
 import com.example.tracker.domain.photos.PhotoCheckIn
 import com.example.tracker.domain.reminder.ReminderTime
 import com.example.tracker.domain.repository.CustomStatRepository
-import com.example.tracker.domain.repository.ExerciseCatalogRepository
 import com.example.tracker.domain.repository.ExerciseRepository
 import com.example.tracker.domain.repository.PlanRepository
 import com.example.tracker.domain.repository.ProgramRepository
@@ -513,21 +511,6 @@ class FakeCustomStatRepository : CustomStatRepository {
 
     fun put(vararg logged: StatEntry) {
         entries.value += logged.associateBy { it.statId to it.date }
-    }
-}
-
-class FakeExerciseCatalogRepository : ExerciseCatalogRepository {
-    /** Returned for every query. */
-    var results: List<CatalogExercise> = emptyList()
-
-    /** When set, every search fails with it. */
-    var error: Exception? = null
-    val queries = mutableListOf<String>()
-
-    override suspend fun search(query: String): List<CatalogExercise> {
-        queries += query
-        error?.let { throw it }
-        return results
     }
 }
 

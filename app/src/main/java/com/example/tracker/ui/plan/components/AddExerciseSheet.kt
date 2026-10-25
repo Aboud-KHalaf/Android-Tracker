@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.TravelExplore
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -47,8 +46,8 @@ import com.example.tracker.ui.theme.Dimens
 import com.example.tracker.ui.theme.spacing
 
 /**
- * Picks an exercise from the library, creates a new one, or opens the online catalog. Used to
- * add an exercise to the day and, with its own [title] and no catalog, to replace one.
+ * Picks an exercise from the library or creates a new one. Used to add an exercise to the day
+ * and, with its own [title], to replace one.
  * Every exercise added this way has a target muscle: a new one asks for it, and a library
  * exercise without one asks before it's added ([onAdd] then gets the choice, otherwise null).
  * Calls [onDismiss] after any of these.
@@ -59,7 +58,6 @@ fun AddExerciseSheet(
     options: List<ExerciseOptionUi>,
     onAdd: (exerciseId: String, muscleGroup: MuscleGroup?) -> Unit,
     onCreate: (name: String, type: ExerciseType, muscleGroup: MuscleGroup) -> Unit,
-    onBrowseCatalog: (() -> Unit)?,
     onDismiss: () -> Unit,
     title: String = stringResource(R.string.add_exercise_title),
     emptyText: String = stringResource(R.string.add_exercise_library_empty),
@@ -102,12 +100,6 @@ fun AddExerciseSheet(
                     }
                 },
                 onCreateNew = { isCreating = true },
-                onBrowseCatalog = onBrowseCatalog?.let { browse ->
-                    {
-                        onDismiss()
-                        browse()
-                    }
-                },
             )
         }
     }
@@ -120,28 +112,12 @@ private fun ExercisePicker(
     options: List<ExerciseOptionUi>,
     onPick: (ExerciseOptionUi) -> Unit,
     onCreateNew: () -> Unit,
-    onBrowseCatalog: (() -> Unit)?,
 ) {
     LazyColumn(modifier = Modifier.padding(bottom = MaterialTheme.spacing.xl)) {
         item(key = "title") {
             SheetTitle(
                 text = title,
                 modifier = Modifier.padding(horizontal = MaterialTheme.spacing.lg, vertical = MaterialTheme.spacing.sm),
-            )
-        }
-        if (onBrowseCatalog != null) item(key = "browse") {
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.add_exercise_browse)) },
-                supportingContent = { Text(stringResource(R.string.add_exercise_browse_body)) },
-                leadingContent = {
-                    IconAvatar(
-                        icon = Icons.Outlined.TravelExplore,
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                },
-                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                modifier = Modifier.clickable(onClick = onBrowseCatalog),
             )
         }
         item(key = "create") {

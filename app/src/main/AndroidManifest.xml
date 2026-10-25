@@ -2,9 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Browsing the online exercise catalog when adding exercises to a plan. -->
-    <uses-permission android:name="android.permission.INTERNET" />
-
     <!-- Progress photos. Optional, so devices without a camera can still install the app. -->
     <uses-feature android:name="android.hardware.camera.any" android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
